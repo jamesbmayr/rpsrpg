@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>RPSG</title>
+		<script node> getAsset("meta") </script>node>
+		<script node> getAsset("google fonts") </script>node>
+		<link rel="shortcut icon" type="image/png" href="icon.png"/>
+		<link rel="stylesheet" type="text/css" href="main.css"/>
+		<script type="text/javascript" src="main.js"></script>
+		<script>window.id = "<script node>request.session.id</script>node>"</script>
+	</head>
+	<body>
+		<div id="message" class="hidden"></div>
+		<div id="start">
+			<div id="start-id"><script node>request.game.id</script>node></div>
+			<div id="start-message">Waiting for players...</div>
+		</div>
+		<div id="container">
+			<canvas id="canvas" height="512" width="512"></canvas>
+			<pre id="info"></pre>
+		</div>
+	</body>
+</html>

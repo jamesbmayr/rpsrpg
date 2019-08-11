@@ -1,0 +1,603 @@
+/*** modules ***/
+	var http       = require("http")
+	var fs         = require("fs")
+	var debug      = getEnvironment("debug")
+	module.exports = {}
+
+/*** logs ***/
+	/* logError */
+		module.exports.logError = logError
+		function logError(error) {
+			if (debug) {
+				console.log("\n*** ERROR @ " + new Date().toLocaleString() + " ***")
+				console.log(" - " + error)
+				console.dir(arguments)
+			}
+		}
+
+	/* logStatus */
+		module.exports.logStatus = logStatus
+		function logStatus(status) {
+			if (debug) {
+				console.log("\n--- STATUS @ " + new Date().toLocaleString() + " ---")
+				console.log(" - " + status)
+
+			}
+		}
+
+	/* logMessage */
+		module.exports.logMessage = logMessage
+		function logMessage(message) {
+			if (debug) {
+				console.log(" - " + new Date().toLocaleString() + ": " + message)
+			}
+		}
+
+	/* logTime */
+		module.exports.logTime = logTime
+		function logTime(flag, callback) {
+			if (debug) {
+				var before = process.hrtime()
+				callback()
+				
+				var after = process.hrtime(before)[1] / 1e6
+				if (after > 5) {
+					logMessage(flag + " " + after)
+				}
+			}
+			else {
+				callback()
+			}
+		}
+
+/*** maps ***/
+	/* getEnvironment */
+		module.exports.getEnvironment = getEnvironment
+		function getEnvironment(index) {
+			try {
+				if (process.env.DOMAIN !== undefined) {
+					var environment = {
+						port:   process.env.PORT,
+						domain: process.env.DOMAIN,
+						debug:  (process.env.DEBUG || false)
+					}
+				}
+				else {
+					var environment = {
+						port:   3000,
+						domain: "localhost",
+						debug:  true
+					}
+				}
+
+				return environment[index]
+			}
+			catch (error) {
+				logError(error)
+				return false
+			}
+		}
+
+	/* getAsset */
+		module.exports.getAsset = getAsset
+		function getAsset(index) {
+			try {
+				switch (index) {
+					// site components
+						case "logo":
+							return "logo.png"
+						break
+						case "google fonts":
+							return '<!--<link href="https://fonts.googleapis.com/css?family=Press-Start-P2" rel="stylesheet">-->'
+						break
+						case "meta":
+							return '<meta charset="UTF-8"/>\
+									<meta name="description" content="Three fantasy heroes team up to fight through a randomly generated dungeon of orb-stealing monsters."/>\
+									<meta name="keywords" content="game,fantasy,heroes,monsters,wizard,barbarian,ranger,multiplayer"/>\
+									<meta name="author" content="James Mayr"/>\
+									<meta property="og:title" content="Three fantasy heroes team up to fight through a randomly generated dungeon of orb-stealing monsters."/>\
+									<meta property="og:url" content="https://rpsg.herokuapp.com"/>\
+									<meta property="og:description" content="Three fantasy heroes team up to fight through a randomly generated dungeon of orb-stealing monsters."/>\
+									<meta property="og:image" content="https://rpsg.herokuapp.com/banner.png"/>\
+									<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>'
+						break
+						case "css variables":
+							// colors
+								var colors = getAsset("colors")
+								var cssColors = ""
+								for (var hue in colors) {
+									for (var shade in colors[hue]) {
+										cssColors += "		--" + hue + "-" + shade + ": " + colors[hue][shade] + ";\n"
+									}
+								}
+							
+							// data
+								return ('/*** variables ***/\n' +
+										'	:root {\n' +
+										'		--font: monospace;\n' +
+										'		--borderRadius: 10px;\n' +
+												cssColors +
+										'	}')
+						break
+
+						case "colors":
+							return {
+								magenta:    ["#ffcce6","#ff66b3","#e60073","#99004d","#33001a"],
+								red:        ["#fab7b7","#f66f6f","#d80e0e","#7c0808","#300303"],
+								brown:      ["#e09b06","#ae7804","#7c5603","#513802","#191101"],
+								browngray:  ["#d5cac3","#b6a196","#a18778","#786154","#4f4037"],
+								orange:     ["#fde4ce","#f9ae6c","#f68523","#ab5407","#442103"],
+								beige:      ["#f7f4ed","#e0d3b8","#c1a871","#91773f","#6a572f"],
+								yellow:     ["#f6f4d5","#e5dd80","#d8cb41","#beb227","#7f771a"],
+								green:      ["#a9d3ab","#539e57","#1a661e","#074f0b","#053007"],
+								greengray:  ["#d3ded4","#99b29b","#6a8c6c","#4d664e","#374938"],
+								cyan:       ["#e6ffff","#b3ffff","#33ffff","#00cccc","#008080"],
+								cerulean:   ["#dae7f1","#90b8d5","#4689b9","#2b5572","#1c374a"],
+								bluegray:   ["#dee9ed","#adc8d2","#7ba7b7","#487484","#2d4852"],
+								blue:       ["#d0e0fb","#7a9bd3","#2b76ef","#0b3d8e","#04142f"],
+								purple:     ["#dac0f7","#b08bda","#7b3dc2","#4a2574","#180c26"],
+								black:      ["#e4e6e7","#a2a7a9","#6e7477","#3d4142","#232526"],
+								white:      ["#c0dee5","#cee2e8","#dcf1f7","#e3f5f9","#f9fdff"]
+							}
+						break
+
+						case "directions":
+							return ["up", "left", "right", "down"]
+						break
+
+						case "heroes":
+							var colors = getAsset("colors")
+
+							return {
+								"barbarian": {
+									info: {
+										rps: "rock",
+										type: "hero",
+										species: "barbarian",
+										color: colors.orange[2]
+									},
+									state: {
+										health: 128,
+										healthMax: 128,
+										position: {
+											x: -32,
+											y: 0
+										}
+									},
+									statistics: {
+										power: 16,
+										armor: 8,
+										speed: 4,
+										range: 16
+									}
+								},
+								"wizard": {
+									info: {
+										rps: "paper",
+										type: "hero",
+										species: "wizard",
+										color: colors.purple[2]
+									},
+									state: {
+										health: 128,
+										healthMax: 128,
+										position: {
+											x: 0,
+											y: 32
+										}
+									},
+									statistics: {
+										power: 16,
+										armor: 2,
+										speed: 2,
+										range: 128
+									}
+								},
+								"ranger": {
+									info: {
+										rps: "scissors",
+										type: "hero",
+										species: "ranger",
+										color: colors.greengray[2]
+									},
+									state: {
+										health: 128,
+										healthMax: 128,
+										position: {
+											x: 32,
+											y: 0
+										}
+									},
+									statistics: {
+										power: 8,
+										armor: 4,
+										speed: 8,
+										range: 64
+									}
+								}
+							}
+						break
+
+					default:
+						return null
+					break
+				}
+			}
+			catch (error) {logError(error)}
+		}
+
+	/* getSchema */
+		module.exports.getSchema = getSchema
+		function getSchema(index) {
+			try {
+				switch (index) {
+					case "game":
+						return {
+							id: 			null,
+							created: 		(new Date().getTime()),
+							loop: 			null,
+							observers: 		{},
+							players: 		{},
+							data: {
+								info: {
+									layers: 3
+								},
+								state: {
+									start: 	true,
+									end: 	false,
+									time: 	0,
+									chamber: {
+										x: 	0,
+										y: 	0
+									}
+								},
+								heroes: 	{},
+								chambers: 	{}
+							}
+						}
+					break
+
+					case "player":
+						return {
+							id: 			null,
+							name: 			null,
+							created: 		(new Date().getTime()),
+							connected: 		false,
+							connection: 	null
+						}
+					break
+
+					case "creature":
+						return {
+							id: 			generateRandom(),
+							info: {
+								name: 		null,
+								rps: 		null,
+								type: 		null,
+								species:	null,
+								size: {
+									x: 		16,
+									y: 		16
+								},
+								color: 		null
+							},
+							state: {
+								alive: 		true,
+								health: 	0,
+								healthMax: 	0,
+								position: {
+									x: 		0,
+									y: 		0,
+									edge: 	null
+								},
+								movement: {
+									facing: "down",
+									up: false,
+									left: false,
+									right: false,
+									down: false
+								},
+								actions: {
+									primary: false,
+									secondary: false
+								},
+								kills: 		0,
+								points: 	0
+							},
+							statistics: {
+								power: 		0,
+								armor: 		0,
+								speed: 		0,
+								range: 		0
+							},
+							inventory: 		{}
+						}
+					break
+
+					case "chamber":
+						return {
+							id: 			generateRandom(),
+							info: {
+								name: 		null,
+								colors: 	[],
+								x: 0,
+								y: 0,
+								size: {
+									x: 		512,
+									y: 		512
+								}
+							},
+							heroes: 		{},
+							creatures: 		{},
+							objects:		{}
+						}
+					break
+
+					default:
+						return null
+					break
+				}
+			}
+			catch (error) {logError(error)}
+		}
+
+/*** checks ***/
+	/* isNumLet */
+		module.exports.isNumLet = isNumLet
+		function isNumLet(string) {
+			try {
+				return (/^[a-z0-9A-Z_\s]+$/).test(string)
+			}
+			catch (error) {
+				logError(error)
+				return false
+			}
+		}
+
+	/* isBot */
+		module.exports.isBot = isBot
+		function isBot(agent) {
+			try {
+				switch (true) {
+					case (typeof agent == "undefined" || !agent):
+						return "no-agent"
+					break
+					
+					case (agent.indexOf("Googlebot") !== -1):
+						return "Googlebot"
+					break
+				
+					case (agent.indexOf("Google Domains") !== -1):
+						return "Google Domains"
+					break
+				
+					case (agent.indexOf("Google Favicon") !== -1):
+						return "Google Favicon"
+					break
+				
+					case (agent.indexOf("https://developers.google.com/+/web/snippet/") !== -1):
+						return "Google+ Snippet"
+					break
+				
+					case (agent.indexOf("IDBot") !== -1):
+						return "IDBot"
+					break
+				
+					case (agent.indexOf("Baiduspider") !== -1):
+						return "Baiduspider"
+					break
+				
+					case (agent.indexOf("facebook") !== -1):
+						return "Facebook"
+					break
+
+					case (agent.indexOf("bingbot") !== -1):
+						return "BingBot"
+					break
+
+					case (agent.indexOf("YandexBot") !== -1):
+						return "YandexBot"
+					break
+
+					default:
+						return null
+					break
+				}
+			}
+			catch (error) {
+				logError(error)
+				return false
+			}
+		}
+
+/*** tools ***/		
+	/* renderHTML */
+		module.exports.renderHTML = renderHTML
+		function renderHTML(request, path, callback) {
+			try {
+				var html = {}
+				fs.readFile(path, "utf8", function (error, file) {
+					if (error) {
+						logError(error)
+						callback("")
+					}
+					else {
+						html.original = file
+						html.array = html.original.split(/<script\snode>|<\/script>node>/gi)
+
+						for (html.count = 1; html.count < html.array.length; html.count += 2) {
+							try {
+								html.temp = eval(html.array[html.count])
+							}
+							catch (error) {
+								html.temp = ""
+								logError("<sn>" + Math.ceil(html.count / 2) + "</sn>\n" + error)
+							}
+							html.array[html.count] = html.temp
+						}
+
+						callback(html.array.join(""))
+					}
+				})
+			}
+			catch (error) {
+				logError(error)
+				callback("")
+			}
+		}
+
+	/* sanitizeString */
+		module.exports.sanitizeString = sanitizeString
+		function sanitizeString(string) {
+			try {
+				return string.replace(/[^a-zA-Z0-9_\s\!\@\#\$\%\^\&\*\(\)\+\=\-\[\]\\\{\}\|\;\'\:\"\,\.\/\<\>\?]/gi, "")
+			}
+			catch (error) {
+				logError(error)
+				return ""
+			}
+		}
+
+	/* duplicateObject */
+		module.exports.duplicateObject = duplicateObject
+		function duplicateObject(object) {
+			try {
+				return JSON.parse(JSON.stringify(object))
+			}
+			catch (error) {
+				logError(error)
+				return null
+			}
+		}
+
+	/* overwriteObject */
+		module.exports.overwriteObject = overwriteObject
+		function overwriteObject(base, overwrites) {
+			try {
+				for (var o in overwrites) {
+					if (typeof overwrites[o] == "object") {
+						if (base[o] && typeof base[o] == "object") {
+							overwriteObject(base[o], overwrites[o])
+						}
+						else {
+							base[o] = overwrites[o]
+						}
+					}
+					else {
+						base[o] = overwrites[o]
+					}
+				}
+			}
+			catch (error) {
+				logError(error)
+				return null
+			}
+		}
+
+/*** randoms ***/
+	/* generateRandom */
+		module.exports.generateRandom = generateRandom
+		function generateRandom(set, length) {
+			try {
+				set = set || "0123456789abcdefghijklmnopqrstuvwxyz"
+				length = length || 32
+				
+				var output = ""
+				for (var i = 0; i < length; i++) {
+					output += (set[Math.floor(Math.random() * set.length)])
+				}
+
+				if ((/[a-zA-Z]/).test(set)) {
+					while (!(/[a-zA-Z]/).test(output[0])) {
+						output = (set[Math.floor(Math.random() * set.length)]) + output.substring(1)
+					}
+				}
+
+				return output
+			}
+			catch (error) {
+				logError(error)
+				return null
+			}
+		}
+
+	/* chooseRandom */
+		module.exports.chooseRandom = chooseRandom
+		function chooseRandom(options) {
+			try {
+				if (!Array.isArray(options)) {
+					return false
+				}
+				else {
+					return options[Math.floor(Math.random() * options.length)]
+				}
+			}
+			catch (error) {
+				logError(error)
+				return false
+			}
+		}
+
+	/* sortRandom */
+		module.exports.sortRandom = sortRandom
+		function sortRandom(array) {
+			try {
+				// duplicate array
+					var output = duplicateObject(array)
+
+				// fisher-yates shuffle
+					var x = output.length
+					while (x > 0) {
+						var y = Math.floor(Math.random() * x)
+						x = x - 1
+						var temp = output[x]
+						output[x] = output[y]
+						output[y] = temp
+					}
+
+				return output
+			}
+			catch (error) {
+				logError(error)
+				return null
+			}
+		}
+
+/*** database ***/
+	/* determineSession */
+		module.exports.determineSession = determineSession
+		function determineSession(request, callback) {
+			try {
+				if (isBot(request.headers["user-agent"])) {
+					request.session = null
+				}
+				else if (!request.cookie.session || request.cookie.session == null || request.cookie.session == 0) {
+					request.session = {
+						id: generateRandom(),
+						updated: new Date().getTime(),
+						info: {
+							"ip":         request.ip,
+				 			"user-agent": request.headers["user-agent"],
+				 			"language":   request.headers["accept-language"],
+						}
+					}
+				}
+				else {
+					request.session = {
+						id: request.cookie.session,
+						updated: new Date().getTime(),
+						info: {
+							"ip":         request.ip,
+				 			"user-agent": request.headers["user-agent"],
+				 			"language":   request.headers["accept-language"],
+						}
+					}
+				}
+
+				callback()
+			}
+			catch (error) {
+				logError(error)
+				callback(false)
+			}
+		}

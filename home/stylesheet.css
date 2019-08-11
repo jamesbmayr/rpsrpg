@@ -1,0 +1,183 @@
+/*** page ***/
+	html, body {
+		width: 100%;
+		height: 100%;
+	}
+
+	/* container */
+		#container {
+			position: absolute;
+			height: auto;
+			min-width: 50%;
+			max-width: 90%;
+			top: 50%;
+			left: 50%;
+			padding: 5%;
+			transform: translateX(-50%) translateY(-50%);
+			text-align: center;
+			z-index: 2;
+			background: transparent;
+			user-select: none;
+			-webkit-user-select: none;
+			-moz-user-select: none;
+			-ms-user-select: none;
+			-o-user-select: none;
+		}
+
+/*** form ***/
+	/* title */
+		#title-outer {
+			top: 5vh;
+			left: 5vh;
+			background-color: var(--white-4);
+		}
+
+		#title {
+			height: 40vh;
+			width: 60vh;
+			max-height: 50vw;
+			max-width: 75vw;
+			background-color: var(--cerulean-3);
+			user-select: none;
+			cursor: pointer;
+			text-shadow: 0px 0px 10px var(--black-4);
+			box-shadow: 0px 0px 10px var(--black-2);
+			background-image: url("banner.png");
+			background-position: center center;
+			background-size: cover;
+			background-repeat: no-repeat;
+		}
+
+		#title-inner {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translateX(-50%) translateY(-50%);
+			width: 80%;
+			color: var(--white-4);
+			font-size: 0%;
+			text-align: center;
+		}
+
+		#title:hover, #title:focus {
+			box-shadow: 0px 0px 20px var(--black-4);
+		}
+
+	/* creator */
+		#creator-outer {
+			top: 20px;
+			right: 100px;
+		}
+
+		#creator {
+			background-color: var(--black-3);
+			background-image: url("j.png");
+			background-position: center center;
+			background-size: contain;
+			background-repeat: no-repeat;
+			left: -10px;
+			height: 60px;
+			width: 90px;
+			border-radius: var(--borderRadius) 0px 0px var(--borderRadius);
+			box-shadow: 0px 0px 10px var(--black-2);
+		}
+
+		#creator-outer .flag-pole {
+			left: 80px;
+		}
+
+		#creator:hover, #creator:focus {
+			box-shadow: 0px 0px 20px var(--black-4);
+		}	
+
+	/* new */
+		#new-outer {
+			position: absolute;
+			top: calc(50vh);
+			left: 15vw;
+		}
+
+		#createGame {
+			position: absolute;
+			top: 0px;
+			left: 0px;
+			width: calc(30vw + 15px);
+			height: 135px;
+			float: left;
+			text-align: center;
+			line-height: 1;
+			font-size: 100%;
+			padding: 5px 5px 5px 0px;
+			border-radius: 0px var(--borderRadius) var(--borderRadius) 0px;
+			border: 0px;
+			background-color: var(--green-2);
+		}
+
+	/* join */
+		#join-outer {
+			position: absolute;
+			top: calc(50vh - 150px);
+			right: 40vw;
+		}
+
+		#name {
+			position: absolute;
+			top: 0px;
+			left: 0px;
+			width: 30vw;
+			height: 40px;
+			padding: 5px;
+			text-align: center;
+			line-height: 1;
+			font-size: 100%;
+			border-radius: 0px var(--borderRadius) var(--borderRadius) 0px;
+			border-width: 5px 5px 5px 0px;
+			background-color: var(--red-0);
+		}
+		
+		#gameCode {
+			position: absolute;
+			top: 70px;
+			left: 0px;
+			width: 30vw;
+			height: 40px;
+			padding: 5px;
+			text-align: center;
+			line-height: 1;
+			font-size: 100%;
+			border-radius: 0px var(--borderRadius) var(--borderRadius) 0px;
+			border-width: 5px 5px 5px 0px;
+			background-color: var(--yellow-0);
+		}
+
+		#joinGame {
+			position: absolute;
+			top: 140px;
+			left: 0px;
+			width: calc(30vw + 15px);
+			height: 60px;
+			text-align: center;
+			line-height: 1;
+			font-size: 100%;
+			padding: 5px 5px 5px 0px;
+			border-radius: 0px var(--borderRadius) var(--borderRadius) 0px;
+			border: 0px;
+			background-color: var(--blue-2);
+		}
+
+/*** mobile ***/
+	@media screen and (max-width: 800px) {
+		#creator-outer {
+			top: 10px;
+			right: 90px;
+		}
+
+		#new-outer {
+			top: 50vh;
+		}
+
+		#join-outer {
+			top: calc(50vh - 65px);
+			right: 42vw;
+		}
+	}

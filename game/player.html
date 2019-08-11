@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>RPSG</title>
+		<script node> getAsset("meta") </script>node>
+		<script node> getAsset("google fonts") </script>node>
+		<link rel="shortcut icon" type="image/png" href="icon.png"/>
+		<link rel="stylesheet" type="text/css" href="player.css"/>
+		<script type="text/javascript" src="player.js"></script>
+		<script>window.id = "<script node>request.session.id</script>node>"</script>
+	</head>
+	<body>
+		<div id="message" class="hidden"></div>
+		<div id="container">
+			<div id="info">
+				<div id="health-outer">
+					<div id="health-inner"></div>
+				</div>
+				<div id="points-outer">
+					<div id="points-inner"></div>
+				</div>
+			</div>
+			<div id="d-pad">
+				<button id="up" value="up" class="input">&#8593;</button>
+				<button id="left" value="left" class="input">&#8592;</button>
+				<button id="center" value="center" class="input"></button>
+				<button id="right" value="right" class="input">&#8594;</button>
+				<button id="down" value="down" class="input">&#8595;</button>
+			</div>
+			<div id="buttons">
+				<button id="a" value="a" class="input">A</button>
+				<button id="b" value="b" class="input">B</button>
+			</div>
+		</div>
+	</body>
+</html>
