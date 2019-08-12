@@ -1,24 +1,3 @@
-/*** pools ***/
-	/* colors */
-		var colors = {
-			magenta:    ["#ffcce6","#ff66b3","#e60073","#99004d","#33001a"],
-			red:        ["#fab7b7","#f66f6f","#d80e0e","#7c0808","#300303"],
-			brown:      ["#e09b06","#ae7804","#7c5603","#513802","#191101"],
-			browngray:  ["#d5cac3","#b6a196","#a18778","#786154","#4f4037"],
-			orange:     ["#fde4ce","#f9ae6c","#f68523","#ab5407","#442103"],
-			beige:      ["#f7f4ed","#e0d3b8","#c1a871","#91773f","#6a572f"],
-			yellow:     ["#f6f4d5","#e5dd80","#d8cb41","#beb227","#7f771a"],
-			green:      ["#a9d3ab","#539e57","#1a661e","#074f0b","#053007"],
-			greengray:  ["#d3ded4","#99b29b","#6a8c6c","#4d664e","#374938"],
-			cyan:       ["#e6ffff","#b3ffff","#33ffff","#00cccc","#008080"],
-			cerulean:   ["#dae7f1","#90b8d5","#4689b9","#2b5572","#1c374a"],
-			bluegray:   ["#dee9ed","#adc8d2","#7ba7b7","#487484","#2d4852"],
-			blue:       ["#d0e0fb","#7a9bd3","#2b76ef","#0b3d8e","#04142f"],
-			purple:     ["#dac0f7","#b08bda","#7b3dc2","#4a2574","#180c26"],
-			black:      ["#e4e6e7","#a2a7a9","#6e7477","#3d4142","#111111"],
-			white:      ["#c0dee5","#cee2e8","#dcf1f7","#e3f5f9","#f9fdff"]
-		}
-
 /*** canvas ***/
 	/* clearCanvas */
 		function clearCanvas(canvas, context) {
@@ -166,7 +145,7 @@
 		function drawText(canvas, context, x, y, text, options) {
 			// variables
 				options = options || {}
-				context.font = (options.style ? options.style + " " : "") + (options.size || 32) + "px " + (options.font || font)
+				context.font = (options.style ? options.style + " " : "") + (options.size || 32) + "px " + (options.font || FONT)
 				context.fillStyle   = options.gradient ? drawGradient(canvas, context, options) : (options.color || "transparent")
 				context.textAlign   = options.alignment || "center"
 				context.shadowBlur  = options.blur ? options.blur : 0

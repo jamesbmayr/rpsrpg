@@ -1,8 +1,7 @@
 /*** globals ***/
-	var inputs = document.querySelectorAll(".input")
-	var health = document.querySelector("#health-inner")
-	var points = document.querySelector("#points-inner")
-	var inventory = document.querySelector("#inventory")
+	var INPUTS = Array.from(document.querySelectorAll(".input"))
+	var HEALTHBAR = document.querySelector("#health-inner")
+	var POINTSBAR = document.querySelector("#points-inner")
 
 /*** websocket ***/
 	/* socket */
@@ -43,7 +42,7 @@
 
 /*** inputs ***/
 	/* pressInput */
-		inputs.forEach(function(input) { input.addEventListener(on.mousedown, pressInput) })
+		INPUTS.forEach(function(input) { input.addEventListener(on.mousedown, pressInput) })
 		function pressInput(event) {
 			event.target.setAttribute("active", true)
 			socket.send(JSON.stringify({
@@ -53,7 +52,7 @@
 		}
 
 	/* releaseInput */
-		inputs.forEach(function(input) { input.addEventListener(on.mouseup, releaseInput) })
+		INPUTS.forEach(function(input) { input.addEventListener(on.mouseup, releaseInput) })
 		function releaseInput(event) {
 			event.target.removeAttribute("active")
 			socket.send(JSON.stringify({
@@ -85,11 +84,11 @@
 /*** display ***/
 	/* displayInfo */
 		function displayInfo(info) {
-			// health
+			// healthbar
 				var healthPercentage = Math.round(info.state.health / info.state.healthMaximum * 100)
-				health.style.width = Math.min(100, Math.max(0, healthPercentage))
-				health.setAttribute("color", healthPercentage > 60 ? "high" : healthPercentage > 30 ? "medium" : "low")
+				HEALTHBAR.style.width = Math.min(100, Math.max(0, healthPercentage))
+				HEALTHBAR.setAttribute("color", healthPercentage > 60 ? "high" : healthPercentage > 30 ? "medium" : "low")
 
-			// points
-				points.style.width = Math.min(100, Math.max(0, info.state.points))
+			// pointsbar
+				POINTSBAR.style.width = Math.min(100, Math.max(0, info.state.points))
 		}

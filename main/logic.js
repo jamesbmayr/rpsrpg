@@ -114,10 +114,28 @@
 							// data
 								return ('/*** variables ***/\n' +
 										'	:root {\n' +
-										'		--font: monospace;\n' +
-										'		--borderRadius: 10px;\n' +
+										'		--font: ' + getAsset("font") + ';\n' +
+										'		--borderRadius: ' + getAsset("borderRadius") + 'px;\n' +
 												cssColors +
 										'	}')
+						break
+						case "js variables":
+							return ('/*** superglobals ***/\n' +
+									'	var CELLSIZE = ' + getAsset("cellSize") + '\n' +
+									'	var BORDERRADIUS = ' + getAsset("borderRadius") + '\n' +
+									'	var FONT = "' + getAsset("font") + '"\n' +
+									'	var COLORS = ' + JSON.stringify(getAsset("colors")) + '\n' +
+									'')
+						break
+
+						case "cellSize":
+							return 32
+						break
+						case "borderRadius":
+							return 8
+						break
+						case "font":
+							return "monospace"
 						break
 
 						case "colors":
@@ -145,6 +163,63 @@
 							return ["up", "left", "right", "down"]
 						break
 
+						case "actions":
+							return ["a", "b", "x", "y"]
+						break
+
+						case "wallMakers":
+							return [
+								function empty(cells, minX, maxX, minY, maxY) {
+									return
+								},
+								function solid(cells, minX, maxX, minY, maxY) {
+									for (var x = minX; x <= maxX; x++) {
+										for (var y = minY; y <= maxY; y++) {
+											cells[x][y].wall = true
+										}
+									}
+								},
+								function corners(cells, minX, maxX, minY, maxY) {
+									cells[minX    ][minY    ].wall = true
+									cells[maxX    ][minY    ].wall = true
+
+									cells[minX    ][maxY    ].wall = true
+									cells[maxX    ][maxY    ].wall = true
+								},
+								function center(cells, minX, maxX, minY, maxY) {
+									var centerX1 = Math.ceil( (minX + maxX) / 2)
+									var centerX2 = Math.floor((minX + maxX) / 2)
+									var centerY1 = Math.ceil( (minY + maxY) / 2)
+									var centerY2 = Math.floor((minY + maxY) / 2)
+
+									cells[centerX1][centerY1].wall = true
+									cells[centerX1][centerY2].wall = true
+									cells[centerX2][centerY1].wall = true
+									cells[centerX2][centerY2].wall = true
+								},
+								function up(cells, minX, maxX, minY, maxY) {
+									for (var x = minX; x <= maxX; x++) {
+										cells[x][maxY].wall = true
+									}
+								},
+								function left(cells, minX, maxX, minY, maxY) {
+									for (var y = minY; y <= maxY; y++) {
+										cells[minX][y].wall = true
+									}
+								},
+								function right(cells, minX, maxX, minY, maxY) {
+									for (var y = minY; y <= maxY; y++) {
+										cells[maxX][y].wall = true
+									}
+								},
+								function down(cells, minX, maxX, minY, maxY) {
+									for (var x = minX; x <= maxX; x++) {
+										cells[x][minY].wall = true
+									}
+								}
+							]
+						break
+
 						case "heroes":
 							var colors = getAsset("colors")
 
@@ -168,7 +243,7 @@
 										power: 16,
 										armor: 8,
 										speed: 4,
-										range: 16
+										range: 4
 									}
 								},
 								"wizard": {
@@ -183,14 +258,14 @@
 										healthMax: 128,
 										position: {
 											x: 0,
-											y: 32
+											y: 0
 										}
 									},
 									statistics: {
-										power: 16,
-										armor: 2,
-										speed: 2,
-										range: 128
+										power: 8,
+										armor: 4,
+										speed: 4,
+										range: 16
 									}
 								},
 								"ranger": {
@@ -210,9 +285,9 @@
 									},
 									statistics: {
 										power: 8,
-										armor: 4,
+										armor: 8,
 										speed: 8,
-										range: 64
+										range: 8
 									}
 								}
 							}
@@ -240,7 +315,7 @@
 							players: 		{},
 							data: {
 								info: {
-									layers: 3
+									layers: 4
 								},
 								state: {
 									start: 	true,
@@ -276,8 +351,8 @@
 								type: 		null,
 								species:	null,
 								size: {
-									x: 		16,
-									y: 		16
+									x: 		32,
+									y: 		32
 								},
 								color: 		null
 							},
@@ -298,8 +373,10 @@
 									down: false
 								},
 								actions: {
-									primary: false,
-									secondary: false
+									a: false,
+									b: false,
+									x: false,
+									y: false
 								},
 								kills: 		0,
 								points: 	0
@@ -323,10 +400,11 @@
 								x: 0,
 								y: 0,
 								size: {
-									x: 		512,
-									y: 		512
+									x: 		480,
+									y: 		480
 								}
 							},
+							cells:          {},
 							heroes: 		{},
 							creatures: 		{},
 							objects:		{}
@@ -463,6 +541,19 @@
 		function duplicateObject(object) {
 			try {
 				return JSON.parse(JSON.stringify(object))
+			}
+			catch (error) {
+				logError(error)
+				return null
+			}
+		}
+
+	/* duplicateArray */
+		module.exports.duplicateArray = duplicateArray
+		function duplicateArray(array) {
+			try {
+				var random = generateRandom()
+				return array.join(random).split(random)
 			}
 			catch (error) {
 				logError(error)

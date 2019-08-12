@@ -10,6 +10,8 @@
 	var home = require("./home/logic")
 	var db   = {}
 
+	var LOOPINTERVAL = 50
+
 /*** server ***/
 	var port = main.getEnvironment("port")
 	var server = http.createServer(handleRequest)
@@ -160,7 +162,7 @@
 															fs.readFile("./" + request.path[1] + "/" + request.path[2], "utf8", function (error, file) {
 																if (error) { _404(error) }
 																else {
-																	response.end("window.addEventListener('load', function() {\n\n" + data + "\n\n" + draw + "\n\n" + file + "\n\n})")
+																	response.end("window.addEventListener('load', function() {\n\n" + main.getAsset("js variables") + "\n\n" + data + "\n\n" + draw + "\n\n" + file + "\n\n})")
 																}
 															})
 														}
@@ -233,7 +235,12 @@
 									case (/^\/data\/?$/).test(request.url):
 										try {
 											if (main.getEnvironment("debug")) {
-												response.end("<pre>" + util.inspect(db) + "</pre>")
+												var data = {}
+												for (var d in db) {
+													data[d] = db[d].data
+												}
+
+												response.end("<pre>" + JSON.stringify(data, 2, 2, 2) + "</pre>")
 											}
 											else {
 												_404()
@@ -418,7 +425,7 @@
 								main.logTime(request.game.id + ":l ", function() {
 									game.updateTime(request, updateSocket)
 								})
-							}, 100)
+							}, LOOPINTERVAL)
 						}
 				}
 				catch (error) {_400("unable to " + arguments.callee.name)}

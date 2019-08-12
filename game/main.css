@@ -50,5 +50,5 @@
 		max-width: 90vh;
 		background-color: var(--bluegray-0);
 		box-shadow: 0px 0px 10px var(--bluegray-3);
-		border-radius: 8px;
+		border-radius: var(--borderRadius);
 	}

@@ -99,6 +99,7 @@
 			background-color: var(--bluegray-3);
 			outline: none;
 			border: 0px;
+			user-select: none;
 		}
 
 		#d-pad button[active] {
@@ -130,7 +131,7 @@
 		}
 
 	/* a / b */
-		#buttons {
+		#actions {
 			float: right;
 			width: calc(50vw - 16px);
 			height: calc(100vh - 64px);
@@ -139,28 +140,37 @@
 			padding: 8px;
 		}
 
-		#buttons button {
+		#actions button {
 			float: left;
-			height: 50%;
-			width: 50%;
+			height: calc(100% / 3);
+			width: calc(100% / 3);
 			font-size: 32px;
 			color: var(--white-4);
 			background-color: var(--bluegray-3);
 			outline: none;
 			border-radius: 100%;
 			border: 0px;
+			user-select: none;
 		}
 
-		#buttons button[active] {
+		#actions button[active] {
 			background-color: var(--bluegray-4);
 		}
 
+		#x {
+			margin-left: calc(100% / 3);
+			margin-right: calc(100% / 3);
+		}
+
+		#y {
+			margin-right: calc(100% / 6);
+		}
+
 		#a {
-			margin-left: 50%;
-			margin-right: 0%;
+			margin-left: calc(100% / 6);
 		}
 
 		#b {
-			margin-left: 0%;
-			margin-right: 50%;
+			margin-left: calc(100% / 3);
+			margin-right: calc(100% / 3);
 		}
