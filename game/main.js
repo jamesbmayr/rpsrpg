@@ -87,9 +87,9 @@
 			// draw walls
 				drawWalls(chamber)
 
-			// draw objects
-				for (var o in chamber.objects) {
-					drawObject(chamber.objects[o])
+			// draw items
+				for (var i in chamber.items) {
+					drawItem(chamber.items[i])
 				}
 
 			// draw creatures
@@ -166,25 +166,34 @@
 			// variables
 				var heroX = hero.state.position.x + CHAMBERRADIUSX
 				var heroY = hero.state.position.y + CHAMBERRADIUSY
-
 				var heroRadius = Math.ceil(((hero.info.size.x + hero.info.size.y) / 2) / 2)
 				var heroColor = hero.info.color
 
 			// draw
 				drawCircle(CANVAS, CONTEXT, heroX, heroY, heroRadius, {color: heroColor})
+
+			// orb ?
+				for (var i in hero.items) {
+					if (hero.items[i].info.type == "orb") {
+						var item = hero.items[i]
+						var itemRadius = Math.ceil(((item.info.size.x + item.info.size.y) / 2) / 2)
+						var itemColor = item.info.color
+
+						drawCircle(CANVAS, CONTEXT, heroX, heroY, itemRadius, {color: itemColor})
+					}
+				}
 		}
 
-	/* drawObject */
-		function drawObject(object) {
+	/* drawItem */
+		function drawItem(item) {
 			// variables
-				var objectX = object.state.position.x - Math.ceil(object.info.size.x / 2) + CHAMBERRADIUSX
-				var objectY = object.state.position.y + Math.ceil(object.info.size.y / 2) + CHAMBERRADIUSY
-				var objectWidth = object.info.size.x
-				var objectHeight = object.info.size.y * -1
-				var objectColor = object.info.color
+				var itemX = item.state.position.x + CHAMBERRADIUSX
+				var itemY = item.state.position.y + CHAMBERRADIUSY
+				var itemRadius = Math.ceil(((item.info.size.x + item.info.size.y) / 2) / 2)
+				var itemColor = item.info.color
 
 			// draw
-				drawRectangle(CANVAS, CONTEXT, objectX, objectY, objectWidth, objectHeight, {color: objectColor})
+				drawCircle(CANVAS, CONTEXT, itemX, itemY, itemRadius, {color: itemColor})
 		}
 
 	/* drawCreature */

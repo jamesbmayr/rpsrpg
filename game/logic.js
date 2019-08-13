@@ -6,6 +6,7 @@
 	var DIRECTIONS 	= main.getAsset("directions")
 	var ACTIONS 	= main.getAsset("actions")
 	var HEROES 		= main.getAsset("heroes")
+	var ORBS 		= main.getAsset("orbs")
 	var COLORS 		= main.getAsset("colors")
 	var WALLMAKERS 	= main.getAsset("wallMakers")
 	var CELLSIZE 	= main.getAsset("cellSize")
@@ -275,6 +276,7 @@
 			try {
 				// chambers
 					var chambers = request.game.data.chambers
+					var orbChambers = []
 					var layer = 0
 					var x = 0
 					var y = 0
@@ -282,6 +284,9 @@
 				// spiral loop
 					while (layer < request.game.data.info.layers) {
 						createChamber(request, x, y, callback)
+						if (layer == request.game.data.info.layers - 1) {
+							orbChambers.push(x + "," + y)
+						}
 
 						if (     (!chambers[x + 1] || !chambers[x + 1][y - 1]) && Math.abs(x + 1) + Math.abs(y - 1) == layer) {
 							x += 1
@@ -304,6 +309,9 @@
 							y += 1
 						}
 					}
+
+				// orbs
+					createOrbs(request, orbChambers, callback)
 			}
 			catch (error) {
 				main.logError(error)
@@ -357,8 +365,6 @@
 						createNeighborConnections(request, chamber, nodemap, connectedCells, connectedCells[i], callback)
 						i++
 					}
-
-					console.log("DONE")
 			}
 			catch (error) {
 				main.logError(error)
@@ -588,8 +594,6 @@
 					var x = Number(coords[0])
 					var y = Number(coords[1])
 
-				console.log("connecting [" + x + "," + y + "]")
-
 				// up
 					if (chamber.cells[x] && chamber.cells[x][y + 1] && !chamber.cells[x][y + 1].wall) {
 						if (!connectedCells.includes((x) + "," + (y + 1))) {
@@ -714,7 +718,7 @@
 					var remainingTypes = Object.keys(HEROES)
 					for (var h in request.game.data.heroes) {
 						remainingTypes = remainingTypes.filter(function (r) {
-							return r !== request.game.data.heroes[h].info.species
+							return r !== request.game.data.heroes[h].info.subtype
 						})
 					}
 
@@ -750,11 +754,52 @@
 			}
 		}
 
-	/* createObject */
-		module.exports.createObject = createObject
-		function createObject(request, callback) {
+	/* createItem */
+		module.exports.createItem = createItem
+		function createItem(request, properties, callback) {
 			try {
-				//
+				var item = main.getSchema("item")
+				main.overwriteObject(item, properties)
+				
+				return item
+			}
+			catch (error) {
+				main.logError(error)
+				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+			}
+		}
+
+	/* createOrbs */
+		module.exports.createOrbs = createOrbs
+		function createOrbs(request, orbChambers, callback) {
+			try {
+				// create and shuffle orbs
+					var magicOrbs = [
+						createItem(request, ORBS.rock, callback),
+						createItem(request, ORBS.paper, callback),
+						createItem(request, ORBS.scissors, callback)
+					]
+
+					magicOrbs = main.sortRandom(magicOrbs)
+
+				// create and shuffle rooms
+					if (orbChambers.length >= 3) {
+						orbChambers = main.sortRandom(orbChambers)
+					}
+
+				// place orbs
+					for (var m = 0; m < magicOrbs.length; m++) {
+						var coords = orbChambers[m].split(",")
+						var x = coords[0]
+						var y = coords[1]
+
+						if (request.game.data.chambers[x] && request.game.data.chambers[x][y]) {
+							var chamber = request.game.data.chambers[x][y]
+							var orb = magicOrbs[m]
+
+							chamber.items[orb.id] = orb
+						}
+					}
 			}
 			catch (error) {
 				main.logError(error)
@@ -851,6 +896,7 @@
 						if (chamber.cells[x] && chamber.cells[x][y] && chamber.cells[x][y].wall) {
 							collisions.push({
 								side: o,
+								supertype: "wall",
 								type: "wall",
 								id: occupiedCells[o]
 							})
@@ -863,7 +909,8 @@
 						if (collisionSide) {
 							collisions.push({
 								side: collisionSide,
-								type: "hero",
+								supertype: "hero",
+								type: chamber.heroes[h].info.type,
 								id: chamber.heroes[h].id
 							})
 						}
@@ -875,20 +922,22 @@
 						if (collisionSide) {
 							collisions.push({
 								side: collisionSide,
-								type: "creature",
+								supertype: "creature",
+								type: chamber.creatures[c].info.type,
 								id: chamber.creatures[c].id
 							})
 						}
 					}
 
-				// objects
-					for (var o in chamber.objects) {
-						var collisionSide = getCollision(request, chamber.objects[o], targetCoordinates)
+				// items
+					for (var i in chamber.items) {
+						var collisionSide = getCollision(request, chamber.items[i], targetCoordinates)
 						if (collisionSide) {
 							collisions.push({
 								side: collisionSide,
-								type: "object",
-								id: chamber.objects[o].id
+								supertype: "item",
+								type: chamber.items[i].info.type,
+								id: chamber.items[i].id
 							})
 						}
 					}
@@ -903,32 +952,32 @@
 
 	/* getCollision */
 		module.exports.getCollision = getCollision
-		function getCollision(request, object, targetCoordinates, callback) {
+		function getCollision(request, item, targetCoordinates, callback) {
 			try {
 				// self?
-					if (object.id == targetCoordinates.id) {
+					if (item.id == targetCoordinates.id) {
 						return false
 					}
 
 				// radii
-					var radiusX = Math.ceil(object.info.size.x / 2)
-					var radiusY = Math.ceil(object.info.size.y / 2)
+					var radiusX = Math.ceil(item.info.size.x / 2)
+					var radiusY = Math.ceil(item.info.size.y / 2)
 
-					var objectUp    = object.state.position.y + radiusY
-					var objectLeft  = object.state.position.x - radiusX
-					var objectRight = object.state.position.x + radiusX
-					var objectDown  = object.state.position.y - radiusY
+					var itemUp    = item.state.position.y + radiusY
+					var itemLeft  = item.state.position.x - radiusX
+					var itemRight = item.state.position.x + radiusX
+					var itemDown  = item.state.position.y - radiusY
 				
 				// collision?
-					if ((objectUp    > targetCoordinates.down )
-					 && (objectLeft  < targetCoordinates.right)
-					 && (objectRight > targetCoordinates.left )
-					 && (objectDown  < targetCoordinates.up   )) {
+					if ((itemUp    > targetCoordinates.down )
+					 && (itemLeft  < targetCoordinates.right)
+					 && (itemRight > targetCoordinates.left )
+					 && (itemDown  < targetCoordinates.up   )) {
 						// get deltas
-							var deltaUp    = Math.abs(targetCoordinates.up    - objectDown )
-							var deltaLeft  = Math.abs(targetCoordinates.left  - objectRight)
-							var deltaRight = Math.abs(targetCoordinates.right - objectLeft )
-							var deltaDown  = Math.abs(targetCoordinates.down  - objectUp   )
+							var deltaUp    = Math.abs(targetCoordinates.up    - itemDown )
+							var deltaLeft  = Math.abs(targetCoordinates.left  - itemRight)
+							var deltaRight = Math.abs(targetCoordinates.right - itemLeft )
+							var deltaDown  = Math.abs(targetCoordinates.down  - itemUp   )
 
 						// get side
 							var delta = Math.min(deltaUp, deltaLeft, deltaRight, deltaDown)
@@ -954,19 +1003,14 @@
 
 				// heroes only
 					if (creature.info.type !== "hero") {
-						return false
+						return true
 					}
 
 				// all agreed?
-					var unanimity = true
 					for (var h in request.game.data.heroes) {
 						if (request.game.data.heroes[h].state.position.edge !== edge) {
-							unanimity = false
+							return true
 						}
-					}
-
-					if (!unanimity) {
-						return false
 					}
 
 				// get nextChamber
@@ -976,10 +1020,11 @@
 
 				// no chamber
 					if (!nextChamber) {
-						return false
+						return true
 					}				
 					else {
 						updateChamber(request, nextChamberX, nextChamberY, callback)
+						return true
 					}
 			}
 			catch (error) {
@@ -992,7 +1037,22 @@
 		module.exports.resolveCollision = resolveCollision
 		function resolveCollision(request, chamber, creature, collision, callback) {
 			try {
-				//
+				// wall
+					if (collision.supertype == "wall") {
+						return true
+					}
+
+				// orb
+					if (creature.info.type == "hero" && collision.supertype == "item" && collision.type == "orb") {
+						if (creature.info.rps == chamber.items[collision.id].info.rps) {
+							creature.items[collision.id] = main.duplicateObject(chamber.items[collision.id])
+							delete chamber.items[collision.id]
+						}
+						else {
+							return true
+						}
+					}
+
 			}
 			catch (error) {
 				main.logError(error)
@@ -1066,6 +1126,9 @@
 		module.exports.updatePosition = updatePosition
 		function updatePosition(request, chamber, creature, callback) {
 			try {
+				// set unresolved
+					var resolved = false
+
 				// get target coordinates
 					var newX = creature.state.position.x + (creature.state.movement.left ? -creature.statistics.speed : creature.state.movement.right ? creature.statistics.speed : 0)
 					var newY = creature.state.position.y + (creature.state.movement.down ? -creature.statistics.speed : creature.state.movement.up    ? creature.statistics.speed : 0)
@@ -1086,23 +1149,22 @@
 					var collisions = getCollisions(request, chamber, targetCoordinates, callback)
 					if (collisions.length) {
 						for (var c in collisions) {
-							resolveCollision(request, chamber, creature, collisions[c], callback)
+							resolved = resolveCollision(request, chamber, creature, collisions[c], callback)
 						}
-						return
 					}
 
 				// get edges
 					var edge = getEdge(request, chamber, targetCoordinates, callback)
 					if (edge) {
-						resolveEdge(request, chamber, creature, edge, callback)
-						return
+						resolved = resolveEdge(request, chamber, creature, edge, callback)
 					}
 
 				// move creature
-					creature.state.position.edge = null
-					creature.state.position.x = targetCoordinates.x
-					creature.state.position.y = targetCoordinates.y
-					return
+					if (!resolved) {
+						creature.state.position.edge = null
+						creature.state.position.x = targetCoordinates.x
+						creature.state.position.y = targetCoordinates.y
+					}
 			}
 			catch (error) {
 				main.logError(error)

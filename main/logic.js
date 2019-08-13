@@ -4,6 +4,9 @@
 	var debug      = getEnvironment("debug")
 	module.exports = {}
 
+/*** maps ***/
+	var COLORS = getAsset("colors")
+
 /*** logs ***/
 	/* logError */
 		module.exports.logError = logError
@@ -103,11 +106,10 @@
 						break
 						case "css variables":
 							// colors
-								var colors = getAsset("colors")
 								var cssColors = ""
-								for (var hue in colors) {
-									for (var shade in colors[hue]) {
-										cssColors += "		--" + hue + "-" + shade + ": " + colors[hue][shade] + ";\n"
+								for (var hue in COLORS) {
+									for (var shade in COLORS[hue]) {
+										cssColors += "		--" + hue + "-" + shade + ": " + COLORS[hue][shade] + ";\n"
 									}
 								}
 							
@@ -126,12 +128,12 @@
 									'	var CELLSIZE = ' + getAsset("cellSize") + '\n' +
 									'	var BORDERRADIUS = ' + getAsset("borderRadius") + '\n' +
 									'	var FONT = "' + getAsset("font") + '"\n' +
-									'	var COLORS = ' + JSON.stringify(getAsset("colors")) + '\n' +
+									'	var COLORS = ' + JSON.stringify(COLORS) + '\n' +
 									'')
 						break
 
 						case "layers":
-							return 3
+							return 2
 						break
 						case "chamberSize":
 							return 9
@@ -291,15 +293,13 @@
 						break
 
 						case "heroes":
-							var colors = getAsset("colors")
-
 							return {
 								"barbarian": {
 									info: {
 										rps: "rock",
 										type: "hero",
-										species: "barbarian",
-										color: colors.orange[2]
+										subtype: "barbarian",
+										color: COLORS.orange[2]
 									},
 									state: {
 										health: 128,
@@ -320,8 +320,8 @@
 									info: {
 										rps: "paper",
 										type: "hero",
-										species: "wizard",
-										color: colors.purple[2]
+										subtype: "wizard",
+										color: COLORS.purple[2]
 									},
 									state: {
 										health: 128,
@@ -342,8 +342,8 @@
 									info: {
 										rps: "scissors",
 										type: "hero",
-										species: "ranger",
-										color: colors.greengray[2]
+										subtype: "ranger",
+										color: COLORS.greengray[2]
 									},
 									state: {
 										health: 128,
@@ -358,6 +358,52 @@
 										armor: 8,
 										speed: 32,
 										range: 8
+									}
+								}
+							}
+						break
+
+						case "orbs":
+							var orbSize = Math.floor(getAsset("cellSize") / 8 * 3)
+
+							return {
+								"rock": {
+									info: {
+										rps: "rock",
+										name: "rock orb",
+										type: "orb",
+										subtype: "rock orb",
+										size: {
+											x: orbSize,
+											y: orbSize
+										},
+										color: COLORS.orange[3]
+									}
+								},
+								"paper": {
+									info: {
+										rps: "paper",
+										name: "paper orb",
+										type: "orb",
+										subtype: "paper orb",
+										size: {
+											x: orbSize,
+											y: orbSize
+										},
+										color: COLORS.purple[3]
+									}
+								},
+								"scissors": {
+									info: {
+										rps: "scissors",
+										name: "scissors orb",
+										type: "orb",
+										subtype: "scissors orb",
+										size: {
+											x: orbSize,
+											y: orbSize
+										},
+										color: COLORS.greengray[3]
 									}
 								}
 							}
@@ -420,7 +466,7 @@
 								name: 		null,
 								rps: 		null,
 								type: 		null,
-								species:	null,
+								subtype:	null,
 								size: {
 									x: 		Math.floor(getAsset("cellSize") / 2),
 									y: 		Math.floor(getAsset("cellSize") / 2)
@@ -458,7 +504,7 @@
 								speed: 		0,
 								range: 		0
 							},
-							inventory: 		{}
+							items: 			{}
 						}
 					break
 
@@ -476,7 +522,30 @@
 							cells:          {},
 							heroes: 		{},
 							creatures: 		{},
-							objects:		{}
+							items:			{}
+						}
+					break
+
+					case "item":
+						return {
+							id: 			generateRandom(),
+							info: {
+								name: 		null,
+								rps: 		null,
+								type: 		"item",
+								subtype: 	null,
+								size: {
+									x: Math.floor(getAsset("cellSize") / 4),
+									y: Math.floor(getAsset("cellSize") / 4)
+								},
+								color: 		null
+							},
+							state: {
+								position: {
+									x: 		0,
+									y: 		0
+								}
+							}
 						}
 					break
 
