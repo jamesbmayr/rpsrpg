@@ -68,10 +68,10 @@
 			// resize
 				if (chamber.id !== CHAMBERID) {
 					CHAMBERID 	   = chamber.id
-					CHAMBERRADIUSX = Math.ceil(chamber.info.size.x / 2)
-					CHAMBERRADIUSY = Math.ceil(chamber.info.size.y / 2)
-					CANVAS.width   = chamber.info.size.x
-					CANVAS.height  = chamber.info.size.y
+					CANVAS.width   = chamber.info.chamberSize * chamber.info.cellSize
+					CANVAS.height  = chamber.info.chamberSize * chamber.info.cellSize
+					CHAMBERRADIUSX = Math.ceil(CANVAS.width  / 2)
+					CHAMBERRADIUSY = Math.ceil(CANVAS.height / 2)
 				}
 
 			// clear
@@ -80,8 +80,9 @@
 			// background
 				drawRectangle(CANVAS, CONTEXT, 0, 0, canvas.width, canvas.height, {color: chamber.info.colors[0]})
 
-			// coordinates
-				drawText(CANVAS, CONTEXT, CHAMBERRADIUSX, CHAMBERRADIUSY, chamber.info.x + "," + chamber.info.y, {color: chamber.info.colors[1]})
+			// minimap
+				drawMinimap(chamber)
+				// drawText(CANVAS, CONTEXT, CHAMBERRADIUSX, CHAMBERRADIUSY - 20, chamber.info.x + "," + chamber.info.y, {color: chamber.info.colors[1], size: 64})
 
 			// draw walls
 				drawWalls(chamber)
@@ -100,6 +101,30 @@
 				for (var h in chamber.heroes) {
 					drawHero(chamber.heroes[h])
 				}
+		}
+
+	/* drawMinimap */
+		function drawMinimap(chamber) {
+			var squareRadius = Math.floor(CELLSIZE / (2 * LAYERS) / 2)
+			var squareSize = squareRadius * 2
+			var radii = {
+				topLeft: 4,
+				topRight: 4,
+				bottomLeft: 4,
+				bottomRight: 4
+			}
+
+			for (var x = 1 - LAYERS; x < LAYERS; x++) {
+				for (var y = 1 - LAYERS; y < LAYERS; y++) {
+					if (Math.abs(x) + Math.abs(y) < LAYERS) {
+						var positionX = (x * squareSize) - squareRadius + CHAMBERRADIUSX
+						var positionY = (y * squareSize) - squareRadius + CHAMBERRADIUSY
+						var color = (x == chamber.info.x && y == chamber.info.y) ? chamber.info.colors[2] : chamber.info.colors[1]
+
+						drawRectangle(CANVAS, CONTEXT, positionX, positionY, squareSize, squareSize, {color: color, radii: radii})
+					}
+				}
+			}
 		}
 
 	/* drawWalls */

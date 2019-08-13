@@ -331,44 +331,34 @@
 					request.game.data.chambers[chamberX][chamberY] = chamber
 
 				// get cell limits
-					var cellCountX = Math.ceil(chamber.info.size.x / CELLSIZE)
-					var cellMinX = Math.floor(cellCountX / 2) * -1
-					var cellMaxX = Math.floor(cellCountX / 2)
-					var cellCountY = Math.ceil(chamber.info.size.y / CELLSIZE)
-					var cellMinY = Math.floor(cellCountY / 2) * -1
-					var cellMaxY = Math.floor(cellCountY / 2)
+					var cellMinX = Math.floor(chamber.info.chamberSize / 2) * -1
+					var cellMaxX = Math.floor(chamber.info.chamberSize / 2)
+					var cellMinY = Math.floor(chamber.info.chamberSize / 2) * -1
+					var cellMaxY = Math.floor(chamber.info.chamberSize / 2)
 
 				// create cells
 					createCells(request, chamber, cellMinX, cellMaxX, cellMinY, cellMaxY, callback)
 
-				// create doors
-					createDoors(request, chamber, cellMinX, cellMaxX, cellMinY, cellMaxY, callback)
-
 				// create walls
 					createWalls(request, chamber, cellMinX, cellMaxX, cellMinY, cellMaxY, callback)
 
-				// cell connections
-					// for (var iX = cellMinX; iX <= cellMaxX; iX++) {
-					// 	for (var iY = cellMinY; iY <= cellMaxY; iY++) {
-					// 		if (!chamber.cells[iX][iY].wall) {
-					// 			var connectedCells = [iX + "_" + iY]
-								
-					// 			var i = 0
-					// 			while (i < connectedCells.length) {
-					// 				createCellConnections(request, chamber, connectedCells, connectedCells[i], iX, iY, callback)
-					// 				i++
-					// 			}
-					// 		}
-					// 	}
-					// }
+				// create doors
+					createDoors(request, chamber, cellMinX, cellMaxX, cellMinY, cellMaxY, callback)
 
-				// node map
-					var connectedCells = ["0_0"]
+				// create nodemap
+					var nodemap = {}
+						nodemap.id = chamber.id
+					request.game.data.nodemaps[chamber.id] = nodemap
+
+				// neighbor connections
+					var connectedCells = ["0,0"]
 					var i = 0
 					while (i < connectedCells.length) {
-						createNodeConnection(request, chamber, connectedCells, connectedCells[i], callback)
+						createNeighborConnections(request, chamber, nodemap, connectedCells, connectedCells[i], callback)
 						i++
 					}
+
+					console.log("DONE")
 			}
 			catch (error) {
 				main.logError(error)
@@ -384,14 +374,37 @@
 					for (var cellX = cellMinX; cellX <= cellMaxX; cellX++) {
 						chamber.cells[cellX] = {}
 
-						// wall edges
+						// loop through cells
 							for (var cellY = cellMinY; cellY <= cellMaxY; cellY++) {
-								chamber.cells[cellX][cellY] = {
-									wall: (cellX == cellMinX || cellX == cellMaxX || cellY == cellMinY || cellY == cellMaxY),
-									to: {}
-								}
+								// wall the edges
+									chamber.cells[cellX][cellY] = {
+										wall: (cellX == cellMinX || cellX == cellMaxX || cellY == cellMinY || cellY == cellMaxY)
+									}
 							}
 					}
+			}
+			catch (error) {
+				main.logError(error)
+				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+			}
+		}
+
+	/* createWalls */
+		module.exports.createWalls = createWalls
+		function createWalls(request, chamber, cellMinX, cellMaxX, cellMinY, cellMaxY, callback) {
+			try {
+				// up-left
+					main.chooseRandom(WALLMAKERS)(chamber.cells, cellMinX, -1, 1, cellMaxY)
+
+				// up-right
+					main.chooseRandom(WALLMAKERS)(chamber.cells, 1, cellMaxX, 1, cellMaxY)
+
+				// down-left
+					main.chooseRandom(WALLMAKERS)(chamber.cells, cellMinX, -1, cellMinY, -1)
+
+				// down-right
+					main.chooseRandom(WALLMAKERS)(chamber.cells, 1, cellMaxX, cellMinY, -1)
+
 			}
 			catch (error) {
 				main.logError(error)
@@ -411,22 +424,22 @@
 				// get neighbors
 					if (request.game.data.chambers[chamber.info.x] && request.game.data.chambers[chamber.info.x][chamber.info.y + 1]) {
 						var neighborUp = request.game.data.chambers[chamber.info.x][chamber.info.y + 1]
-						var neighborUpMinY = Math.floor(Math.ceil(neighborUp.info.size.y / CELLSIZE) / 2) * -1
+						var neighborUpMinY = Math.floor(neighborUp.info.chamberSize / 2) * -1
 					}
 
 					if (request.game.data.chambers[chamber.info.x - 1] && request.game.data.chambers[chamber.info.x - 1][chamber.info.y]) {
 						var neighborLeft = request.game.data.chambers[chamber.info.x - 1][chamber.info.y]
-						var neighborLeftMaxX = Math.floor(Math.ceil(neighborLeft.info.size.x / CELLSIZE) / 2)
+						var neighborLeftMaxX = Math.floor(neighborLeft.info.chamberSize / 2)
 					}
 
 					if (request.game.data.chambers[chamber.info.x + 1] && request.game.data.chambers[chamber.info.x + 1][chamber.info.y]) {
 						var neighborRight = request.game.data.chambers[chamber.info.x + 1][chamber.info.y]
-						var neighborRightMinX = Math.floor(Math.ceil(neighborRight.info.size.x / CELLSIZE) / 2) * -1
+						var neighborRightMinX = Math.floor(neighborRight.info.chamberSize / 2) * -1
 					}
 
 					if (request.game.data.chambers[chamber.info.x] && request.game.data.chambers[chamber.info.x][chamber.info.y - 1]) {
 						var neighborDown = request.game.data.chambers[chamber.info.x][chamber.info.y - 1]
-						var neighborDownMaxY = Math.floor(Math.ceil(neighborDown.info.size.y / CELLSIZE) / 2)
+						var neighborDownMaxY = Math.floor(neighborDown.info.chamberSize / 2)
 					}
 
 				// center chamber
@@ -566,72 +579,47 @@
 			}
 		}
 
-	/* createWalls */
-		module.exports.createWalls = createWalls
-		function createWalls(request, chamber, cellMinX, cellMaxX, cellMinY, cellMaxY, callback) {
-			try {
-				// up-left
-					main.chooseRandom(WALLMAKERS)(chamber.cells, cellMinX + 1, -2, 2, cellMaxY - 1)
-
-				// up-right
-					main.chooseRandom(WALLMAKERS)(chamber.cells, 2, cellMaxX - 1, 2, cellMaxY - 1)
-
-				// down-left
-					main.chooseRandom(WALLMAKERS)(chamber.cells, cellMinX + 1, -2, cellMinY + 1, -2)
-
-				// down-right
-					main.chooseRandom(WALLMAKERS)(chamber.cells, 2, cellMaxX - 1, cellMinY + 1, -2)
-
-			}
-			catch (error) {
-				main.logError(error)
-				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
-			}
-		}
-
-	/* createNodeConnection */
-		module.exports.createNodeConnection = createNodeConnection
-		function createNodeConnection(request, chamber, connectedCells, currentCell, callback) {
+	/* createNeighborConnections */
+		module.exports.createNeighborConnections = createNeighborConnections
+		function createNeighborConnections(request, chamber, nodemap, connectedCells, currentCell, callback) {
 			try {
 				// get coordinates
-					var coords = currentCell.split("_")
+					var coords = currentCell.split(",")
 					var x = Number(coords[0])
 					var y = Number(coords[1])
 
+				console.log("connecting [" + x + "," + y + "]")
+
 				// up
 					if (chamber.cells[x] && chamber.cells[x][y + 1] && !chamber.cells[x][y + 1].wall) {
-						if (!connectedCells.includes((x) + "_" + (y + 1))) {
-							connectedCells.push((x) + "_" + (y + 1))
+						if (!connectedCells.includes((x) + "," + (y + 1))) {
+							connectedCells.push((x) + "," + (y + 1))
 						}
-
-						chamber.cells[x][y].to[(x) + "_" + (y + 1)] = true
+						createConnectionPaths(request, chamber, nodemap, x, y, x, y + 1, callback)
 					}
 
 				// left
 					if (chamber.cells[x - 1] && chamber.cells[x - 1][y] && !chamber.cells[x - 1][y].wall) {
-						if (!connectedCells.includes((x - 1) + "_" + (y))) {
-							connectedCells.push((x - 1) + "_" + (y))
+						if (!connectedCells.includes((x - 1) + "," + (y))) {
+							connectedCells.push((x - 1) + "," + (y))
 						}
-
-						chamber.cells[x][y].to[(x - 1) + "_" + (y)] = true
+						createConnectionPaths(request, chamber, nodemap, x, y, x - 1, y, callback)
 					}
 
 				// right
 					if (chamber.cells[x + 1] && chamber.cells[x + 1][y] && !chamber.cells[x + 1][y].wall) {
-						if (!connectedCells.includes((x + 1) + "_" + (y))) {
-							connectedCells.push((x + 1) + "_" + (y))
+						if (!connectedCells.includes((x + 1) + "," + (y))) {
+							connectedCells.push((x + 1) + "," + (y))
 						}
-
-						chamber.cells[x][y].to[(x + 1) + "_" + (y)] = true
+						createConnectionPaths(request, chamber, nodemap, x, y, x + 1, y, callback)
 					}
 
 				// down
 					if (chamber.cells[x] && chamber.cells[x][y - 1] && !chamber.cells[x][y - 1].wall) {
-						if (!connectedCells.includes((x) + "_" + (y - 1))) {
-							connectedCells.push((x) + "_" + (y - 1))
+						if (!connectedCells.includes((x) + "," + (y - 1))) {
+							connectedCells.push((x) + "," + (y - 1))
 						}
-
-						chamber.cells[x][y].to[(x) + "_" + (y - 1)] = true
+						createConnectionPaths(request, chamber, nodemap, x, y, x, y - 1, callback)
 					}
 			}
 			catch (error) {
@@ -640,88 +628,83 @@
 			}
 		}
 	
-	/* createCellConnections */
-		// module.exports.createCellConnections = createCellConnections
-		// function createCellConnections(request, chamber, connectedCells, currentCell, iX, iY, callback) {
-		// 	try {
-		// 		// get coordinates
-		// 			var coords = currentCell.split("_")
-		// 			var x = Number(coords[0])
-		// 			var y = Number(coords[1])
+	/* createConnectionPaths */
+		module.exports.createConnectionPaths = createConnectionPaths
+		function createConnectionPaths(request, chamber, nodemap, aX, aY, bX, bY, callback) {
+			try {
+				if (chamber.cells[aX] && chamber.cells[aX][aY] && chamber.cells[bX] && chamber.cells[bX][bY]) {
+					// get cell A and cell B
+						var coordsA = aX + "," + aY
+						var coordsB = bX + "," + bY
+						if (!nodemap[coordsA]) {
+							nodemap[coordsA] = {} 
+						}
+						if (!nodemap[coordsB]) {
+							nodemap[coordsB] = {} 
+						}
+						var cellA = nodemap[coordsA]
+						var cellB = nodemap[coordsB]
 
-		// 		// get chains to this cell
-		// 			if (chamber.cells[iX][iY].to[x + "_" + y]) {
-		// 				chains = main.duplicateObject(chamber.cells[iX][iY].to[x + "_" + y])
-		// 			}
-		// 			else {
-		// 				chains = [[]]
-		// 			}
+					// add this A --> B path
+						if (!cellA[coordsB]) {
+							cellA[coordsB] = []
+						}
+						if (!cellA[coordsB].includes(coordsA + " > " + coordsB)) {
+							cellA[coordsB].push(coordsA + " > " + coordsB)
+						}
 
-		// 		// up
-		// 			if (chamber.cells[x] && chamber.cells[x][y + 1] && !chamber.cells[x][y + 1].wall) {
-		// 				if (!connectedCells.includes((x) + "_" + (y + 1))) {
-		// 					connectedCells.push((x) + "_" + (y + 1))
-		// 				}
+					// add this B --> A path
+						if (!cellB[coordsA]) {
+							cellB[coordsA] = []
+						}
+						if (!cellB[coordsA].includes(coordsB + " > " + coordsA)) {
+							cellB[coordsA].push(coordsB + " > " + coordsA)
+						}
 
-		// 				if (!chamber.cells[iX][iY].to[(x) + "_" + (y + 1)]) {
-		// 					chamber.cells[iX][iY].to[(x) + "_" + (y + 1)] = []
-		// 				}
+					// loop through all Ns connected to A
+						for (var coordsN in cellA) {
+							if (coordsN !== coordsB) {
+								// get N
+									if (!nodemap[coordsN]) {
+										nodemap[coordsN] = {}
+									}
+									var cellN = nodemap[coordsN]
 
-		// 				for (var c in chains) {
-		// 					chamber.cells[iX][iY].to[(x) + "_" + (y + 1)].push(chains[c].concat((x) + "_" + (y + 1)))
-		// 				}
-		// 			}
+								// add empty paths if necessary
+									if (!cellB[coordsN]) {
+										cellB[coordsN] = []
+									}
+									if (!cellN[coordsB]) {
+										cellN[coordsB] = []
+									}
 
-		// 		// left
-		// 			if (chamber.cells[x - 1] && chamber.cells[x - 1][y] && !chamber.cells[x - 1][y].wall) {
-		// 				if (!connectedCells.includes((x - 1) + "_" + (y))) {
-		// 					connectedCells.push((x - 1) + "_" + (y))
-		// 				}
+								// loop through all A --> N paths
+									for (var i in cellA[coordsN]) {
+										var path = cellA[coordsN][i]
 
-		// 				if (!chamber.cells[iX][iY].to[(x - 1) + "_" + (y)]) {
-		// 					chamber.cells[iX][iY].to[(x - 1) + "_" + (y)] = []
-		// 				}
+										if (!path.includes(coordsB)) {
+											// prepend to get B --> A --> N
+												path = coordsB + " > " + path
+												if (!cellB[coordsN].includes(path)) {
+													cellB[coordsN].push(path)
+												}
 
-		// 				for (var c in chains) {
-		// 					chamber.cells[iX][iY].to[(x - 1) + "_" + (y)].push(chains[c].concat((x - 1) + "_" + (y)))
-		// 				}
-		// 			}
-
-		// 		// right
-		// 			if (chamber.cells[x + 1] && chamber.cells[x + 1][y] && !chamber.cells[x + 1][y].wall) {
-		// 				if (!connectedCells.includes((x + 1) + "_" + (y))) {
-		// 					connectedCells.push((x + 1) + "_" + (y))
-		// 				}
-
-		// 				if (!chamber.cells[iX][iY].to[(x + 1) + "_" + (y)]) {
-		// 					chamber.cells[iX][iY].to[(x + 1) + "_" + (y)] = []
-		// 				}
-
-		// 				for (var c in chains) {
-		// 					chamber.cells[iX][iY].to[(x + 1) + "_" + (y)].push(chains[c].concat((x + 1) + "_" + (y)))
-		// 				}
-		// 			}
-
-		// 		// down
-		// 			if (chamber.cells[x] && chamber.cells[x][y - 1] && !chamber.cells[x][y - 1].wall) {
-		// 				if (!connectedCells.includes((x) + "_" + (y - 1))) {
-		// 					connectedCells.push((x) + "_" + (y - 1))
-		// 				}
-
-		// 				if (!chamber.cells[iX][iY].to[(x) + "_" + (y - 1)]) {
-		// 					chamber.cells[iX][iY].to[(x) + "_" + (y - 1)] = []
-		// 				}
-
-		// 				for (var c in chains) {
-		// 					chamber.cells[iX][iY].to[(x) + "_" + (y - 1)].push(chains[c].concat((x) + "_" + (y - 1)))
-		// 				}
-		// 			}
-		// 	}
-		// 	catch (error) {
-		// 		main.logError(error)
-		// 		callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
-		// 	}
-		// }
+											// reverse to get N --> A --> B
+												var reversePath = path.split(" > ").reverse().join(" > ")
+												if (!cellN[coordsB].includes(reversePath)) {
+													cellN[coordsB].push(reversePath)
+												}
+										}
+									}
+							}
+						}
+				}
+			}
+			catch (error) {
+				main.logError(error)
+				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+			}
+		}
 
 	/* createHero */
 		module.exports.createHero = createHero
@@ -785,10 +768,10 @@
 		function getEdge(request, chamber, targetCoordinates, callback) {
 			try {
 				// get edges
-					var chamberUp    =  chamber.info.size.y / 2
-					var chamberLeft  = -chamber.info.size.x / 2
-					var chamberRight =  chamber.info.size.x / 2
-					var chamberDown  = -chamber.info.size.y / 2
+					var chamberUp    =  chamber.info.chamberSize * chamber.info.cellSize / 2
+					var chamberLeft  = -chamber.info.chamberSize * chamber.info.cellSize / 2
+					var chamberRight =  chamber.info.chamberSize * chamber.info.cellSize / 2
+					var chamberDown  = -chamber.info.chamberSize * chamber.info.cellSize / 2
 
 				// test each size
 					if (targetCoordinates.up > chamberUp) {
@@ -818,31 +801,31 @@
 		function getCells(request, chamber, targetCoordinates, callback) {
 			try {
 				// get x and y
-					var leftX 	= Math.round(Math.abs((targetCoordinates.left - 1)  / CELLSIZE)) * Math.sign(targetCoordinates.left )
+					var leftX 	= Math.round(Math.abs((targetCoordinates.left + 1)  / CELLSIZE)) * Math.sign(targetCoordinates.left )
 						if (leftX   == -0) { leftX   = 0 }
 					var centerX = Math.round(Math.abs(targetCoordinates.x           / CELLSIZE)) * Math.sign(targetCoordinates.x    )
 						if (centerX == -0) { centerX = 0 }
-					var rightX 	= Math.round(Math.abs((targetCoordinates.right + 1) / CELLSIZE)) * Math.sign(targetCoordinates.right)
+					var rightX 	= Math.round(Math.abs((targetCoordinates.right - 1) / CELLSIZE)) * Math.sign(targetCoordinates.right)
 						if (rightX  == -0) { rightX  = 0 }
 
-					var upY 	= Math.round(Math.abs((targetCoordinates.up + 1)    / CELLSIZE)) * Math.sign(targetCoordinates.up   )
+					var upY 	= Math.round(Math.abs((targetCoordinates.up - 1)    / CELLSIZE)) * Math.sign(targetCoordinates.up   )
 						if (upY     == -0) { upY     = 0 }
 					var centerY = Math.round(Math.abs(targetCoordinates.y           / CELLSIZE)) * Math.sign(targetCoordinates.y    )
 						if (centerY == -0) { centerY = 0 }
-					var downY 	= Math.round(Math.abs((targetCoordinates.down - 1)  / CELLSIZE)) * Math.sign(targetCoordinates.down )
+					var downY 	= Math.round(Math.abs((targetCoordinates.down + 1)  / CELLSIZE)) * Math.sign(targetCoordinates.down )
 						if (downY   == -0) { downY   = 0 }
 
 				// return cell coordinates
 					return {
-						upLeft: 		leftX   + "_" + upY,
-						upCenter: 		centerX + "_" + upY,
-						upRight: 		rightX  + "_" + upY,
-						centerLeft: 	leftX   + "_" + centerY,
-						centerCenter: 	centerX + "_" + centerY,
-						centerRight: 	rightX  + "_" + centerY,
-						downLeft: 		leftX   + "_" + downY,
-						downCenter: 	centerX + "_" + downY,
-						downRight: 		rightX  + "_" + downY
+						upLeft: 		leftX   + "," + upY,
+						upCenter: 		centerX + "," + upY,
+						upRight: 		rightX  + "," + upY,
+						centerLeft: 	leftX   + "," + centerY,
+						centerCenter: 	centerX + "," + centerY,
+						centerRight: 	rightX  + "," + centerY,
+						downLeft: 		leftX   + "," + downY,
+						downCenter: 	centerX + "," + downY,
+						downRight: 		rightX  + "," + downY
 					}
 			}
 			catch (error) {
@@ -861,7 +844,7 @@
 				// walls
 					var occupiedCells = getCells(request, chamber, targetCoordinates, callback)
 					for (var o in occupiedCells) {
-						var coords = occupiedCells[o].split("_")
+						var coords = occupiedCells[o].split(",")
 						var x = Number(coords[0])
 						var y = Number(coords[1])
 
@@ -937,10 +920,10 @@
 					var objectDown  = object.state.position.y - radiusY
 				
 				// collision?
-					if ((objectUp    >= targetCoordinates.down )
-					 && (objectLeft  <= targetCoordinates.right)
-					 && (objectRight >= targetCoordinates.left )
-					 && (objectDown  <= targetCoordinates.up   )) {
+					if ((objectUp    > targetCoordinates.down )
+					 && (objectLeft  < targetCoordinates.right)
+					 && (objectRight > targetCoordinates.left )
+					 && (objectDown  < targetCoordinates.up   )) {
 						// get deltas
 							var deltaUp    = Math.abs(targetCoordinates.up    - objectDown )
 							var deltaLeft  = Math.abs(targetCoordinates.left  - objectRight)
@@ -974,16 +957,6 @@
 						return false
 					}
 
-				// get nextChamber
-					var nextChamberX = chamber.info.x + (edge == "left" ? -1 : edge == "right" ? 1 : 0)
-					var nextChamberY = chamber.info.y + (edge == "down" ? -1 : edge == "up"    ? 1 : 0)
-					var nextChamber = request.game.data.chambers[nextChamberX] ? (request.game.data.chambers[nextChamberX][nextChamberY] || null) : null
-
-				// no chamber
-					if (!nextChamber) {
-						return false
-					}
-
 				// all agreed?
 					var unanimity = true
 					for (var h in request.game.data.heroes) {
@@ -995,6 +968,16 @@
 					if (!unanimity) {
 						return false
 					}
+
+				// get nextChamber
+					var nextChamberX = chamber.info.x + (edge == "left" ? -1 : edge == "right" ? 1 : 0)
+					var nextChamberY = chamber.info.y + (edge == "down" ? -1 : edge == "up"    ? 1 : 0)
+					var nextChamber = request.game.data.chambers[nextChamberX] ? (request.game.data.chambers[nextChamberX][nextChamberY] || null) : null
+
+				// no chamber
+					if (!nextChamber) {
+						return false
+					}				
 					else {
 						updateChamber(request, nextChamberX, nextChamberY, callback)
 					}
@@ -1042,7 +1025,11 @@
 						}
 
 					// send data
-						callback(Object.keys(request.game.players).concat(Object.keys(request.game.observers)), {success: true, data: chamber})
+						callback(Object.keys(request.game.observers), {success: true, data: chamber})
+
+						for (var p in request.game.players) {
+							callback([p], {success: true, data: request.game.data.heroes[p]})
+						}
 				}
 			}
 			catch (error) {
@@ -1112,6 +1099,7 @@
 					}
 
 				// move creature
+					creature.state.position.edge = null
 					creature.state.position.x = targetCoordinates.x
 					creature.state.position.y = targetCoordinates.y
 					return

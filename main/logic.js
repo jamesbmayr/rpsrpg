@@ -121,6 +121,8 @@
 						break
 						case "js variables":
 							return ('/*** superglobals ***/\n' +
+									'	var LAYERS = ' + getAsset("layers") + '\n' +
+									'	var CHAMBERSIZE = ' + getAsset("chamberSize") + '\n' +
 									'	var CELLSIZE = ' + getAsset("cellSize") + '\n' +
 									'	var BORDERRADIUS = ' + getAsset("borderRadius") + '\n' +
 									'	var FONT = "' + getAsset("font") + '"\n' +
@@ -128,11 +130,17 @@
 									'')
 						break
 
+						case "layers":
+							return 3
+						break
+						case "chamberSize":
+							return 9
+						break
 						case "cellSize":
-							return 32
+							return 128
 						break
 						case "borderRadius":
-							return 8
+							return 16
 						break
 						case "font":
 							return "monospace"
@@ -169,9 +177,6 @@
 
 						case "wallMakers":
 							return [
-								function empty(cells, minX, maxX, minY, maxY) {
-									return
-								},
 								function solid(cells, minX, maxX, minY, maxY) {
 									for (var x = minX; x <= maxX; x++) {
 										for (var y = minY; y <= maxY; y++) {
@@ -182,39 +187,104 @@
 								function corners(cells, minX, maxX, minY, maxY) {
 									cells[minX    ][minY    ].wall = true
 									cells[maxX    ][minY    ].wall = true
-
 									cells[minX    ][maxY    ].wall = true
 									cells[maxX    ][maxY    ].wall = true
 								},
 								function center(cells, minX, maxX, minY, maxY) {
-									var centerX1 = Math.ceil( (minX + maxX) / 2)
-									var centerX2 = Math.floor((minX + maxX) / 2)
-									var centerY1 = Math.ceil( (minY + maxY) / 2)
-									var centerY2 = Math.floor((minY + maxY) / 2)
-
-									cells[centerX1][centerY1].wall = true
-									cells[centerX1][centerY2].wall = true
-									cells[centerX2][centerY1].wall = true
-									cells[centerX2][centerY2].wall = true
+									var centerX = Math.floor( Math.abs(minX + maxX) / 2) * Math.sign(minX + maxX)
+									var centerY = Math.floor( Math.abs(minY + maxY) / 2) * Math.sign(minY + maxY)
+									cells[centerX][centerY].wall = true
 								},
 								function up(cells, minX, maxX, minY, maxY) {
 									for (var x = minX; x <= maxX; x++) {
 										cells[x][maxY].wall = true
+										cells[x][maxY - 1].wall = true
 									}
 								},
 								function left(cells, minX, maxX, minY, maxY) {
 									for (var y = minY; y <= maxY; y++) {
 										cells[minX][y].wall = true
+										cells[minX + 1][y].wall = true
 									}
 								},
 								function right(cells, minX, maxX, minY, maxY) {
 									for (var y = minY; y <= maxY; y++) {
 										cells[maxX][y].wall = true
+										cells[maxX - 1][y].wall = true
 									}
 								},
 								function down(cells, minX, maxX, minY, maxY) {
 									for (var x = minX; x <= maxX; x++) {
 										cells[x][minY].wall = true
+										cells[x][minY + 1].wall = true
+									}
+								},
+								function upLeft(cells, minX, maxX, minY, maxY) {
+									cells[minX][maxY].wall = true
+									cells[minX][maxY - 1].wall = true
+									cells[minX + 1][maxY].wall = true
+									cells[minX + 1][maxY - 1].wall = true
+								},
+								function upRight(cells, minX, maxX, minY, maxY) {
+									cells[maxX][maxY].wall = true
+									cells[maxX][maxY - 1].wall = true
+									cells[maxX - 1][maxY].wall = true
+									cells[maxX - 1][maxY - 1].wall = true
+								},
+								function downLeft(cells, minX, maxX, minY, maxY) {
+									cells[minX][minY].wall = true
+									cells[minX][minY + 1].wall = true
+									cells[minX + 1][minY].wall = true
+									cells[minX + 1][minY + 1].wall = true
+								},
+								function downRight(cells, minX, maxX, minY, maxY) {
+									cells[maxX][minY].wall = true
+									cells[maxX][minY + 1].wall = true
+									cells[maxX - 1][minY].wall = true
+									cells[maxX - 1][minY + 1].wall = true
+								},
+								function diagonal(cells, minX, maxX, minY, maxY) {
+									if (minX < 0 && minY > 0) {
+										cells[minX + 1][maxY - 1].wall = true
+										cells[minX + 2][maxY - 1].wall = true
+										cells[minX + 1][maxY - 2].wall = true
+									}
+									else if (minX > 0 && minY > 0) {
+										cells[maxX - 1][maxY - 1].wall = true
+										cells[maxX - 2][maxY - 1].wall = true
+										cells[maxX - 1][maxY - 2].wall = true
+									}
+									else if (minX < 0 && minY < 0) {
+										cells[minX + 1][minY + 1].wall = true
+										cells[minX + 2][minY + 1].wall = true
+										cells[minX + 1][minY + 2].wall = true
+									}
+									else if (minX > 0 && minY < 0) {
+										cells[maxX - 1][minY + 1].wall = true
+										cells[maxX - 2][minY + 1].wall = true
+										cells[maxX - 1][minY + 2].wall = true
+									}
+								},
+								function inverseDiagonal(cells, minX, maxX, minY, maxY) {
+									if (minX > 0 && minY < 0) {
+										cells[minX][maxY].wall = true
+										cells[minX + 1][maxY].wall = true
+										cells[minX][maxY - 1].wall = true
+									}
+									else if (minX < 0 && minY < 0) {
+										cells[maxX][maxY].wall = true
+										cells[maxX - 1][maxY].wall = true
+										cells[maxX][maxY - 1].wall = true
+									}
+									else if (minX > 0 && minY > 0) {
+										cells[minX][minY].wall = true
+										cells[minX + 1][minY].wall = true
+										cells[minX][minY + 1].wall = true
+									}
+									else if (minX < 0 && minY > 0) {
+										cells[maxX][minY].wall = true
+										cells[maxX - 1][minY].wall = true
+										cells[maxX][minY + 1].wall = true
 									}
 								}
 							]
@@ -235,15 +305,15 @@
 										health: 128,
 										healthMax: 128,
 										position: {
-											x: -32,
-											y: 0
+											x: -5 * getAsset("cellSize") / 4,
+											y:  1 * getAsset("cellSize") / 4
 										}
 									},
 									statistics: {
 										power: 16,
 										armor: 8,
-										speed: 4,
-										range: 4
+										speed: 16,
+										range: 2
 									}
 								},
 								"wizard": {
@@ -257,15 +327,15 @@
 										health: 128,
 										healthMax: 128,
 										position: {
-											x: 0,
-											y: 0
+											x: -1 * getAsset("cellSize") / 4,
+											y: -3 * getAsset("cellSize") / 4
 										}
 									},
 									statistics: {
 										power: 8,
 										armor: 4,
-										speed: 4,
-										range: 16
+										speed: 16,
+										range: 8
 									}
 								},
 								"ranger": {
@@ -279,14 +349,14 @@
 										health: 128,
 										healthMax: 128,
 										position: {
-											x: 32,
-											y: 0
+											x:  3 * getAsset("cellSize") / 4,
+											y:  1 * getAsset("cellSize") / 4
 										}
 									},
 									statistics: {
 										power: 8,
 										armor: 8,
-										speed: 8,
+										speed: 32,
 										range: 8
 									}
 								}
@@ -315,7 +385,7 @@
 							players: 		{},
 							data: {
 								info: {
-									layers: 4
+									layers: getAsset("layers")
 								},
 								state: {
 									start: 	true,
@@ -327,7 +397,8 @@
 									}
 								},
 								heroes: 	{},
-								chambers: 	{}
+								chambers: 	{},
+								nodemaps: 	{}
 							}
 						}
 					break
@@ -351,8 +422,8 @@
 								type: 		null,
 								species:	null,
 								size: {
-									x: 		32,
-									y: 		32
+									x: 		Math.floor(getAsset("cellSize") / 2),
+									y: 		Math.floor(getAsset("cellSize") / 2)
 								},
 								color: 		null
 							},
@@ -399,10 +470,8 @@
 								colors: 	[],
 								x: 0,
 								y: 0,
-								size: {
-									x: 		480,
-									y: 		480
-								}
+								chamberSize: getAsset("chamberSize"),
+								cellSize: getAsset("cellSize")
 							},
 							cells:          {},
 							heroes: 		{},
@@ -552,8 +621,8 @@
 		module.exports.duplicateArray = duplicateArray
 		function duplicateArray(array) {
 			try {
-				var random = generateRandom()
-				return array.join(random).split(random)
+				var splitter = ":||:"
+				return array.join(splitter).split(splitter)
 			}
 			catch (error) {
 				logError(error)
