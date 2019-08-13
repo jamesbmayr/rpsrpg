@@ -1,4 +1,4 @@
-# RPSG
+# RPS RPG
 
 Three fantasy heroes team up to fight through a randomly generated dungeon of orb-stealing monsters.
 
@@ -21,7 +21,7 @@ The app is powered by nodeJS and websockets, written in 100% raw javascript.
 
 ---
 <pre>
-rpsg
+rpsrpg
 |- package.json
 |- index.js (handleRequest, parseRequest, routeRequest, \_302, \_403, \_404; handleSocket, parseSocket, routeSocket, updateSocket, \_400)
 |- node_modules

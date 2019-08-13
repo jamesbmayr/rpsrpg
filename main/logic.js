@@ -96,9 +96,9 @@
 									<meta name="keywords" content="game,fantasy,heroes,monsters,wizard,barbarian,ranger,multiplayer"/>\
 									<meta name="author" content="James Mayr"/>\
 									<meta property="og:title" content="Three fantasy heroes team up to fight through a randomly generated dungeon of orb-stealing monsters."/>\
-									<meta property="og:url" content="https://rpsg.herokuapp.com"/>\
+									<meta property="og:url" content="https://rpsrpg.herokuapp.com"/>\
 									<meta property="og:description" content="Three fantasy heroes team up to fight through a randomly generated dungeon of orb-stealing monsters."/>\
-									<meta property="og:image" content="https://rpsg.herokuapp.com/banner.png"/>\
+									<meta property="og:image" content="https://rpsrpg.herokuapp.com/banner.png"/>\
 									<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>'
 						break
 						case "css variables":

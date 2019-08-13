@@ -1,5 +1,5 @@
 {
-  "name": "rpsg",
+  "name": "rpsrpg",
   "version": "1.0.0",
   "description": "Three fantasy heroes team up to fight through a randomly generated dungeon of orb-stealing monsters.",
   "main": "index.js",
