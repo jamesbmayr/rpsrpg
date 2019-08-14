@@ -44,7 +44,7 @@
 				context.beginPath()
 				context.fillStyle   = options.gradient ? drawGradient(canvas, context, options) : (options.color || "transparent")
 				context.strokeStyle = options.gradient ? drawGradient(canvas, context, options) : (options.color || "transparent")
-				context.lineWidth   = options.border || 1
+				context.lineWidth   = options.border || 0
 				context.shadowBlur  = options.blur ? options.blur : 0
 				context.shadowColor = options.shadow ? options.shadow : "transparent"
 				context.globalAlpha = options.opacity || 1
@@ -68,7 +68,8 @@
 				options = options || {}
 				context.beginPath()
 				context.fillStyle   = options.gradient ? drawGradient(canvas, context, options) : (options.color || "transparent")
-				context.lineWidth   = options.border || 1
+				context.strokeStyle = options.gradient ? drawGradient(canvas, context, options) : (options.color || "transparent")
+				context.lineWidth   = options.border || 0
 				context.shadowBlur  = options.blur ? options.blur : 0
 				context.shadowColor = options.shadow ? options.shadow : "transparent"
 				context.globalAlpha = options.opacity || 1
@@ -79,7 +80,14 @@
 				context.lineTo(x3, canvas.height - y3)
 				context.lineTo(x1, canvas.height - y1)
 				context.closePath()
-				context.fill()
+
+			// fill or stroke?
+				if (options.border) {
+					context.stroke()
+				}
+				else {
+					context.fill()
+				}
 		}
 
 	/* drawRectangle */
@@ -88,7 +96,8 @@
 				options = options || {}
 				context.beginPath()
 				context.fillStyle   = options.gradient ? drawGradient(canvas, context, options) : (options.color || "transparent")
-				context.lineWidth   = options.border || 1
+				context.strokeStyle = options.gradient ? drawGradient(canvas, context, options) : (options.color || "transparent")
+				context.lineWidth   = options.border || 0
 				context.shadowBlur  = options.blur ? options.blur : 0
 				context.shadowColor = options.shadow ? options.shadow : "transparent"
 				context.globalAlpha = options.opacity || 1
@@ -105,7 +114,14 @@
 					context.lineTo(x, canvas.height - y - height + options.radii.topLeft)
 					context.quadraticCurveTo(x, canvas.height - y - height, x + options.radii.topLeft, canvas.height - y - height)
 					context.closePath()
-					context.fill()
+					
+					// fill or stroke?
+						if (options.border) {
+							context.stroke()
+						}
+						else {
+							context.fill()
+						}
 				}
 				else {
 					context.fillRect(x, canvas.height - y, width, -1 * height)
@@ -118,7 +134,8 @@
 				options = options || {}
 				context.beginPath()
 				context.fillStyle   = options.gradient ? drawGradient(canvas, context, options) : (options.color || "transparent")
-				context.lineWidth   = options.border || 1
+				context.strokeStyle = options.gradient ? drawGradient(canvas, context, options) : (options.color || "transparent")
+				context.lineWidth   = options.border || 0
 				context.shadowBlur  = options.blur ? options.blur : 0
 				context.shadowColor = options.shadow ? options.shadow : "transparent"
 				context.globalAlpha = options.opacity || 1
@@ -138,7 +155,14 @@
 					}
 				}
 				context.closePath()
-				context.fill()
+				
+			// fill or stroke?
+				if (options.border) {
+					context.stroke()
+				}
+				else {
+					context.fill()
+				}
 		}
 
 	/* drawText */
@@ -147,11 +171,11 @@
 				options = options || {}
 				context.font = (options.style ? options.style + " " : "") + (options.size || 32) + "px " + (options.font || FONT)
 				context.fillStyle   = options.gradient ? drawGradient(canvas, context, options) : (options.color || "transparent")
+				context.strokeStyle = options.gradient ? drawGradient(canvas, context, options) : (options.color || "transparent")
 				context.textAlign   = options.alignment || "center"
 				context.shadowBlur  = options.blur ? options.blur : 0
 				context.shadowColor = options.shadow ? options.shadow : "transparent"
 				context.globalAlpha = options.opacity || 1
-
 
 			// draw
 				context.fillText((text || ""), x, canvas.height - y)

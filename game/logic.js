@@ -25,6 +25,7 @@
 							request.game.players[request.session.id].connected  = true
 							request.game.players[request.session.id].connection = request.connection
 							callback(Object.keys(request.game.observers), {success: true, names: [request.game.players[request.session.id].name]})
+							callback([request.session.id], {success: true, data: request.game.data.heroes[request.session.id]})
 						}
 
 					// add observer
@@ -33,23 +34,6 @@
 							request.game.observers[request.session.id].id = request.session.id
 							request.game.observers[request.session.id].connected  = true
 							request.game.observers[request.session.id].connection = request.connection
-						}
-
-					// message
-						if (!request.game.data.state.start) {
-							callback([request.session.id], {success: true,
-								id:           request.game.id,
-								names:        Object.keys(request.game.players).length ? Object.keys(request.game.players).map(function(id) { return request.game.players[id].name }) : []
-							})
-						}
-						else if (request.game.data.state.end) {
-							callback([request.session.id], {success: true, location: "../../../../"})
-						}
-						else {
-							callback([request.session.id], {success: true,
-								id:           request.game.id,
-								data:         request.game.data
-							})
 						}
 				}
 			}
@@ -269,7 +253,7 @@
 			}
 		}
 
-/*** creates ***/
+/*** creates: map ***/
 	/* createMap */
 		module.exports.createMap = createMap
 		function createMap(request, callback) {
@@ -352,6 +336,11 @@
 
 				// create doors
 					createDoors(request, chamber, cellMinX, cellMaxX, cellMinY, cellMaxY, callback)
+
+				// specials
+					if (chamberX == 0 && chamberY == 0) {
+						createTemple(request, chamber, callback)
+					}
 
 				// create nodemap
 					var nodemap = {}
@@ -585,6 +574,50 @@
 			}
 		}
 
+	/* createTemple */
+		module.exports.createTemple = createTemple
+		function createTemple(request, chamber, callback) {
+			try {
+				// loop through middle 5x5
+					for (var x = -2; x <= 2; x++) {
+						for (var y = -2; y <= 2; y++) {
+							// wall the corners
+								if (Math.abs(x) == 2 && Math.abs(y) == 2) {
+									chamber.cells[x][y].wall = true
+								}
+
+							// clear the rest and add healing tiles
+								else {
+									chamber.cells[x][y].wall = false
+
+									var healTile = main.getSchema("item")
+									main.overwriteObject(healTile, main.getAsset("healTile"))
+									healTile.state.position = {
+										x: CELLSIZE * x,
+										y: CELLSIZE * y
+									}
+
+									chamber.items[healTile.id] = healTile
+								}
+						}
+					}
+
+				// set pedestals
+					var pedestals = main.getAsset("pedestals")
+					
+					for (var p in pedestals) {
+						var pedestal = main.getSchema("item")
+						main.overwriteObject(pedestal, pedestals[p])
+
+						chamber.items[pedestal.id] = pedestal
+					}
+			}
+			catch (error) {
+				main.logError(error)
+				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+			}
+		}
+
 	/* createNeighborConnections */
 		module.exports.createNeighborConnections = createNeighborConnections
 		function createNeighborConnections(request, chamber, nodemap, connectedCells, currentCell, callback) {
@@ -710,6 +743,7 @@
 			}
 		}
 
+/*** creates: things ***/
 	/* createHero */
 		module.exports.createHero = createHero
 		function createHero(request, callback) {
@@ -998,34 +1032,39 @@
 		module.exports.resolveEdge = resolveEdge
 		function resolveEdge(request, chamber, creature, edge, callback) {
 			try {
-				// set edge
-					creature.state.position.edge = edge
-
-				// heroes only
+				// other creatures stop at edge
 					if (creature.info.type !== "hero") {
-						return true
+						keepMoving = false
 					}
 
-				// all agreed?
-					for (var h in request.game.data.heroes) {
-						if (request.game.data.heroes[h].state.position.edge !== edge) {
-							return true
-						}
-					}
-
-				// get nextChamber
-					var nextChamberX = chamber.info.x + (edge == "left" ? -1 : edge == "right" ? 1 : 0)
-					var nextChamberY = chamber.info.y + (edge == "down" ? -1 : edge == "up"    ? 1 : 0)
-					var nextChamber = request.game.data.chambers[nextChamberX] ? (request.game.data.chambers[nextChamberX][nextChamberY] || null) : null
-
-				// no chamber
-					if (!nextChamber) {
-						return true
-					}				
+				// heroes
 					else {
-						updateChamber(request, nextChamberX, nextChamberY, callback)
-						return true
+						// keep moving?
+							var keepMoving = false
+							creature.state.position.edge = edge
+
+						// all agreed?
+							var agreed = true
+							for (var h in request.game.data.heroes) {
+								if (request.game.data.heroes[h].state.position.edge !== edge) {
+									agreed = false
+								}
+							}
+
+							if (agreed) {
+								// get nextChamber
+									var nextChamberX = chamber.info.x + (edge == "left" ? -1 : edge == "right" ? 1 : 0)
+									var nextChamberY = chamber.info.y + (edge == "down" ? -1 : edge == "up"    ? 1 : 0)
+									var nextChamber = request.game.data.chambers[nextChamberX] ? (request.game.data.chambers[nextChamberX][nextChamberY] || null) : null
+
+								// no chamber
+									if (nextChamber) {
+										updateChamber(request, nextChamberX, nextChamberY, callback)
+									}
+							}
 					}
+
+				return keepMoving
 			}
 			catch (error) {
 				main.logError(error)
@@ -1037,21 +1076,52 @@
 		module.exports.resolveCollision = resolveCollision
 		function resolveCollision(request, chamber, creature, collision, callback) {
 			try {
+				// set defaults
+					var keepMoving = true
+
 				// wall
 					if (collision.supertype == "wall") {
-						return true
+						keepMoving = false
+					}
+
+				// healTile
+					if (collision.supertype == "item" && collision.type == "tile") {
+						if (creature.info.type == "hero" && chamber.items[collision.id].info.subtype == "healing") {
+							creature.state.health = Math.min(creature.state.healthMax, creature.state.health + main.getAsset("heal"))
+						}
 					}
 
 				// orb
-					if (creature.info.type == "hero" && collision.supertype == "item" && collision.type == "orb") {
-						if (creature.info.rps == chamber.items[collision.id].info.rps) {
+					if (collision.supertype == "item" && collision.type == "orb") {
+						if (creature.info.type == "hero" && creature.info.rps == chamber.items[collision.id].info.rps) {
 							creature.items[collision.id] = main.duplicateObject(chamber.items[collision.id])
 							delete chamber.items[collision.id]
 						}
 						else {
-							return true
+							keepMoving = false
 						}
 					}
+
+				// pedestal
+					if (collision.supertype == "item" && collision.type == "pedestal") {
+						keepMoving = false
+
+						if (creature.info.type == "hero" && creature.info.rps == chamber.items[collision.id].info.rps) {
+							var itemKeys = Object.keys(creature.items)
+							var orbKey = itemKeys.find(function(id) {
+								return creature.items[id].info.type == "orb"
+							})
+
+							if (orbKey) {
+								chamber.items[collision.id].state.active = true
+								chamber.items[collision.id].info.style = "filled"
+								delete creature.items[orbKey]
+							}
+						}
+					}
+
+				// stop ?
+					return keepMoving
 
 			}
 			catch (error) {
@@ -1126,8 +1196,8 @@
 		module.exports.updatePosition = updatePosition
 		function updatePosition(request, chamber, creature, callback) {
 			try {
-				// set unresolved
-					var resolved = false
+				// don't stop yet
+					var move = true
 
 				// get target coordinates
 					var newX = creature.state.position.x + (creature.state.movement.left ? -creature.statistics.speed : creature.state.movement.right ? creature.statistics.speed : 0)
@@ -1149,18 +1219,20 @@
 					var collisions = getCollisions(request, chamber, targetCoordinates, callback)
 					if (collisions.length) {
 						for (var c in collisions) {
-							resolved = resolveCollision(request, chamber, creature, collisions[c], callback)
+							var keepMoving = resolveCollision(request, chamber, creature, collisions[c], callback)
+							if (!keepMoving) { move = false }
 						}
 					}
 
 				// get edges
 					var edge = getEdge(request, chamber, targetCoordinates, callback)
 					if (edge) {
-						resolved = resolveEdge(request, chamber, creature, edge, callback)
+						var keepMoving = resolveEdge(request, chamber, creature, edge, callback)
+						if (!keepMoving) { move = false }
 					}
 
 				// move creature
-					if (!resolved) {
+					if (move) {
 						creature.state.position.edge = null
 						creature.state.position.x = targetCoordinates.x
 						creature.state.position.y = targetCoordinates.y

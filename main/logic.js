@@ -133,7 +133,7 @@
 						break
 
 						case "layers":
-							return 2
+							return 3
 						break
 						case "chamberSize":
 							return 9
@@ -146,6 +146,12 @@
 						break
 						case "font":
 							return "monospace"
+						break
+						case "baseHealth":
+							return 128
+						break
+						case "heal":
+							return 1
 						break
 
 						case "colors":
@@ -293,6 +299,9 @@
 						break
 
 						case "heroes":
+							var quarterCell = Math.floor(getAsset("cellSize") / 4)
+							var baseHealth = getAsset("baseHealth")
+
 							return {
 								"barbarian": {
 									info: {
@@ -302,18 +311,18 @@
 										color: COLORS.orange[2]
 									},
 									state: {
-										health: 128,
-										healthMax: 128,
+										health: baseHealth / 4,
+										healthMax: baseHealth,
 										position: {
-											x: -5 * getAsset("cellSize") / 4,
-											y:  1 * getAsset("cellSize") / 4
+											x: -3 * quarterCell,
+											y:  3 * quarterCell
 										}
 									},
 									statistics: {
-										power: 16,
-										armor: 8,
-										speed: 16,
-										range: 2
+										power: Math.floor(baseHealth / 8),
+										armor: Math.floor(baseHealth / 8),
+										speed: Math.floor(quarterCell / 2),
+										range: quarterCell * 8
 									}
 								},
 								"wizard": {
@@ -324,18 +333,18 @@
 										color: COLORS.purple[2]
 									},
 									state: {
-										health: 128,
-										healthMax: 128,
+										health: baseHealth / 4,
+										healthMax: baseHealth,
 										position: {
-											x: -1 * getAsset("cellSize") / 4,
-											y: -3 * getAsset("cellSize") / 4
+											x: -1 * quarterCell,
+											y: -3 * quarterCell
 										}
 									},
 									statistics: {
-										power: 8,
-										armor: 4,
-										speed: 16,
-										range: 8
+										power: Math.floor(baseHealth / 8),
+										armor: Math.floor(baseHealth / 16),
+										speed: Math.floor(quarterCell / 2),
+										range: quarterCell * 32
 									}
 								},
 								"ranger": {
@@ -346,18 +355,18 @@
 										color: COLORS.greengray[2]
 									},
 									state: {
-										health: 128,
-										healthMax: 128,
+										health: baseHealth / 4,
+										healthMax: baseHealth,
 										position: {
-											x:  3 * getAsset("cellSize") / 4,
-											y:  1 * getAsset("cellSize") / 4
+											x:  3 * quarterCell,
+											y:  3 * quarterCell
 										}
 									},
 									statistics: {
-										power: 8,
-										armor: 8,
-										speed: 32,
-										range: 8
+										power: Math.floor(baseHealth / 8),
+										armor: Math.floor(baseHealth / 8),
+										speed: quarterCell,
+										range: quarterCell * 32
 									}
 								}
 							}
@@ -377,6 +386,8 @@
 											x: orbSize,
 											y: orbSize
 										},
+										shape: "circle",
+										style: "fill",
 										color: COLORS.orange[3]
 									}
 								},
@@ -390,6 +401,8 @@
 											x: orbSize,
 											y: orbSize
 										},
+										shape: "circle",
+										style: "fill",
 										color: COLORS.purple[3]
 									}
 								},
@@ -403,9 +416,54 @@
 											x: orbSize,
 											y: orbSize
 										},
+										shape: "circle",
+										style: "fill",
 										color: COLORS.greengray[3]
 									}
 								}
+							}
+						break
+
+						case "pedestals":
+							var quarterCell = Math.floor(getAsset("cellSize") / 4)
+							var pedestals = getAsset("orbs")
+							
+							for (var p in pedestals) {
+								overwriteObject(pedestals[p], {
+									info: {
+										type: "pedestal",
+										shape: "circle",
+										style: "border"
+									},
+									state: {
+										active: false,
+										position: {
+											x: 0,
+											y: 0
+										}
+									}
+								})
+							}
+
+							overwriteObject(pedestals["rock"],     {state: {position: {x: -4 * quarterCell}}})
+							overwriteObject(pedestals["scissors"], {state: {position: {x:  4 * quarterCell}}})
+							
+							return pedestals
+						break
+
+						case "healTile":
+							return {
+								info: {
+									type: "tile",
+									subtype: "healing",
+									size: {
+										x: Math.floor(getAsset("cellSize") / 4) * 3,
+										y: Math.floor(getAsset("cellSize") / 4) * 3
+									},
+									color: COLORS.green[1],
+									shape: "square",
+									style: "border"
+								},
 							}
 						break
 

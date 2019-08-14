@@ -75,20 +75,19 @@
 				}
 
 			// info
-				if (data.info) {
-					displayInfo(data.info)
+				if (data.data && data.data.id == window.id) {
+					displayInfo(data.data)
 				}
-
 		}
 
 /*** display ***/
 	/* displayInfo */
-		function displayInfo(info) {
+		function displayInfo(hero) {
 			// healthbar
-				var healthPercentage = Math.round(info.state.health / info.state.healthMaximum * 100)
-				HEALTHBAR.style.width = Math.min(100, Math.max(0, healthPercentage))
+				var healthPercentage = Math.round(hero.state.health / hero.state.healthMax * 100)
+				HEALTHBAR.style.width = Math.min(100, Math.max(0, healthPercentage)) + "%"
 				HEALTHBAR.setAttribute("color", healthPercentage > 60 ? "high" : healthPercentage > 30 ? "medium" : "low")
 
 			// pointsbar
-				POINTSBAR.style.width = Math.min(100, Math.max(0, info.state.points))
+				POINTSBAR.style.width = Math.min(100, Math.max(0, hero.state.points)) + "%"
 		}

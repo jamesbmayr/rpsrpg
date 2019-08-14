@@ -82,7 +82,6 @@
 
 			// minimap
 				drawMinimap(chamber)
-				// drawText(CANVAS, CONTEXT, CHAMBERRADIUSX, CHAMBERRADIUSY - 20, chamber.info.x + "," + chamber.info.y, {color: chamber.info.colors[1], size: 64})
 
 			// draw walls
 				drawWalls(chamber)
@@ -190,10 +189,27 @@
 				var itemX = item.state.position.x + CHAMBERRADIUSX
 				var itemY = item.state.position.y + CHAMBERRADIUSY
 				var itemRadius = Math.ceil(((item.info.size.x + item.info.size.y) / 2) / 2)
-				var itemColor = item.info.color
+				var itemOptions = {
+					color: item.info.color
+				}
+
+				if (item.info.style == "border") {
+					itemOptions.border = 8
+				}
 
 			// draw
-				drawCircle(CANVAS, CONTEXT, itemX, itemY, itemRadius, {color: itemColor})
+				if (item.info.shape == "circle") {
+					drawCircle(CANVAS, CONTEXT, itemX, itemY, itemRadius, itemOptions)
+				}
+				else if (item.info.shape == "square") {
+					itemOptions.radii = {
+						topLeft: BORDERRADIUS,
+						topRight: BORDERRADIUS,
+						bottomRight: BORDERRADIUS,
+						bottomLeft: BORDERRADIUS
+					}
+					drawRectangle(CANVAS, CONTEXT, itemX - itemRadius, itemY - itemRadius, itemRadius * 2, itemRadius * 2, itemOptions)
+				}
 		}
 
 	/* drawCreature */
