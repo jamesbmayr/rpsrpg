@@ -10,7 +10,7 @@
 	var home = require("./home/logic")
 	var db   = {}
 
-	var LOOPINTERVAL = 50
+	var LOOPINTERVAL = main.getAsset("loopInterval")
 
 /*** server ***/
 	var port = main.getEnvironment("port")

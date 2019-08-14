@@ -132,6 +132,9 @@
 									'')
 						break
 
+						case "loopInterval":
+							return 50
+						break
 						case "layers":
 							return 3
 						break
@@ -152,6 +155,9 @@
 						break
 						case "heal":
 							return 1
+						break
+						case "portalCooldown":
+							return Math.floor(1000 / getAsset("loopInterval")) * 3
 						break
 
 						case "colors":
@@ -185,10 +191,37 @@
 
 						case "wallMakers":
 							return [
+								function empty(cells, minX, maxX, minY, maxY) {
+									return
+								},
 								function solid(cells, minX, maxX, minY, maxY) {
 									for (var x = minX; x <= maxX; x++) {
 										for (var y = minY; y <= maxY; y++) {
 											cells[x][y].wall = true
+										}
+									}
+								},
+								function allButInner(cells, minX, maxX, minY, maxY) {
+									for (var x = minX; x <= maxX; x++) {
+										for (var y = minY; y <= maxY; y++) {
+											cells[x][y].wall = true
+										}
+									}
+
+									if (minX < 0) {
+										if (minY < 0) {
+											cells[maxX][maxY].wall = false
+										}
+										else {
+											cells[maxX][minY].wall = false
+										}
+									}
+									else {
+										if (minY < 0) {
+											cells[minX][maxY].wall = false
+										}
+										else {
+											cells[minX][minY].wall = false
 										}
 									}
 								},
@@ -275,22 +308,18 @@
 								},
 								function inverseDiagonal(cells, minX, maxX, minY, maxY) {
 									if (minX > 0 && minY < 0) {
-										cells[minX][maxY].wall = true
 										cells[minX + 1][maxY].wall = true
 										cells[minX][maxY - 1].wall = true
 									}
 									else if (minX < 0 && minY < 0) {
-										cells[maxX][maxY].wall = true
 										cells[maxX - 1][maxY].wall = true
 										cells[maxX][maxY - 1].wall = true
 									}
 									else if (minX > 0 && minY > 0) {
-										cells[minX][minY].wall = true
 										cells[minX + 1][minY].wall = true
 										cells[minX][minY + 1].wall = true
 									}
 									else if (minX < 0 && minY > 0) {
-										cells[maxX][minY].wall = true
 										cells[maxX - 1][minY].wall = true
 										cells[maxX][minY + 1].wall = true
 									}
@@ -455,7 +484,7 @@
 							return {
 								info: {
 									type: "tile",
-									subtype: "healing",
+									subtype: "heal",
 									size: {
 										x: Math.floor(getAsset("cellSize") / 4) * 3,
 										y: Math.floor(getAsset("cellSize") / 4) * 3
@@ -463,9 +492,29 @@
 									color: COLORS.green[1],
 									shape: "square",
 									style: "border"
-								},
+								}
 							}
 						break
+
+						case "portalTile":
+							return {
+								info: {
+									type: "tile",
+									subtype: "portal",
+									size: {
+										max: Math.floor(getAsset("cellSize") / 4) * 3,
+										x: Math.floor(getAsset("cellSize") / 4) * 3,
+										y: Math.floor(getAsset("cellSize") / 4) * 3
+									},
+									color: COLORS.blue[1],
+									shape: "square",
+									style: "border"
+								},
+								state: {
+									active: true,
+									link: null
+								}
+							}
 
 					default:
 						return null
@@ -498,7 +547,8 @@
 									chamber: {
 										x: 	0,
 										y: 	0
-									}
+									},
+									portalCooldown: 0
 								},
 								heroes: 	{},
 								chambers: 	{},

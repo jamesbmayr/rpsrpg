@@ -3,13 +3,15 @@
 	module.exports = {}
 
 /*** maps ***/
-	var DIRECTIONS 	= main.getAsset("directions")
-	var ACTIONS 	= main.getAsset("actions")
-	var HEROES 		= main.getAsset("heroes")
-	var ORBS 		= main.getAsset("orbs")
-	var COLORS 		= main.getAsset("colors")
-	var WALLMAKERS 	= main.getAsset("wallMakers")
-	var CELLSIZE 	= main.getAsset("cellSize")
+	var DIRECTIONS 		= main.getAsset("directions")
+	var ACTIONS 		= main.getAsset("actions")
+	var HEROES 			= main.getAsset("heroes")
+	var ORBS 			= main.getAsset("orbs")
+	var COLORS 			= main.getAsset("colors")
+	var WALLMAKERS 		= main.getAsset("wallMakers")
+	var CELLSIZE 		= main.getAsset("cellSize")
+	var PORTALCOOLDOWN 	= main.getAsset("portalCooldown")
+	var LOOPINTERVAL 	= main.getAsset("loopInterval")
 
 /*** players ***/
 	/* addPlayer */
@@ -258,44 +260,83 @@
 		module.exports.createMap = createMap
 		function createMap(request, callback) {
 			try {
-				// chambers
-					var chambers = request.game.data.chambers
-					var orbChambers = []
+				// set starting values
 					var layer = 0
 					var x = 0
 					var y = 0
 
-				// spiral loop
+				// set starting arrays
+					var allChambers = []
+					var orbChambers = []
+					var portalChambers = []
+					var orbTypes = main.sortRandom(Object.keys(ORBS))
+				
+				// spiral to fill coordinate arrays
 					while (layer < request.game.data.info.layers) {
-						createChamber(request, x, y, callback)
-						if (layer == request.game.data.info.layers - 1) {
-							orbChambers.push(x + "," + y)
-						}
+						// coords
+							var coords = x + "," + y
 
-						if (     (!chambers[x + 1] || !chambers[x + 1][y - 1]) && Math.abs(x + 1) + Math.abs(y - 1) == layer) {
-							x += 1
-							y -= 1
-						}
-						else if ((!chambers[x - 1] || !chambers[x - 1][y - 1]) && Math.abs(x - 1) + Math.abs(y - 1) == layer) {
-							x -= 1
-							y -= 1
-						}
-						else if ((!chambers[x - 1] || !chambers[x - 1][y + 1]) && Math.abs(x - 1) + Math.abs(y + 1) == layer) {
-							x -= 1
-							y += 1
-						}
-						else if ((!chambers[x + 1] || !chambers[x + 1][y + 1]) && Math.abs(x + 1) + Math.abs(y + 1) == layer) {
-							x += 1
-							y += 1
-						}
-						else {
-							layer += 1
-							y += 1
-						}
+						// add to all chambers
+							allChambers.push(coords)
+
+						// eligible for orbs?
+							if (layer == request.game.data.info.layers - 1) {
+								orbChambers.push(coords)
+							}
+
+						// eligible for portals?
+							else if (layer) {
+								portalChambers.push(coords)
+							}
+
+						// get next coords
+							var nextCoords = getNextCoords(request, allChambers, x, y, layer, callback)
+								x = nextCoords.x
+								y = nextCoords.y
+								layer = nextCoords.layer
 					}
 
-				// orbs
-					createOrbs(request, orbChambers, callback)
+				// pick orbChambers & portalChambers
+					orbChambers = main.sortRandom(orbChambers)
+					portalChambers = portalChambers.concat(orbChambers.slice(3))
+					orbChambers = orbChambers.slice(0,3)
+					portalChambers = main.sortRandom(portalChambers)
+					portalChambers = portalChambers.slice(0,2)
+					if (portalChambers.length < 2) {
+						portalChambers = []
+					}
+
+				// loop through spiral to make chambers
+					var chambers = request.game.data.chambers
+					for (var a in allChambers) {
+						// get coords
+							var coords = allChambers[a].split(",")
+							var options = null
+
+						// special ?
+							if (coords[0] == 0 && coords[1] == 0) {
+								options = {
+									temple: true
+								}
+							}
+							else if (orbChambers.includes(allChambers[a])) {
+								options = {
+									orb: orbTypes.shift()
+								}
+							}
+							else if (portalChambers.includes(allChambers[a])) {
+								var otherChamber = portalChambers.find(function(c) {
+									return c !== allChambers[a]
+								})
+
+								options = {
+									portal: otherChamber
+								}
+							}
+
+						// create chamber (cells, walls, doors, specials, nodemap)
+							createChamber(request, Number(coords[0]), Number(coords[1]), options, callback)
+					}
 			}
 			catch (error) {
 				main.logError(error)
@@ -305,7 +346,7 @@
 
 	/* createChamber */
 		module.exports.createChamber = createChamber
-		function createChamber(request, chamberX, chamberY, callback) {
+		function createChamber(request, chamberX, chamberY, options, callback) {
 			try {
 				// create chamber
 					var chamber = main.getSchema("chamber")
@@ -338,8 +379,16 @@
 					createDoors(request, chamber, cellMinX, cellMaxX, cellMinY, cellMaxY, callback)
 
 				// specials
-					if (chamberX == 0 && chamberY == 0) {
-						createTemple(request, chamber, callback)
+					if (options) {
+						if (options.temple) {
+							createTemple(request, chamber, callback)
+						}
+						else if (options.orb) {
+							createOrb(request, chamber, options.orb, callback)
+						}
+						else if (options.portal) {
+							createPortal(request, chamber, options.portal, callback)
+						}
 					}
 
 				// create nodemap
@@ -586,17 +635,19 @@
 									chamber.cells[x][y].wall = true
 								}
 
-							// clear the rest and add healing tiles
+							// clear the rest and add heal tiles
 								else {
 									chamber.cells[x][y].wall = false
 
-									var healTile = main.getSchema("item")
-									main.overwriteObject(healTile, main.getAsset("healTile"))
-									healTile.state.position = {
-										x: CELLSIZE * x,
-										y: CELLSIZE * y
-									}
-
+									var healTile = createItem(request, main.getAsset("healTile"), callback)
+									main.overwriteObject(healTile, {
+										state: {
+											position: {
+												x: CELLSIZE * x,
+												y: CELLSIZE * y
+											}
+										}
+									})
 									chamber.items[healTile.id] = healTile
 								}
 						}
@@ -604,17 +655,41 @@
 
 				// set pedestals
 					var pedestals = main.getAsset("pedestals")
-					
 					for (var p in pedestals) {
-						var pedestal = main.getSchema("item")
-						main.overwriteObject(pedestal, pedestals[p])
-
+						var pedestal = createItem(request, pedestals[p], callback)
 						chamber.items[pedestal.id] = pedestal
 					}
 			}
 			catch (error) {
 				main.logError(error)
 				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+			}
+		}
+
+	/* createPortal */
+		module.exports.createPortal = createPortal
+		function createPortal(request, chamber, destination, callback) {
+			try {
+				// remove 3x3 walls
+					chamber.cells[-1][-1].wall = false
+					chamber.cells[ 1][-1].wall = false
+					chamber.cells[-1][ 1].wall = false
+					chamber.cells[ 1][ 1].wall = false
+
+				// create portal
+					var portal = createItem(request, main.getAsset("portalTile"), callback)
+					main.overwriteObject(portal, {
+						state: {
+							link: destination
+						}
+					})
+
+				// add to chamber
+					chamber.items[portal.id] = portal
+			}
+			catch (error) {
+				main.logError(error)
+				callback([request.session.id], {success: false, message: "uanble to " + arguments.callee.name})
 			}
 		}
 
@@ -803,37 +878,13 @@
 			}
 		}
 
-	/* createOrbs */
-		module.exports.createOrbs = createOrbs
-		function createOrbs(request, orbChambers, callback) {
+	/* createOrb */
+		module.exports.createOrb = createOrb
+		function createOrb(request, chamber, orbType, callback) {
 			try {
-				// create and shuffle orbs
-					var magicOrbs = [
-						createItem(request, ORBS.rock, callback),
-						createItem(request, ORBS.paper, callback),
-						createItem(request, ORBS.scissors, callback)
-					]
-
-					magicOrbs = main.sortRandom(magicOrbs)
-
-				// create and shuffle rooms
-					if (orbChambers.length >= 3) {
-						orbChambers = main.sortRandom(orbChambers)
-					}
-
-				// place orbs
-					for (var m = 0; m < magicOrbs.length; m++) {
-						var coords = orbChambers[m].split(",")
-						var x = coords[0]
-						var y = coords[1]
-
-						if (request.game.data.chambers[x] && request.game.data.chambers[x][y]) {
-							var chamber = request.game.data.chambers[x][y]
-							var orb = magicOrbs[m]
-
-							chamber.items[orb.id] = orb
-						}
-					}
+				// add orb to chamber
+					var orb = createItem(request, ORBS[orbType], callback)
+					chamber.items[orb.id] = orb
 			}
 			catch (error) {
 				main.logError(error)
@@ -842,6 +893,45 @@
 		}
 
 /*** gets ***/
+	/* getNextCoords */
+		module.exports.getNextCoords = getNextCoords
+		function getNextCoords(request, allChambers, x, y, layer, callback) {
+			try {
+				// spiral up and out
+					if (     !allChambers.includes((x + 1) + "," + (y - 1)) && (Math.abs(x + 1) + Math.abs(y - 1) == layer)) {
+						x += 1
+						y -= 1
+					}
+					else if (!allChambers.includes((x - 1) + "," + (y - 1)) && (Math.abs(x - 1) + Math.abs(y - 1) == layer)) {
+						x -= 1
+						y -= 1
+					}
+					else if (!allChambers.includes((x - 1) + "," + (y + 1)) && (Math.abs(x - 1) + Math.abs(y + 1) == layer)) {
+						x -= 1
+						y += 1
+					}
+					else if (!allChambers.includes((x + 1) + "," + (y + 1)) && (Math.abs(x + 1) + Math.abs(y + 1) == layer)) {
+						x += 1
+						y += 1
+					}
+					else {
+						layer += 1
+						y += 1
+					}
+
+				// return values
+					return {
+						x: x,
+						y: y,
+						layer: layer
+					}
+			}
+			catch (error) {
+				main.logError(error)
+				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+			}
+		}
+
 	/* getEdge */
 		module.exports.getEdge = getEdge
 		function getEdge(request, chamber, targetCoordinates, callback) {
@@ -1030,37 +1120,60 @@
 /*** resolves ***/
 	/* resolveEdge */
 		module.exports.resolveEdge = resolveEdge
-		function resolveEdge(request, chamber, creature, edge, callback) {
+		function resolveEdge(request, chamber, creature, destination, callback) {
 			try {
-				// other creatures stop at edge
+				// assume we keep moving
+					var keepMoving = true
+					var isEdge = DIRECTIONS.includes(destination)
+
+				// other creatures are stuck in this chamber
 					if (creature.info.type !== "hero") {
-						keepMoving = false
+						// other creatures stop at edge
+							if (isEdge) {
+								keepMoving = false
+							}
 					}
 
 				// heroes
 					else {
-						// keep moving?
-							var keepMoving = false
-							creature.state.position.edge = edge
+						// save edge (or portal)
+							creature.state.position.edge = destination
 
 						// all agreed?
 							var agreed = true
 							for (var h in request.game.data.heroes) {
-								if (request.game.data.heroes[h].state.position.edge !== edge) {
+								if (request.game.data.heroes[h].state.position.edge !== destination) {
 									agreed = false
 								}
 							}
 
 							if (agreed) {
-								// get nextChamber
-									var nextChamberX = chamber.info.x + (edge == "left" ? -1 : edge == "right" ? 1 : 0)
-									var nextChamberY = chamber.info.y + (edge == "down" ? -1 : edge == "up"    ? 1 : 0)
-									var nextChamber = request.game.data.chambers[nextChamberX] ? (request.game.data.chambers[nextChamberX][nextChamberY] || null) : null
-
-								// no chamber
-									if (nextChamber) {
-										updateChamber(request, nextChamberX, nextChamberY, callback)
+								// get nextChamber for edges
+									if (isEdge) {
+										var nextChamberX = Number(chamber.info.x) + (destination == "left" ? -1 : destination == "right" ? 1 : 0)
+										var nextChamberY = Number(chamber.info.y) + (destination == "down" ? -1 : destination == "up"    ? 1 : 0)
 									}
+
+								// get nextChamber for portals
+									else {
+										var coords = destination.split(",")
+										var nextChamberX = Number(coords[0])
+										var nextChamberY = Number(coords[1])
+									}
+
+								// updateChamber
+									updateChamber(request, nextChamberX, nextChamberY, isEdge, callback)
+									keepMoving = false
+
+								// reset heroes
+									for (var h in request.game.data.heroes) {
+										request.game.data.heroes[h].state.position.edge = null
+									}
+							}
+
+						// disagree? stop at edges
+							else if (isEdge) {
+								keepMoving = false
 							}
 					}
 
@@ -1084,40 +1197,54 @@
 						keepMoving = false
 					}
 
-				// healTile
-					if (collision.supertype == "item" && collision.type == "tile") {
-						if (creature.info.type == "hero" && chamber.items[collision.id].info.subtype == "healing") {
-							creature.state.health = Math.min(creature.state.healthMax, creature.state.health + main.getAsset("heal"))
-						}
-					}
+				// items
+					if (collision.supertype == "item" && chamber.items[collision.id]) {
+						var item = chamber.items[collision.id]
+						
+						// tiles
+							if (collision.type == "tile") {
+								// healTile
+									if (creature.info.type == "hero" && chamber.items[collision.id].info.subtype == "heal") {
+										creature.state.health = Math.min(creature.state.healthMax, creature.state.health + main.getAsset("heal"))
+									}
 
-				// orb
-					if (collision.supertype == "item" && collision.type == "orb") {
-						if (creature.info.type == "hero" && creature.info.rps == chamber.items[collision.id].info.rps) {
-							creature.items[collision.id] = main.duplicateObject(chamber.items[collision.id])
-							delete chamber.items[collision.id]
-						}
-						else {
-							keepMoving = false
-						}
-					}
-
-				// pedestal
-					if (collision.supertype == "item" && collision.type == "pedestal") {
-						keepMoving = false
-
-						if (creature.info.type == "hero" && creature.info.rps == chamber.items[collision.id].info.rps) {
-							var itemKeys = Object.keys(creature.items)
-							var orbKey = itemKeys.find(function(id) {
-								return creature.items[id].info.type == "orb"
-							})
-
-							if (orbKey) {
-								chamber.items[collision.id].state.active = true
-								chamber.items[collision.id].info.style = "filled"
-								delete creature.items[orbKey]
+								// portalTile
+									if (creature.info.type == "hero" && chamber.items[collision.id].info.subtype == "portal") {
+										var portal = chamber.items[collision.id]
+										if (portal.state.active) {
+											keepMoving = resolveEdge(request, chamber, creature, portal.state.link, callback)
+										}
+									}
 							}
-						}
+
+						// orbs
+							else if (collision.type == "orb") {
+								if (creature.info.type == "hero" && creature.info.rps == chamber.items[collision.id].info.rps) {
+									creature.items[collision.id] = main.duplicateObject(chamber.items[collision.id])
+									delete chamber.items[collision.id]
+								}
+								else {
+									keepMoving = false
+								}
+							}
+
+						// pedestal
+							else if (collision.type == "pedestal") {
+								keepMoving = false
+
+								if (creature.info.type == "hero" && creature.info.rps == chamber.items[collision.id].info.rps) {
+									var itemKeys = Object.keys(creature.items)
+									var orbKey = itemKeys.find(function(id) {
+										return creature.items[id].info.type == "orb"
+									})
+
+									if (orbKey) {
+										chamber.items[collision.id].state.active = true
+										chamber.items[collision.id].info.style = "filled"
+										delete creature.items[orbKey]
+									}
+								}
+							}
 					}
 
 				// stop ?
@@ -1137,10 +1264,15 @@
 			try {
 				if (request.game.data.state.start) {
 					// time
-						request.game.data.state.time += 100
+						request.game.data.state.time += LOOPINTERVAL
 
 					// chamber
 						var chamber = request.game.data.chambers[request.game.data.state.chamber.x][request.game.data.state.chamber.y]
+
+					// cooldowns
+						// portal
+							request.game.data.state.portalCooldown = Math.max(0, request.game.data.state.portalCooldown - 1)
+							updatePortals(request, chamber, request.game.data.state.portalCooldown, callback)
 
 					// heroes
 						for (var h in chamber.heroes) {
@@ -1170,20 +1302,50 @@
 
 	/* updateChamber */
 		module.exports.updateChamber = updateChamber
-		function updateChamber(request, x, y, callback) {
+		function updateChamber(request, x, y, isEdge, callback) {
 			try {
-				// get old
-					var oldX = request.game.data.state.chamber.x
-					var oldY = request.game.data.state.chamber.y
-				
-				// set new
-					request.game.data.state.chamber.x = x
-					request.game.data.state.chamber.y = y
+				if (request.game.data.chambers[x] && request.game.data.chambers[x][y]) {
+					// get old
+						var oldX = Number(request.game.data.state.chamber.x)
+						var oldY = Number(request.game.data.state.chamber.y)
+					
+					// set new
+						request.game.data.state.chamber.x = Number(x)
+						request.game.data.state.chamber.y = Number(y)
 
-				// flip hero positions
-					var direction = (x !== oldX) ? "x" : "y"
-					for (var h in request.game.data.heroes) {
-						request.game.data.heroes[h].state.position[direction] *= -1
+					// flip hero positions
+						if (isEdge) {
+							var direction = (x !== oldX) ? "x" : "y"
+							for (var h in request.game.data.heroes) {
+								request.game.data.heroes[h].state.position[direction] *= -1
+							}
+						}
+
+					// deactivate portals
+						else {
+							request.game.data.state.portalCooldown = PORTALCOOLDOWN
+							updatePortals(request, request.game.data.chambers[oldX][oldY], PORTALCOOLDOWN, callback)
+							updatePortals(request, request.game.data.chambers[   x][   y], PORTALCOOLDOWN, callback)
+						}
+				}
+			}
+			catch (error) {
+				main.logError(error)
+				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+			}
+		}
+
+	/* updatePortals */
+		module.exports.updatePortals = updatePortals
+		function updatePortals(request, chamber, cooldown, callback) {
+			try {
+				// loop through items to find portals
+					for (var i in chamber.items) {
+						var item = chamber.items[i]
+						if (item.info.type == "tile" && item.info.subtype == "portal") {
+							item.state.active = cooldown ? false : true
+							item.info.size.x = item.info.size.y = item.info.size.max * ((PORTALCOOLDOWN - cooldown) / PORTALCOOLDOWN)
+						}
 					}
 			}
 			catch (error) {
@@ -1196,8 +1358,9 @@
 		module.exports.updatePosition = updatePosition
 		function updatePosition(request, chamber, creature, callback) {
 			try {
-				// don't stop yet
+				// don't stop yet, but reset edge
 					var move = true
+					creature.state.position.edge = null
 
 				// get target coordinates
 					var newX = creature.state.position.x + (creature.state.movement.left ? -creature.statistics.speed : creature.state.movement.right ? creature.statistics.speed : 0)
@@ -1233,7 +1396,6 @@
 
 				// move creature
 					if (move) {
-						creature.state.position.edge = null
 						creature.state.position.x = targetCoordinates.x
 						creature.state.position.y = targetCoordinates.y
 					}
