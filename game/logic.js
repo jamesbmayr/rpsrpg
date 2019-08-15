@@ -6,12 +6,18 @@
 	var DIRECTIONS 		= main.getAsset("directions")
 	var ACTIONS 		= main.getAsset("actions")
 	var HEROES 			= main.getAsset("heroes")
+	var MONSTERS		= main.getAsset("monsters")
 	var ORBS 			= main.getAsset("orbs")
 	var COLORS 			= main.getAsset("colors")
 	var WALLMAKERS 		= main.getAsset("wallMakers")
 	var CELLSIZE 		= main.getAsset("cellSize")
 	var PORTALCOOLDOWN 	= main.getAsset("portalCooldown")
 	var LOOPINTERVAL 	= main.getAsset("loopInterval")
+	var MONSTERCHANCE 	= main.getAsset("monsterChance")
+	var MONSTERMAX 		= main.getAsset("monsterMax")
+	var MONSTERMIN 		= main.getAsset("monsterMin")
+	var BUMPDISTANCE 	= main.getAsset("bumpDistance")
+	var PATHINGAI 		= main.getAsset("pathingAI")
 
 /*** players ***/
 	/* addPlayer */
@@ -311,31 +317,38 @@
 					for (var a in allChambers) {
 						// get coords
 							var coords = allChambers[a].split(",")
-							var options = null
+							var x = Number(coords[0])
+							var y = Number(coords[1])
+							var options = {}
 
 						// special ?
-							if (coords[0] == 0 && coords[1] == 0) {
-								options = {
-									temple: true
-								}
+							if (x == 0 && y == 0) {
+								options.temple = true
 							}
 							else if (orbChambers.includes(allChambers[a])) {
-								options = {
-									orb: orbTypes.shift()
-								}
+								options.orb = orbTypes.shift()
 							}
 							else if (portalChambers.includes(allChambers[a])) {
 								var otherChamber = portalChambers.find(function(c) {
 									return c !== allChambers[a]
 								})
 
-								options = {
-									portal: otherChamber
+								options.portal = otherChamber
+							}
+
+						// monsters ?
+							if (!(x == 0 && y == 0) && main.rollRandom(MONSTERCHANCE[0], MONSTERCHANCE[1])) {
+								var monsterCount = main.rangeRandom(MONSTERMIN, MONSTERMAX)
+								options.monsters = []
+
+								for (var m = 0; m < monsterCount; m++) {
+									var monsterType = main.chooseRandom(Object.keys(MONSTERS))
+									options.monsters.push(main.duplicateObject(MONSTERS[monsterType]))
 								}
 							}
 
 						// create chamber (cells, walls, doors, specials, nodemap)
-							createChamber(request, Number(coords[0]), Number(coords[1]), options, callback)
+							createChamber(request, Number(x), Number(y), options, callback)
 					}
 			}
 			catch (error) {
@@ -388,6 +401,10 @@
 						}
 						else if (options.portal) {
 							createPortal(request, chamber, options.portal, callback)
+						}
+
+						if (options.monsters) {
+							createMonsters(request, chamber, options.monsters, callback)
 						}
 					}
 
@@ -560,7 +577,7 @@
 						return (!doors.includes(d))
 					})
 
-					if (doors.length < 2 && possibleDoors.length && !Math.floor(Math.random() * doors.length)) {
+					if (doors.length < 2 && possibleDoors.length && main.rollRandom(1, doors.length)) {
 						doors.push(main.chooseRandom(possibleDoors))
 					}
 
@@ -818,7 +835,73 @@
 			}
 		}
 
-/*** creates: things ***/
+/*** creates: creatures ***/
+	/* createCreature */
+		module.exports.createCreature = createCreature
+		function createCreature(request, properties, callback) {
+			try {
+				// create creature
+					var creature = main.getSchema("creature")
+					main.overwriteObject(creature, properties)
+
+					return creature
+			}
+			catch (error) {
+				main.logError(error)
+				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+			}
+		}
+
+	/* createMonsters */
+		module.exports.createMonsters = createMonsters
+		function createMonsters(request, chamber, monsters, callback) {
+			try {
+				// get eligible cells
+					var chamberRadius = Math.floor(chamber.info.chamberSize / 2)
+					var emptyCells = []
+					for (var x = -chamberRadius + 1; x <= chamberRadius - 1; x++) {
+						for (var y = -chamberRadius + 1; y <= chamberRadius - 1; y++) {
+							if (chamber.cells[x] && chamber.cells[x][y] && !chamber.cells[x][y].wall) {
+								var itemKeys = Object.keys(chamber.items)
+								if (!itemKeys.find(function(key) {
+									var item = chamber.items[key]
+									return ((x == Math.floor(item.state.position.x / CELLSIZE)) && (y == Math.floor(item.state.position.y / CELLSIZE)))
+								})) {
+									emptyCells.push(x + "," + y)
+								}
+							}
+						}
+					}
+					emptyCells = main.sortRandom(emptyCells)
+
+				// loop through monsters
+					for (var m in monsters) {
+						// pick a cell
+							var cell = emptyCells.shift()
+							var coords = cell.split(",")
+							var x = Number(coords[0])
+							var y = Number(coords[1])
+
+						// create monster
+							var monster = createCreature(request, monsters[m], callback)
+							main.overwriteObject(monster, {
+								state: {
+									position: {
+										x: CELLSIZE * x,
+										y: CELLSIZE * y
+									}
+								}
+							})
+							chamber.creatures[monster.id] = monster
+					}
+
+			}
+			catch (error) {
+				main.logError(error)
+				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+			}
+		}
+
 	/* createHero */
 		module.exports.createHero = createHero
 		function createHero(request, callback) {
@@ -837,10 +920,13 @@
 					}
 
 				// create hero & add to game
-					var hero = main.getSchema("creature")
-						hero.id = request.session.id
-						hero.info.name = request.game.players[request.session.id].name
-						main.overwriteObject(hero, HEROES[main.chooseRandom(remainingTypes)])
+					var hero = createCreature(request, HEROES[main.chooseRandom(remainingTypes)], callback)
+						main.overwriteObject(hero, {
+							id: request.session.id,
+							info: {
+								name: request.game.players[request.session.id].name
+							}
+						})
 					request.game.data.heroes[hero.id] = hero
 			}
 			catch (error) {
@@ -849,20 +935,7 @@
 			}
 		}
 
-	/* createCreature */
-		module.exports.createCreature = createCreature
-		function createCreature(request, chamber, callback) {
-			try {
-				// create creature
-					var creature = main.getSchema("creature")
-					chamber.creatures.push(creature)
-			}
-			catch (error) {
-				main.logError(error)
-				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
-			}
-		}
-
+/*** creates: items ***/
 	/* createItem */
 		module.exports.createItem = createItem
 		function createItem(request, properties, callback) {
@@ -937,10 +1010,10 @@
 		function getEdge(request, chamber, targetCoordinates, callback) {
 			try {
 				// get edges
-					var chamberUp    =  chamber.info.chamberSize * chamber.info.cellSize / 2
-					var chamberLeft  = -chamber.info.chamberSize * chamber.info.cellSize / 2
-					var chamberRight =  chamber.info.chamberSize * chamber.info.cellSize / 2
-					var chamberDown  = -chamber.info.chamberSize * chamber.info.cellSize / 2
+					var chamberUp    =  chamber.info.chamberSize * CELLSIZE / 2
+					var chamberLeft  = -chamber.info.chamberSize * CELLSIZE / 2
+					var chamberRight =  chamber.info.chamberSize * CELLSIZE / 2
+					var chamberDown  = -chamber.info.chamberSize * CELLSIZE / 2
 
 				// test each size
 					if (targetCoordinates.up > chamberUp) {
@@ -996,7 +1069,7 @@
 						downCenter: 	centerX + "," + downY,
 						downRight: 		rightX  + "," + downY
 					}
-			}
+				}
 			catch (error) {
 				main.logError(error)
 				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
@@ -1247,6 +1320,49 @@
 							}
 					}
 
+				// heroes & creatures
+					if (collision.supertype == "hero" || collision.supertype == "creature") {
+						keepMoving = false
+
+						// get recipient
+							var other = chamber[collision.supertype == "hero" ? "heroes" : "creatures"][collision.id]
+
+						// bump them...
+							var newX = other.state.position.x + (collision.side == "right" ? BUMPDISTANCE : collision.side == "left" ? -BUMPDISTANCE : 0)
+							var newY = other.state.position.y + (collision.side == "up"    ? BUMPDISTANCE : collision.side == "down" ? -BUMPDISTANCE : 0)
+							var radiusX = Math.ceil(other.info.size.x / 2)
+							var radiusY = Math.ceil(other.info.size.y / 2)
+
+							var bumpCoordinates = {
+								id: 	other.id,
+								x: 		newX,
+								y: 		newY,
+								up: 	newY + radiusY,
+								left: 	newX - radiusX,
+								right: 	newX + radiusX,
+								down: 	newY - radiusY
+							}
+
+						// but only if the cells are empty
+							var bumpCells = getCells(request, chamber, bumpCoordinates, callback)
+							var bump = true
+							for (var b in bumpCells) {
+								var coords = bumpCells[b].split(",")
+								var x = Number(coords[0])
+								var y = Number(coords[1])
+
+								if (!chamber.cells[x] || !chamber.cells[x][y] || chamber.cells[x][y].wall) {
+									bump = false
+								}
+							}
+
+							if (bump) {
+								other.state.position.x = bumpCoordinates.x
+								other.state.position.y = bumpCoordinates.y
+							}
+
+					}
+
 				// stop ?
 					return keepMoving
 
@@ -1277,13 +1393,13 @@
 					// heroes
 						for (var h in chamber.heroes) {
 							var hero = chamber.heroes[h]
-							updatePosition(request, chamber, hero, callback)
+							updateHeroPosition(request, chamber, hero, callback)
 						}
 
 					// creatures
 						for (var c in chamber.creatures) {
 							var creature = chamber.creatures[c]
-							updatePosition(request, chamber, creature, callback)
+							updateCreaturePosition(request, chamber, creature, callback)
 						}
 
 					// send data
@@ -1354,15 +1470,96 @@
 			}
 		}
 
-	/* updatePosition */
-		module.exports.updatePosition = updatePosition
-		function updatePosition(request, chamber, creature, callback) {
+	/* updateHeroPosition */
+		module.exports.updateHeroPosition = updateHeroPosition
+		function updateHeroPosition(request, chamber, hero, callback) {
+			try {
+				// don't stop yet, but reset edge
+					var move = true
+					hero.state.position.edge = null
+
+				// get target coordinates
+					var newX = hero.state.position.x + (hero.state.movement.left ? -hero.statistics.speed : hero.state.movement.right ? hero.statistics.speed : 0)
+					var newY = hero.state.position.y + (hero.state.movement.down ? -hero.statistics.speed : hero.state.movement.up    ? hero.statistics.speed : 0)
+					var radiusX = Math.ceil(hero.info.size.x / 2)
+					var radiusY = Math.ceil(hero.info.size.y / 2)
+
+					var targetCoordinates = {
+						id: 	hero.id,
+						x: 		newX,
+						y: 		newY,
+						up: 	newY + radiusY,
+						left: 	newX - radiusX,
+						right: 	newX + radiusX,
+						down: 	newY - radiusY
+					}
+
+				// get collisions
+					var collisions = getCollisions(request, chamber, targetCoordinates, callback)
+					if (collisions.length) {
+						for (var c in collisions) {
+							var keepMoving = resolveCollision(request, chamber, hero, collisions[c], callback)
+							if (!keepMoving) { move = false }
+						}
+					}
+
+				// get edges
+					var edge = getEdge(request, chamber, targetCoordinates, callback)
+					if (edge) {
+						var keepMoving = resolveEdge(request, chamber, hero, edge, callback)
+						if (!keepMoving) { move = false }
+					}
+
+				// move hero
+					if (move) {
+						hero.state.position.x = targetCoordinates.x
+						hero.state.position.y = targetCoordinates.y
+					}
+			}
+			catch (error) {
+				main.logError(error)
+				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+			}
+		}
+
+	/* updateCreaturePosition */
+		module.exports.updateCreaturePosition = updateCreaturePosition
+		function updateCreaturePosition(request, chamber, creature, callback) {
 			try {
 				// don't stop yet, but reset edge
 					var move = true
 					creature.state.position.edge = null
 
-				// get target coordinates
+				// get path
+					var cellX = Math.round(Math.abs(creature.state.position.x / CELLSIZE)) * Math.sign(creature.state.position.x)
+						if (cellX == -0) { cellX = 0 }
+					var cellY = Math.round(Math.abs(creature.state.position.y / CELLSIZE)) * Math.sign(creature.state.position.y)
+						if (cellY == -0) { cellY = 0 }
+					var path = PATHINGAI[creature.info.pathing](chamber, creature, cellX + "," + cellY, request.game.data.nodemaps[chamber.id])
+
+				// get direction of next cell
+					var nextCoords = path.split(" > ")[1] || path.split(" > ")[0]
+					var nextCellCenterX = Number(nextCoords.split(",")[0]) * CELLSIZE
+					var nextCellCenterY = Number(nextCoords.split(",")[1]) * CELLSIZE
+
+					if (nextCellCenterY > creature.state.position.y) {
+						creature.state.movement.up    = true
+						creature.state.movement.down  = false
+					}
+					else if (nextCellCenterY < creature.state.position.y) {
+						creature.state.movement.down  = true
+						creature.state.movement.up    = false
+					}
+					if (nextCellCenterX > creature.state.position.x) {
+						creature.state.movement.right = true
+						creature.state.movement.left  = false
+					}
+					else if (nextCellCenterX < creature.state.position.x) {
+						creature.state.movement.left  = true
+						creature.state.movement.right = false
+					}
+
+				// get actual target coordinates
 					var newX = creature.state.position.x + (creature.state.movement.left ? -creature.statistics.speed : creature.state.movement.right ? creature.statistics.speed : 0)
 					var newY = creature.state.position.y + (creature.state.movement.down ? -creature.statistics.speed : creature.state.movement.up    ? creature.statistics.speed : 0)
 					var radiusX = Math.ceil(creature.info.size.x / 2)

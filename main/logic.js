@@ -1,17 +1,18 @@
 /*** modules ***/
 	var http       = require("http")
 	var fs         = require("fs")
-	var debug      = getEnvironment("debug")
+	var DEBUG      = getEnvironment("debug")
 	module.exports = {}
 
 /*** maps ***/
 	var COLORS = getAsset("colors")
+	var CELLSIZE = getAsset("cellSize")
 
 /*** logs ***/
 	/* logError */
 		module.exports.logError = logError
 		function logError(error) {
-			if (debug) {
+			if (DEBUG) {
 				console.log("\n*** ERROR @ " + new Date().toLocaleString() + " ***")
 				console.log(" - " + error)
 				console.dir(arguments)
@@ -21,7 +22,7 @@
 	/* logStatus */
 		module.exports.logStatus = logStatus
 		function logStatus(status) {
-			if (debug) {
+			if (DEBUG) {
 				console.log("\n--- STATUS @ " + new Date().toLocaleString() + " ---")
 				console.log(" - " + status)
 
@@ -31,7 +32,7 @@
 	/* logMessage */
 		module.exports.logMessage = logMessage
 		function logMessage(message) {
-			if (debug) {
+			if (DEBUG) {
 				console.log(" - " + new Date().toLocaleString() + ": " + message)
 			}
 		}
@@ -39,7 +40,7 @@
 	/* logTime */
 		module.exports.logTime = logTime
 		function logTime(flag, callback) {
-			if (debug) {
+			if (DEBUG) {
 				var before = process.hrtime()
 				callback()
 				
@@ -132,6 +133,7 @@
 									'')
 						break
 
+					// game parameters
 						case "loopInterval":
 							return 50
 						break
@@ -144,12 +146,6 @@
 						case "cellSize":
 							return 128
 						break
-						case "borderRadius":
-							return 16
-						break
-						case "font":
-							return "monospace"
-						break
 						case "baseHealth":
 							return 128
 						break
@@ -159,7 +155,26 @@
 						case "portalCooldown":
 							return Math.floor(1000 / getAsset("loopInterval")) * 3
 						break
+						case "monsterChance":
+							return [3,4]
+						break
+						case "monsterMax":
+							return 1
+						break
+						case "monsterMin":
+							return 1
+						break
+						case "bumpDistance":
+							return Math.floor(getAsset("cellSize") / 4)
+						break
 
+					// styling
+						case "font":
+							return "monospace"
+						break
+						case "borderRadius":
+							return 16
+						break
 						case "colors":
 							return {
 								magenta:    ["#ffcce6","#ff66b3","#e60073","#99004d","#33001a"],
@@ -181,6 +196,7 @@
 							}
 						break
 
+					// lists
 						case "directions":
 							return ["up", "left", "right", "down"]
 						break
@@ -189,6 +205,7 @@
 							return ["a", "b", "x", "y"]
 						break
 
+					// functions
 						case "wallMakers":
 							return [
 								function empty(cells, minX, maxX, minY, maxY) {
@@ -327,6 +344,87 @@
 							]
 						break
 
+						case "pathingAI":
+							return {
+								docile: function(chamber, monster, currentCell, nodemap) {
+									return currentCell
+								},
+								cowardly: function(chamber, monster, currentCell, nodemap) {
+									return currentCell
+								},
+								protective: function(chamber, monster, currentCell, nodemap) {
+									return currentCell
+								},
+								aggressive: function(chamber, monster, currentCell, nodemap) {
+									// distances
+										var distances = {}
+										for (var h in chamber.heroes) {
+											var hero = chamber.heroes[h]
+											distances[h] = getDistance(monster.state.position.x, monster.state.position.y, hero.state.position.x, hero.state.position.y)
+										}
+
+									// get closest
+										var keys = Object.keys(distances)
+											keys.sort(function(a,b) {
+												return distances[b] - distances[a]
+											})
+										var closestHero = chamber.heroes[keys[0]]
+
+									// get target cell
+										var targetX = closestHero.state.position.x
+										var targetY = closestHero.state.position.y
+										var cellX = Math.round(Math.abs(targetX / CELLSIZE)) * Math.sign(targetX)
+											if (cellX == -0) { cellX = 0 }
+										var cellY = Math.round(Math.abs(targetY / CELLSIZE)) * Math.sign(targetY)
+											if (cellY == -0) { cellY = 0 }
+
+									// return path
+										var paths = nodemap[currentCell][cellX + "," + cellY] || []
+										if (!paths || !paths.length) {
+											return currentCell
+										}
+										else {
+											return paths.sort(function(a, b) {
+												return a.split(" > ").length - b.split(" > ").length
+											})[0] || currentCell
+										}
+								},
+								strategic: function(chamber, monster, currentCell, nodemap) {
+									// get rps target
+										var rpsTarget = (monster.info.rps == "rock") ? "scissors" : (monster.info.rps == "scissors") ? "paper" : "rock"
+										var targetKey = Object.keys(chamber.heroes).find(function(k) {
+											return chamber.heroes[k].info.rps == rpsTarget
+										})
+										var targetHero = chamber.heroes[targetKey]
+
+									// no rps target?
+										if (!targetHero) {
+											return currentCell
+										}
+
+									// get target cell
+										var targetX = targetHero.state.position.x
+										var targetY = targetHero.state.position.y
+										var cellX = Math.round(Math.abs(targetX / CELLSIZE)) * Math.sign(targetX)
+											if (cellX == -0) { cellX = 0 }
+										var cellY = Math.round(Math.abs(targetY / CELLSIZE)) * Math.sign(targetY)
+											if (cellY == -0) { cellY = 0 }
+
+									// return path
+										var paths = nodemap[currentCell][cellX + "," + cellY] || []
+										if (!paths || !paths.length) {
+											return currentCell
+										}
+										else {
+											return paths.sort(function(a, b) {
+												return b.split(" > ").length - a.split(" > ").length
+											})[0] || currentCell
+										}
+								}
+							}
+						break
+
+					// creatures
 						case "heroes":
 							var quarterCell = Math.floor(getAsset("cellSize") / 4)
 							var baseHealth = getAsset("baseHealth")
@@ -401,6 +499,72 @@
 							}
 						break
 
+						case "monsters":
+							var quarterCell = Math.floor(getAsset("cellSize") / 4)
+							var baseHealth = getAsset("baseHealth")
+
+							return {
+								"troll": {
+									info: {
+										rps: "rock",
+										type: "monster",
+										subtype: "troll",
+										color: COLORS.orange[2],
+										pathing: "aggressive"
+									},
+									state: {
+										health: baseHealth / 4,
+										healthMax: baseHealth / 4
+									},
+									statistics: {
+										power: Math.floor(baseHealth / 8),
+										armor: Math.floor(baseHealth / 8),
+										speed: Math.floor(quarterCell / 2),
+										range: quarterCell * 2
+									}
+								},
+								"dendroid": {
+									info: {
+										rps: "paper",
+										type: "monster",
+										subtype: "dendroid",
+										color: COLORS.purple[2],
+										pathing: "aggressive"
+									},
+									state: {
+										health: baseHealth / 4,
+										healthMax: baseHealth / 4
+									},
+									statistics: {
+										power: Math.floor(baseHealth / 8),
+										armor: Math.floor(baseHealth / 4),
+										speed: Math.floor(quarterCell / 4),
+										range: quarterCell * 2
+									}
+								},
+								"golem": {
+									info: {
+										rps: "scissors",
+										type: "monster",
+										subtype: "golem",
+										color: COLORS.greengray[2],
+										pathing: "aggressive"
+									},
+									state: {
+										health: baseHealth / 4,
+										healthMax: baseHealth / 4
+									},
+									statistics: {
+										power: Math.floor(baseHealth / 4),
+										armor: Math.floor(baseHealth / 8),
+										speed: Math.floor(quarterCell / 4),
+										range: quarterCell * 2
+									}
+								}
+							}
+						break
+
+					// items
 						case "orbs":
 							var orbSize = Math.floor(getAsset("cellSize") / 8 * 3)
 
@@ -515,6 +679,7 @@
 									link: null
 								}
 							}
+						break
 
 					default:
 						return null
@@ -567,6 +732,24 @@
 						}
 					break
 
+					case "chamber":
+						return {
+							id: 			generateRandom(),
+							info: {
+								name: 		null,
+								colors: 	[],
+								x: 0,
+								y: 0,
+								chamberSize: getAsset("chamberSize"),
+								cellSize: getAsset("cellSize")
+							},
+							cells:          {},
+							heroes: 		{},
+							creatures: 		{},
+							items:			{}
+						}
+					break
+
 					case "creature":
 						return {
 							id: 			generateRandom(),
@@ -613,24 +796,6 @@
 								range: 		0
 							},
 							items: 			{}
-						}
-					break
-
-					case "chamber":
-						return {
-							id: 			generateRandom(),
-							info: {
-								name: 		null,
-								colors: 	[],
-								x: 0,
-								y: 0,
-								chamberSize: getAsset("chamberSize"),
-								cellSize: getAsset("cellSize")
-							},
-							cells:          {},
-							heroes: 		{},
-							creatures: 		{},
-							items:			{}
 						}
 					break
 
@@ -831,6 +996,28 @@
 			}
 		}
 
+	/* getDistance */
+		module.exports.getDistance = getDistance
+		function getDistance(x1, y1, x2, y2) {
+			try {
+				x1 = Number(x1)
+				y1 = Number(y1)
+				x2 = Number(x2)
+				y2 = Number(y2)
+
+				if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2)) {
+					return null
+				}
+				else {
+					return Math.pow(Math.pow((x2 - x1), 2) + Math.pow((y2 - y1), 2), 0.5)
+				}
+			}
+			catch (error) {
+				logError(error)
+				return null
+			}
+		}
+
 /*** randoms ***/
 	/* generateRandom */
 		module.exports.generateRandom = generateRandom
@@ -855,6 +1042,47 @@
 			catch (error) {
 				logError(error)
 				return null
+			}
+		}
+
+	/* rangeRandom */
+		module.exports.rangeRandom = rangeRandom
+		function rangeRandom(min, max) {
+			try {
+				min = Number(min)
+				max = Number(max)
+
+				if (isNaN(min) || isNaN(max)) {
+					return false
+				}
+				else {
+					return (Math.floor(Math.random() * (max + 1 - min)) + min)
+				}
+			}
+			catch (error) {
+				logError(error)
+				return false
+			}
+		}
+
+	/* rollRandom */
+		module.exports.rollRandom = rollRandom
+		function rollRandom(numerator, denominator) {
+			try {
+				numerator  = Number(numerator)
+				denominator = Number(denominator)
+
+				if (isNaN(numerator) || isNaN(denominator)) {
+					return false
+				}
+				else {
+					var roll = Math.floor(Math.random() * denominator) + 1
+					return roll <= numerator
+				}
+			}
+			catch (error) {
+				logError(error)
+				return false
 			}
 		}
 

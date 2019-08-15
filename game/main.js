@@ -215,12 +215,12 @@
 	/* drawCreature */
 		function drawCreature(creature) {
 			// variables
-				var x1 = creature.state.position.x                                     + CHAMBERRADIUSX
-				var y1 = creature.state.position.y + Math.ceil(object.info.size.y / 2) + CHAMBERRADIUSY
-				var x2 = creature.state.position.x + Math.ceil(object.info.size.x / 2) + CHAMBERRADIUSX
-				var y2 = creature.state.position.y - Math.ceil(object.info.size.y / 2) + CHAMBERRADIUSY
-				var x3 = creature.state.position.x - Math.ceil(object.info.size.x / 2) + CHAMBERRADIUSX
-				var y3 = creature.state.position.y - Math.ceil(object.info.size.y / 2) + CHAMBERRADIUSY
+				var x1 = creature.state.position.x                                       + CHAMBERRADIUSX
+				var y1 = creature.state.position.y + Math.ceil(creature.info.size.y / 2) + CHAMBERRADIUSY
+				var x2 = creature.state.position.x + Math.ceil(creature.info.size.x / 2) + CHAMBERRADIUSX
+				var y2 = creature.state.position.y - Math.ceil(creature.info.size.y / 2) + CHAMBERRADIUSY
+				var x3 = creature.state.position.x - Math.ceil(creature.info.size.x / 2) + CHAMBERRADIUSX
+				var y3 = creature.state.position.y - Math.ceil(creature.info.size.y / 2) + CHAMBERRADIUSY
 				var creatureColor = creature.info.color
 
 			// draw
