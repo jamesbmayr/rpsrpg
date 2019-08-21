@@ -16,8 +16,7 @@
 				callback({success: true, message: "game created", location: "../../game/" + request.game.id})
 			}
 			catch (error) {
-				main.logError(error)
-				callback({success: false, message: "unable to " + arguments.callee.name})
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
 			}
 		}
 	
@@ -83,7 +82,6 @@
 				}
 			}
 			catch (error) {
-				main.logError(error)
-				callback({success: false, message: "unable to " + arguments.callee.name})
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
 			}
 		}

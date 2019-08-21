@@ -3,6 +3,7 @@
 	var HEALTHBAR = document.querySelector("#health-inner")
 	var POINTSBAR = document.querySelector("#points-inner")
 
+
 /*** websocket ***/
 	/* socket */
 		var socket = null
@@ -83,11 +84,18 @@
 /*** display ***/
 	/* displayInfo */
 		function displayInfo(hero) {
+			try {
 			// healthbar
 				var healthPercentage = Math.round(hero.state.health / hero.state.healthMax * 100)
 				HEALTHBAR.style.width = Math.min(100, Math.max(0, healthPercentage)) + "%"
-				HEALTHBAR.setAttribute("color", healthPercentage > 60 ? "high" : healthPercentage > 30 ? "medium" : "low")
+				HEALTHBAR.setAttribute("color", healthPercentage > HEALTHHIGH ? "high" : healthPercentage > HEALTHLOW ? "medium" : "low")
 
-			// pointsbar
-				POINTSBAR.style.width = Math.min(100, Math.max(0, hero.state.points)) + "%"
+			// button sizes
+				for (var c in hero.state.cooldowns) {
+					var button = document.getElementById(c)
+					var size = Math.ceil(button.getBoundingClientRect().width)
+					var percentage = hero.state.cooldowns[c] / BUTTONCOOLDOWNMAX * size
+					button.style.borderWidth = Math.max(0, Math.min(size / 2, percentage)) + "px"
+				}
+			}catch(error) {console.log(error)}
 		}

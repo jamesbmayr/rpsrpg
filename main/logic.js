@@ -11,11 +11,17 @@
 /*** logs ***/
 	/* logError */
 		module.exports.logError = logError
-		function logError(error) {
+		function logError(error, functionName, recipients, callback) {
 			if (DEBUG) {
 				console.log("\n*** ERROR @ " + new Date().toLocaleString() + " ***")
 				console.log(" - " + error)
 				console.dir(arguments)
+
+				try {
+					if (functionName && recipients && callback) {
+						callback(recipients, {success: false, message: "unable to " + functionName})
+					}
+				} catch (error) {}
 			}
 		}
 
@@ -25,7 +31,6 @@
 			if (DEBUG) {
 				console.log("\n--- STATUS @ " + new Date().toLocaleString() + " ---")
 				console.log(" - " + status)
-
 			}
 		}
 
@@ -130,6 +135,9 @@
 									'	var BORDERRADIUS = ' + getAsset("borderRadius") + '\n' +
 									'	var FONT = "' + getAsset("font") + '"\n' +
 									'	var COLORS = ' + JSON.stringify(COLORS) + '\n' +
+									'	var HEALTHHIGH = ' + getAsset("healthHigh") + '\n' +
+									'	var HEALTHLOW = ' + getAsset("healthLow") + '\n' +
+									'	var BUTTONCOOLDOWNMAX = ' + getAsset("buttonCooldownMax") + '\n' +
 									'')
 						break
 
@@ -166,6 +174,21 @@
 						break
 						case "bumpDistance":
 							return Math.floor(getAsset("cellSize") / 4)
+						break
+						case "projectileFade":
+							return 1
+						break
+						case "aCooldown":
+							return Math.floor(1000 / getAsset("loopInterval") / 4)
+						break
+						case "healthHigh":
+							return 60
+						break
+						case "healthLow":
+							return 30
+						break
+						case "buttonCooldownMax":
+							return 10
 						break
 
 					// styling
@@ -435,7 +458,13 @@
 										rps: "rock",
 										type: "hero",
 										subtype: "barbarian",
-										color: COLORS.orange[2]
+										color: COLORS.orange[2],
+										statistics: {
+											power: Math.floor(baseHealth / 8),
+											armor: Math.floor(baseHealth / 8),
+											speed: Math.floor(quarterCell / 4),
+											throw: Math.floor(quarterCell / 2)
+										}
 									},
 									state: {
 										health: baseHealth / 4,
@@ -444,12 +473,6 @@
 											x: -3 * quarterCell,
 											y:  3 * quarterCell
 										}
-									},
-									statistics: {
-										power: Math.floor(baseHealth / 8),
-										armor: Math.floor(baseHealth / 8),
-										speed: Math.floor(quarterCell / 2),
-										range: quarterCell * 8
 									}
 								},
 								"wizard": {
@@ -457,7 +480,13 @@
 										rps: "paper",
 										type: "hero",
 										subtype: "wizard",
-										color: COLORS.purple[2]
+										color: COLORS.purple[2],
+										statistics: {
+											power: Math.floor(baseHealth / 8),
+											armor: Math.floor(baseHealth / 16),
+											speed: Math.floor(quarterCell / 4),
+											throw: Math.floor(quarterCell)
+										}
 									},
 									state: {
 										health: baseHealth / 4,
@@ -466,12 +495,6 @@
 											x: -1 * quarterCell,
 											y: -3 * quarterCell
 										}
-									},
-									statistics: {
-										power: Math.floor(baseHealth / 8),
-										armor: Math.floor(baseHealth / 16),
-										speed: Math.floor(quarterCell / 2),
-										range: quarterCell * 32
 									}
 								},
 								"ranger": {
@@ -479,7 +502,13 @@
 										rps: "scissors",
 										type: "hero",
 										subtype: "ranger",
-										color: COLORS.greengray[2]
+										color: COLORS.greengray[2],
+										statistics: {
+											power: Math.floor(baseHealth / 8),
+											armor: Math.floor(baseHealth / 8),
+											speed: Math.floor(quarterCell / 2),
+											throw: Math.floor(quarterCell)
+										}
 									},
 									state: {
 										health: baseHealth / 4,
@@ -488,12 +517,6 @@
 											x:  3 * quarterCell,
 											y:  3 * quarterCell
 										}
-									},
-									statistics: {
-										power: Math.floor(baseHealth / 8),
-										armor: Math.floor(baseHealth / 8),
-										speed: quarterCell,
-										range: quarterCell * 32
 									}
 								}
 							}
@@ -510,17 +533,17 @@
 										type: "monster",
 										subtype: "troll",
 										color: COLORS.orange[2],
-										pathing: "aggressive"
+										pathing: "aggressive",
+										statistics: {
+											power: Math.floor(baseHealth / 8),
+											armor: Math.floor(baseHealth / 8),
+											speed: Math.floor(quarterCell / 2),
+											throw: Math.floor(quarterCell / 2)
+										}
 									},
 									state: {
 										health: baseHealth / 4,
 										healthMax: baseHealth / 4
-									},
-									statistics: {
-										power: Math.floor(baseHealth / 8),
-										armor: Math.floor(baseHealth / 8),
-										speed: Math.floor(quarterCell / 2),
-										range: quarterCell * 2
 									}
 								},
 								"dendroid": {
@@ -529,17 +552,17 @@
 										type: "monster",
 										subtype: "dendroid",
 										color: COLORS.purple[2],
-										pathing: "aggressive"
+										pathing: "aggressive",
+										statistics: {
+											power: Math.floor(baseHealth / 8),
+											armor: Math.floor(baseHealth / 4),
+											speed: Math.floor(quarterCell / 4),
+											throw: Math.floor(quarterCell / 2)
+										}
 									},
 									state: {
 										health: baseHealth / 4,
 										healthMax: baseHealth / 4
-									},
-									statistics: {
-										power: Math.floor(baseHealth / 8),
-										armor: Math.floor(baseHealth / 4),
-										speed: Math.floor(quarterCell / 4),
-										range: quarterCell * 2
 									}
 								},
 								"golem": {
@@ -548,17 +571,17 @@
 										type: "monster",
 										subtype: "golem",
 										color: COLORS.greengray[2],
-										pathing: "aggressive"
+										pathing: "aggressive",
+										statistics: {
+											power: Math.floor(baseHealth / 4),
+											armor: Math.floor(baseHealth / 8),
+											speed: Math.floor(quarterCell / 4),
+											throw: Math.floor(quarterCell / 2)
+										}
 									},
 									state: {
 										health: baseHealth / 4,
 										healthMax: baseHealth / 4
-									},
-									statistics: {
-										power: Math.floor(baseHealth / 4),
-										armor: Math.floor(baseHealth / 8),
-										speed: Math.floor(quarterCell / 4),
-										range: quarterCell * 2
 									}
 								}
 							}
@@ -756,13 +779,19 @@
 							info: {
 								name: 		null,
 								rps: 		null,
-								type: 		null,
+								type: 		"creature",
 								subtype:	null,
 								size: {
 									x: 		Math.floor(getAsset("cellSize") / 2),
 									y: 		Math.floor(getAsset("cellSize") / 2)
 								},
-								color: 		null
+								color: 		null,
+								statistics: {
+									power: 	0,
+									armor: 	0,
+									speed: 	0,
+									throw: 	0
+								}
 							},
 							state: {
 								alive: 		true,
@@ -774,26 +803,28 @@
 									edge: 	null
 								},
 								movement: {
-									facing: "down",
-									up: false,
-									left: false,
-									right: false,
-									down: false
+									direction: "down",
+									up: 	false,
+									left: 	false,
+									right: 	false,
+									down: 	false
 								},
 								actions: {
-									a: false,
-									b: false,
-									x: false,
-									y: false
+									a: 		false,
+									b: 		false,
+									x: 		false,
+									y: 		false,
+									start: 	false
+								},
+								cooldowns: {
+									a: 		0,
+									b: 		0,
+									x: 		0,
+									y: 		0,
+									start: 	0
 								},
 								kills: 		0,
 								points: 	0
-							},
-							statistics: {
-								power: 		0,
-								armor: 		0,
-								speed: 		0,
-								range: 		0
 							},
 							items: 			{}
 						}
@@ -821,6 +852,29 @@
 							}
 						}
 					break
+
+					case "projectile":
+						return {
+							info: {
+								type: "projectile",
+								shooter: {
+									id: null,
+									type: null,
+									subtype: null
+								},
+								shape: "circle",
+								style: "fill",
+								statistics: {
+									speed: 0,
+									power: 0
+								}
+							},
+							state: {
+								movement: {
+									direction: null
+								}
+							}
+						}
 
 					default:
 						return null

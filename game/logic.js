@@ -18,6 +18,8 @@
 	var MONSTERMIN 		= main.getAsset("monsterMin")
 	var BUMPDISTANCE 	= main.getAsset("bumpDistance")
 	var PATHINGAI 		= main.getAsset("pathingAI")
+	var PROJECTILEFADE 	= main.getAsset("projectileFade")
+	var ACOOLDOWN 		= main.getAsset("aCooldown")
 
 /*** players ***/
 	/* addPlayer */
@@ -46,8 +48,7 @@
 				}
 			}
 			catch (error) {
-				main.logError(error)
-				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
 			}
 		}
 
@@ -92,8 +93,7 @@
 				}
 			}
 			catch (error) {
-				main.logError(error)
-				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
 			}
 		}
 
@@ -121,8 +121,7 @@
 				}
 			}
 			catch (error) {
-				main.logError(error)
-				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
 			}
 		}
 
@@ -149,8 +148,7 @@
 				}
 			}
 			catch (error) {
-				main.logError(error)
-				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
 			}
 		}
 
@@ -160,7 +158,7 @@
 		function triggerMove(request, callback) {
 			try {
 				var hero = request.game.data.heroes[request.session.id]
-					hero.state.movement.facing = request.post.input
+					hero.state.movement.direction = request.post.input
 
 				switch (request.post.input) {
 					case "up":
@@ -182,8 +180,7 @@
 				}
 			}
 			catch (error) {
-				main.logError(error)
-				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
 			}
 		}
 		
@@ -209,8 +206,7 @@
 				}
 			}
 			catch (error) {
-				main.logError(error)
-				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
 			}
 		}
 
@@ -223,25 +219,28 @@
 					hero.state.actions.b = false
 					hero.state.actions.x = false
 					hero.state.actions.y = false
+					hero.state.actions.start = false
 
 				switch (request.post.input) {
 					case "a":
-						hero.state.movement.a = true
+						hero.state.actions.a = true
 					break
 					case "b":
-						hero.state.movement.b = true
+						hero.state.actions.b = true
 					break
 					case "x":
-						hero.state.movement.x = true
+						hero.state.actions.x = true
 					break
 					case "y":
-						hero.state.movement.y = true
+						hero.state.actions.y = true
+					break
+					case "start":
+						hero.state.actions.start = true
 					break
 				}
 			}
 			catch (error) {
-				main.logError(error)
-				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
 			}
 		}
 
@@ -254,10 +253,10 @@
 					hero.state.actions.b = false
 					hero.state.actions.x = false
 					hero.state.actions.y = false
+					hero.state.actions.start = false
 			}
 			catch (error) {
-				main.logError(error)
-				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
 			}
 		}
 
@@ -352,8 +351,7 @@
 					}
 			}
 			catch (error) {
-				main.logError(error)
-				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
 			}
 		}
 
@@ -422,8 +420,7 @@
 					}
 			}
 			catch (error) {
-				main.logError(error)
-				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
 			}
 		}
 
@@ -445,8 +442,7 @@
 					}
 			}
 			catch (error) {
-				main.logError(error)
-				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
 			}
 		}
 
@@ -468,8 +464,7 @@
 
 			}
 			catch (error) {
-				main.logError(error)
-				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
 			}
 		}
 
@@ -635,8 +630,7 @@
 						}
 			}
 			catch (error) {
-				main.logError(error)
-				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
 			}
 		}
 
@@ -678,8 +672,7 @@
 					}
 			}
 			catch (error) {
-				main.logError(error)
-				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
 			}
 		}
 
@@ -705,8 +698,7 @@
 					chamber.items[portal.id] = portal
 			}
 			catch (error) {
-				main.logError(error)
-				callback([request.session.id], {success: false, message: "uanble to " + arguments.callee.name})
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
 			}
 		}
 
@@ -752,8 +744,7 @@
 					}
 			}
 			catch (error) {
-				main.logError(error)
-				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
 			}
 		}
 	
@@ -830,8 +821,7 @@
 				}
 			}
 			catch (error) {
-				main.logError(error)
-				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
 			}
 		}
 
@@ -847,8 +837,7 @@
 					return creature
 			}
 			catch (error) {
-				main.logError(error)
-				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
 			}
 		}
 
@@ -897,8 +886,7 @@
 
 			}
 			catch (error) {
-				main.logError(error)
-				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
 			}
 		}
 
@@ -930,8 +918,7 @@
 					request.game.data.heroes[hero.id] = hero
 			}
 			catch (error) {
-				main.logError(error)
-				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
 			}
 		}
 
@@ -946,8 +933,7 @@
 				return item
 			}
 			catch (error) {
-				main.logError(error)
-				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
 			}
 		}
 
@@ -960,8 +946,53 @@
 					chamber.items[orb.id] = orb
 			}
 			catch (error) {
-				main.logError(error)
-				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
+			}
+		}
+
+	/* createProjectile */
+		module.exports.createProjectile = createProjectile
+		function createProjectile(request, chamber, creature, callback) {
+			try {
+				// empty projectile
+					var projectile = createItem(request, main.getSchema("projectile"), callback)
+
+				// add creature info
+					main.overwriteObject(projectile, {
+						info: {
+							shooter: {
+								id: creature.id,
+								type: creature.info.type,
+								subtype: creature.info.subtype
+							},
+							rps: creature.info.rps,
+							subtype: creature.info.subtype,
+							size: {
+								x: creature.info.statistics.power,
+								y: creature.info.statistics.power
+							},
+							color: creature.info.color,
+							statistics: {
+								power: creature.info.statistics.power,
+								speed: creature.info.statistics.throw
+							}
+						},
+						state: {
+							position: {
+								x: creature.state.position.x,
+								y: creature.state.position.y
+							},
+							movement: {
+								direction: creature.state.movement.direction
+							}
+						}
+					})
+
+				// add to items
+					chamber.items[projectile.id] = projectile
+			}
+			catch (error) {
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
 			}
 		}
 
@@ -1000,8 +1031,7 @@
 					}
 			}
 			catch (error) {
-				main.logError(error)
-				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
 			}
 		}
 
@@ -1033,8 +1063,7 @@
 					}
 			}
 			catch (error) {
-				main.logError(error)
-				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
 			}
 		}
 
@@ -1071,8 +1100,7 @@
 					}
 				}
 			catch (error) {
-				main.logError(error)
-				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
 			}
 		}
 
@@ -1102,7 +1130,7 @@
 
 				// heroes
 					for (var h in chamber.heroes) {
-						var collisionSide = getCollision(request, chamber.heroes[h], targetCoordinates, callback)
+						var collisionSide = getCollisionSide(request, chamber.heroes[h], targetCoordinates, callback)
 						if (collisionSide) {
 							collisions.push({
 								side: collisionSide,
@@ -1115,7 +1143,7 @@
 
 				// creatures
 					for (var c in chamber.creatures) {
-						var collisionSide = getCollision(request, chamber.creatures[c], targetCoordinates)
+						var collisionSide = getCollisionSide(request, chamber.creatures[c], targetCoordinates)
 						if (collisionSide) {
 							collisions.push({
 								side: collisionSide,
@@ -1128,7 +1156,7 @@
 
 				// items
 					for (var i in chamber.items) {
-						var collisionSide = getCollision(request, chamber.items[i], targetCoordinates)
+						var collisionSide = getCollisionSide(request, chamber.items[i], targetCoordinates)
 						if (collisionSide) {
 							collisions.push({
 								side: collisionSide,
@@ -1142,14 +1170,13 @@
 				return collisions
 			}
 			catch (error) {
-				main.logError(error)
-				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
 			}
 		}
 
-	/* getCollision */
-		module.exports.getCollision = getCollision
-		function getCollision(request, item, targetCoordinates, callback) {
+	/* getCollisionSide */
+		module.exports.getCollisionSide = getCollisionSide
+		function getCollisionSide(request, item, targetCoordinates, callback) {
 			try {
 				// self?
 					if (item.id == targetCoordinates.id) {
@@ -1185,8 +1212,7 @@
 					}
 			}
 			catch (error) {
-				main.logError(error)
-				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
 			}
 		}
 
@@ -1253,8 +1279,7 @@
 				return keepMoving
 			}
 			catch (error) {
-				main.logError(error)
-				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
 			}
 		}
 
@@ -1368,8 +1393,103 @@
 
 			}
 			catch (error) {
-				main.logError(error)
-				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
+			}
+		}
+
+	/* resolveProjectileCollision */
+		module.exports.resolveProjectileCollision = resolveProjectileCollision
+		function resolveProjectileCollision(request, chamber, projectile, collision, callback) {
+			try {
+				// keep moving
+					var keepMoving = true
+
+				// self
+					if (collision.id == projectile.info.shooter.id) {
+						keepMoving = true
+					}
+
+				// wall / edge / dissipation
+						else if (collision.supertype == "wall" || collision.supertype == "edge" || collision.supertype == "dissipation") {
+						keepMoving = false
+					}
+
+				// items
+					else if (collision.supertype == "item") {
+						// tile
+							if (collision.type == "tile") {
+								keepMoving = true
+							}
+
+						// other
+							else {
+								keepMoving = false
+							}
+					}
+
+				// creatures
+					else if (collision.supertype == "hero" || collision.supertype == "creature") {
+						keepMoving = false
+
+						// recipient
+							var recipient = chamber[collision.supertype == "hero" ? "heroes" : "creatures"][collision.id]
+							var alive = resolveDamage(request, chamber, recipient, {
+								power: projectile.info.statistics.power,
+								rps: projectile.info.rps
+							}, callback)
+
+						// shooter
+							var shooter = chamber[projectile.info.shooter.type == "hero" ? "heroes" : "creatures"][projectile.info.shooter.id]
+							if (!alive && shooter) {
+								shooter.state.kills++
+							}
+					}
+
+					return keepMoving
+
+			}
+			catch (error) {
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
+			}
+		}
+
+	/* resolveDamage */
+		module.exports.resolveDamage = resolveDamage
+		function resolveDamage(request, chamber, creature, damage, callback) {
+			try {
+				// multiplier
+					var multiplier = 1
+					switch (damage.rps) {
+						case "rock":
+							multiplier = creature.info.rps == "scissors" ? 2 : creature.info.rps == "paper" ? 0.5 : 1
+						break
+						case "paper":
+							multiplier = creature.info.rps == "rock" ? 2 : creature.info.rps == "scissors" ? 0.5 : 1
+						break
+						case "scissors":
+							multiplier = creature.info.rps == "paper" ? 2 : creature.info.rps == "rock" ? 0.5 : 1
+						break
+					}
+
+				// damage
+					var damage = Math.max(0, Math.floor(damage.power * multiplier))
+
+				// reduce health
+					creature.state.health = Math.max(0, Math.min(creature.state.healthMax, creature.state.health - damage))
+					if (creature.state.health <= 0) {
+						if (creature.info.type == "hero") {
+							creature.state.alive = false
+						}
+						else {
+							delete chamber.creatures[creature.id]
+						}
+					}
+
+				// return alive
+					return creature.state.alive
+			}
+			catch (error) {
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
 			}
 		}
 
@@ -1393,13 +1513,19 @@
 					// heroes
 						for (var h in chamber.heroes) {
 							var hero = chamber.heroes[h]
-							updateHeroPosition(request, chamber, hero, callback)
+							updateHero(request, chamber, hero, callback)
 						}
 
 					// creatures
 						for (var c in chamber.creatures) {
 							var creature = chamber.creatures[c]
-							updateCreaturePosition(request, chamber, creature, callback)
+							updateCreature(request, chamber, creature, callback)
+						}
+
+					// items
+						for (var i in chamber.items) {
+							var item = chamber.items[i]
+							updateItem(request, chamber, item, callback)
 						}
 
 					// send data
@@ -1411,8 +1537,7 @@
 				}
 			}
 			catch (error) {
-				main.logError(error)
-				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
 			}
 		}
 
@@ -1446,8 +1571,7 @@
 				}
 			}
 			catch (error) {
-				main.logError(error)
-				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
 			}
 		}
 
@@ -1465,22 +1589,21 @@
 					}
 			}
 			catch (error) {
-				main.logError(error)
-				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
 			}
 		}
 
-	/* updateHeroPosition */
-		module.exports.updateHeroPosition = updateHeroPosition
-		function updateHeroPosition(request, chamber, hero, callback) {
+	/* updateHero */
+		module.exports.updateHero = updateHero
+		function updateHero(request, chamber, hero, callback) {
 			try {
 				// don't stop yet, but reset edge
 					var move = true
 					hero.state.position.edge = null
 
 				// get target coordinates
-					var newX = hero.state.position.x + (hero.state.movement.left ? -hero.statistics.speed : hero.state.movement.right ? hero.statistics.speed : 0)
-					var newY = hero.state.position.y + (hero.state.movement.down ? -hero.statistics.speed : hero.state.movement.up    ? hero.statistics.speed : 0)
+					var newX = hero.state.position.x + (hero.state.movement.left ? -hero.info.statistics.speed : hero.state.movement.right ? hero.info.statistics.speed : 0)
+					var newY = hero.state.position.y + (hero.state.movement.down ? -hero.info.statistics.speed : hero.state.movement.up    ? hero.info.statistics.speed : 0)
 					var radiusX = Math.ceil(hero.info.size.x / 2)
 					var radiusY = Math.ceil(hero.info.size.y / 2)
 
@@ -1515,16 +1638,28 @@
 						hero.state.position.x = targetCoordinates.x
 						hero.state.position.y = targetCoordinates.y
 					}
+
+				// create projectiles
+					if (hero.state.actions.a && !hero.state.cooldowns.a) {
+						hero.state.cooldowns.a = ACOOLDOWN
+						createProjectile(request, chamber, hero, callback)
+					}
+
+				// reduce cooldowns
+					for (var c in hero.state.cooldowns) {
+						if (hero.state.cooldowns[c]) {
+							hero.state.cooldowns[c] = Math.max(0, hero.state.cooldowns[c] - 1)
+						}
+					}
 			}
 			catch (error) {
-				main.logError(error)
-				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
 			}
 		}
 
-	/* updateCreaturePosition */
-		module.exports.updateCreaturePosition = updateCreaturePosition
-		function updateCreaturePosition(request, chamber, creature, callback) {
+	/* updateCreature */
+		module.exports.updateCreature = updateCreature
+		function updateCreature(request, chamber, creature, callback) {
 			try {
 				// don't stop yet, but reset edge
 					var move = true
@@ -1545,23 +1680,27 @@
 					if (nextCellCenterY > creature.state.position.y) {
 						creature.state.movement.up    = true
 						creature.state.movement.down  = false
+						creature.state.movement.direction = "up"
 					}
 					else if (nextCellCenterY < creature.state.position.y) {
 						creature.state.movement.down  = true
 						creature.state.movement.up    = false
+						creature.state.movement.direction = "down"
 					}
 					if (nextCellCenterX > creature.state.position.x) {
 						creature.state.movement.right = true
 						creature.state.movement.left  = false
+						creature.state.movement.direction = "right"
 					}
 					else if (nextCellCenterX < creature.state.position.x) {
 						creature.state.movement.left  = true
 						creature.state.movement.right = false
+						creature.state.movement.direction = "left"
 					}
 
 				// get actual target coordinates
-					var newX = creature.state.position.x + (creature.state.movement.left ? -creature.statistics.speed : creature.state.movement.right ? creature.statistics.speed : 0)
-					var newY = creature.state.position.y + (creature.state.movement.down ? -creature.statistics.speed : creature.state.movement.up    ? creature.statistics.speed : 0)
+					var newX = creature.state.position.x + (creature.state.movement.left ? -creature.info.statistics.speed : creature.state.movement.right ? creature.info.statistics.speed : 0)
+					var newY = creature.state.position.y + (creature.state.movement.down ? -creature.info.statistics.speed : creature.state.movement.up    ? creature.info.statistics.speed : 0)
 					var radiusX = Math.ceil(creature.info.size.x / 2)
 					var radiusY = Math.ceil(creature.info.size.y / 2)
 
@@ -1596,9 +1735,113 @@
 						creature.state.position.x = targetCoordinates.x
 						creature.state.position.y = targetCoordinates.y
 					}
+
+				// create projectiles
+					if (!creature.state.cooldowns.a && main.rollRandom(1,3)) {
+						creature.state.cooldowns.a = ACOOLDOWN
+						createProjectile(request, chamber, creature, callback)
+					}
+
+				// reduce cooldowns
+					for (var c in creature.state.cooldowns) {
+						if (creature.state.cooldowns[c]) {
+							creature.state.cooldowns[c] = Math.max(0, creature.state.cooldowns[c] - 1)
+						}
+					}
 			}
 			catch (error) {
-				main.logError(error)
-				callback([request.session.id], {success: false, message: "unable to " + arguments.callee.name})
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
+			}
+		}
+
+	/* updateItem */
+		module.exports.updateItem = updateItem
+		function updateItem(request, chamber, item, callback) {
+			try {
+				// no speed
+					if (!item.info || !item.info.statistics || !item.info.statistics.speed) {
+						return
+					}
+
+				// no active direction
+					else if (!item.state || !item.state.movement || !item.state.movement.direction) {
+						return
+					}
+
+				// projectiles
+					else if (item.info.type == "projectile") {
+						// set move
+							var move = true
+
+						// no power?
+							if (item.info.statistics.power <= 0) {
+								var keepMoving = resolveProjectileCollision(request, chamber, item, {
+									side: null,
+									supertype: "dissipation",
+									type: "dissipation",
+									id: null
+								}, callback)
+								if (!keepMoving) { move = false }
+							}
+
+						// still has power
+							else {
+								// target coordinates
+									var speed = item.info.statistics.speed
+									var direction = item.state.movement.direction
+									var newX = item.state.position.x + (direction == "left" ? -speed : direction == "right" ? speed : 0)
+									var newY = item.state.position.y + (direction == "down" ? -speed : direction == "up"    ? speed : 0)
+									var radiusX = Math.ceil(item.info.size.x / 2)
+									var radiusY = Math.ceil(item.info.size.y / 2)
+
+									var targetCoordinates = {
+										id: 	item.id,
+										x: 		newX,
+										y: 		newY,
+										up: 	newY + radiusY,
+										left: 	newX - radiusX,
+										right: 	newX + radiusX,
+										down: 	newY - radiusY
+									}
+
+								// collisions
+									var collisions = getCollisions(request, chamber, targetCoordinates, callback)
+									if (collisions.length) {
+										for (var c in collisions) {
+											var keepMoving = resolveProjectileCollision(request, chamber, item, collisions[c], callback)
+											if (!keepMoving) { move = false }
+										}
+									}
+
+								// get edges
+									var edge = getEdge(request, chamber, targetCoordinates, callback)
+									if (edge) {
+										var keepMoving = resolveProjectileCollision(request, chamber, item, {
+											side: null,
+											supertype: "edge",
+											type: "edge",
+											id: null
+										}, callback)
+										if (!keepMoving) { move = false }
+									}
+							}
+
+						// move item & diminish its size
+							if (move) {
+								item.state.position.x = targetCoordinates.x
+								item.state.position.y = targetCoordinates.y
+								item.info.statistics.power -= PROJECTILEFADE
+								item.info.size.x -= PROJECTILEFADE
+								item.info.size.y -= PROJECTILEFADE
+							}
+
+						// or else delete it
+							else {
+								delete chamber.items[item.id]
+							}
+					}
+			}
+			catch (error) {
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
 			}
 		}

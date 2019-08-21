@@ -43,7 +43,7 @@
 			color: var(--black-3);
 			background-color: var(--white-4);
 			padding: 0px;
-			box-shadow: 0px 0px 10px var(--black-2);
+			/*box-shadow: 0px 0px 10px var(--black-2);*/
 		}
 
 		input, button, select {
@@ -58,7 +58,7 @@
 		}
 
 		button:hover, button:focus, select:focus, textarea:focus, input:focus {
-			box-shadow: 0px 0px 20px var(--black-4);
+			/*box-shadow: 0px 0px 20px var(--black-4);*/
 		}
 
 		select:-moz-focusring {

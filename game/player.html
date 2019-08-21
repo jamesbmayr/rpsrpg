@@ -11,27 +11,28 @@
 	</head>
 	<body>
 		<div id="message" class="hidden"></div>
+		<div id="wire"></div>
 		<div id="container">
 			<div id="info">
 				<div id="health-outer">
 					<div id="health-inner"></div>
 				</div>
-				<div id="points-outer">
-					<div id="points-inner"></div>
-				</div>
 			</div>
 			<div id="d-pad">
-				<button id="up" value="up" class="input">&#8593;</button>
-				<button id="left" value="left" class="input">&#8592;</button>
-				<button id="center" value="center" class="input"></button>
-				<button id="right" value="right" class="input">&#8594;</button>
-				<button id="down" value="down" class="input">&#8595;</button>
+				<button class="input" id="up" value="up">&#8593;</button>
+				<button class="input" id="left" value="left">&#8592;</button>
+				<button class="input" id="center" value="center" disabled></button>
+				<button class="input" id="right" value="right">&#8594;</button>
+				<button class="input" id="down" value="down">&#8595;</button>
+			</div>
+			<div id="middle">
+				<button class="input" id="start" value="start"></button>
 			</div>
 			<div id="actions">
-				<button id="x" value="x" class="input">X</button>
-				<button id="y" value="y" class="input">Y</button>
-				<button id="a" value="a" class="input">A</button>
-				<button id="b" value="b" class="input">B</button>
+				<button class="input" id="x" value="x">X</button>
+				<button class="input" id="y" value="y">Y</button>
+				<button class="input" id="a" value="a">A</button>
+				<button class="input" id="b" value="b">B</button>
 			</div>
 		</div>
 	</body>
