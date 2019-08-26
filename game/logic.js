@@ -20,6 +20,7 @@
 	var PATHINGAI 		= main.getAsset("pathingAI")
 	var PROJECTILEFADE 	= main.getAsset("projectileFade")
 	var ACOOLDOWN 		= main.getAsset("aCooldown")
+	var CHAMBERCOOLDOWN = main.getAsset("chamberCooldown")
 
 /*** players ***/
 	/* addPlayer */
@@ -34,7 +35,6 @@
 						if (request.game.players[request.session.id]) {
 							request.game.players[request.session.id].connected  = true
 							request.game.players[request.session.id].connection = request.connection
-							callback(Object.keys(request.game.observers), {success: true, names: [request.game.players[request.session.id].name]})
 							callback([request.session.id], {success: true, data: request.game.data.heroes[request.session.id]})
 						}
 
@@ -61,14 +61,12 @@
 					// remove player or observer
 						if (request.game.data.state.end || !request.game.data.state.start) {
 							if (request.game.players[request.session.id]) {
-								var name = request.game.players[request.session.id].name
 								delete request.game.players[request.session.id]
 							}
 							else if (request.game.observers[request.session.id]) {
 								delete request.game.observers[request.session.id]
 							}
 							callback([request.session.id], {success: true, location: "../../../../"})
-							callback(Object.keys(request.game.observers), {success: true, names: [false, name]})
 						}
 
 					// disable connection
@@ -116,6 +114,10 @@
 
 						case (ACTIONS.includes(request.post.input)):
 							triggerAction(request, callback)
+						break
+
+						case (request.post.input == "start"):
+							triggerPause(request, callback)
 						break
 					}
 				}
@@ -217,9 +219,6 @@
 				var hero = request.game.data.heroes[request.session.id]
 					hero.state.actions.a = false
 					hero.state.actions.b = false
-					hero.state.actions.x = false
-					hero.state.actions.y = false
-					hero.state.actions.start = false
 
 				switch (request.post.input) {
 					case "a":
@@ -227,15 +226,6 @@
 					break
 					case "b":
 						hero.state.actions.b = true
-					break
-					case "x":
-						hero.state.actions.x = true
-					break
-					case "y":
-						hero.state.actions.y = true
-					break
-					case "start":
-						hero.state.actions.start = true
 					break
 				}
 			}
@@ -251,9 +241,17 @@
 				var hero = request.game.data.heroes[request.session.id]
 					hero.state.actions.a = false
 					hero.state.actions.b = false
-					hero.state.actions.x = false
-					hero.state.actions.y = false
-					hero.state.actions.start = false
+			}
+			catch (error) {
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
+			}
+		}
+
+	/* triggerPause */
+		module.exports.triggerPause = triggerPause
+		function triggerPause(request, callback) {
+			try {
+				request.game.data.state.paused = !request.game.data.state.paused
 			}
 			catch (error) {
 				main.logError(error, arguments.callee.name, [request.session.id], callback)
@@ -1260,8 +1258,8 @@
 										var nextChamberY = Number(coords[1])
 									}
 
-								// updateChamber
-									updateChamber(request, nextChamberX, nextChamberY, isEdge, callback)
+								// updateNextChamber
+									updateNextChamber(request, nextChamberX, nextChamberY, isEdge, callback)
 									keepMoving = false
 
 								// reset heroes
@@ -1498,42 +1496,107 @@
 		module.exports.updateTime = updateTime
 		function updateTime(request, callback) {
 			try {
-				if (request.game.data.state.start) {
-					// time
-						request.game.data.state.time += LOOPINTERVAL
-
+				if (!request.game.data.state.start) {
+					callback(Object.keys(request.game.observers), {success: true, data: null})
+				}
+				else {
 					// chamber
 						var chamber = request.game.data.chambers[request.game.data.state.chamber.x][request.game.data.state.chamber.y]
 
-					// cooldowns
-						// portal
-							request.game.data.state.portalCooldown = Math.max(0, request.game.data.state.portalCooldown - 1)
-							updatePortals(request, chamber, request.game.data.state.portalCooldown, callback)
-
-					// heroes
-						for (var h in chamber.heroes) {
-							var hero = chamber.heroes[h]
-							updateHero(request, chamber, hero, callback)
+					// paused
+						if (request.game.data.state.paused) {
+							callback(Object.keys(request.game.observers), {success: true, paused: true, data: chamber})	
 						}
 
-					// creatures
-						for (var c in chamber.creatures) {
-							var creature = chamber.creatures[c]
-							updateCreature(request, chamber, creature, callback)
+					// game over
+						else if (request.game.data.state.end) {
+							callback(Object.keys(request.game.observers), {success: true, end: true, data: chamber})	
 						}
 
-					// items
-						for (var i in chamber.items) {
-							var item = chamber.items[i]
-							updateItem(request, chamber, item, callback)
+					// play
+						else {
+							// time
+								request.game.data.state.time += LOOPINTERVAL
+
+							// chamber switch
+								if (request.game.data.state.nextChamber) {
+									if (chamber.state.cooldown) {
+										chamber.state.cooldown = Math.max(0, chamber.state.cooldown - 1)
+									}
+									else {
+										updateChamber(request, callback)
+										var chamber = request.game.data.chambers[request.game.data.state.chamber.x][request.game.data.state.chamber.y]
+									}
+								}
+								else if (chamber.state.cooldown) {
+									chamber.state.cooldown = Math.max(0, chamber.state.cooldown - 1)
+								}
+
+							// regular gameplay
+								else {
+									// portals
+										request.game.data.state.portalCooldown = Math.max(0, request.game.data.state.portalCooldown - 1)
+										updatePortals(request, chamber, request.game.data.state.portalCooldown, callback)
+
+									// heroes
+										for (var h in chamber.heroes) {
+											var hero = chamber.heroes[h]
+											updateHero(request, chamber, hero, callback)
+										}
+
+									// creatures
+										for (var c in chamber.creatures) {
+											var creature = chamber.creatures[c]
+											updateCreature(request, chamber, creature, callback)
+										}
+
+									// items
+										for (var i in chamber.items) {
+											var item = chamber.items[i]
+											updateItem(request, chamber, item, callback)
+										}
+								}
+
+							// send data
+								callback(Object.keys(request.game.observers), {success: true, data: chamber})
+
+								for (var p in request.game.players) {
+									callback([p], {success: true, data: request.game.data.heroes[p]})
+								}
+						}
+				}
+			}
+			catch (error) {
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
+			}
+		}
+
+	/* updateNextChamber */
+		module.exports.updateNextChamber = updateNextChamber
+		function updateNextChamber(request, newX, newY, isEdge, callback) {
+			try {
+				if (request.game.data.chambers[newX] && request.game.data.chambers[newX][newY]) {
+					// get old
+						var oldX = Number(request.game.data.state.chamber.x)
+						var oldY = Number(request.game.data.state.chamber.y)
+					
+					// set new
+						request.game.data.state.nextChamber = {
+							x: Number(newX),
+							y: Number(newY),
+							isEdge: isEdge
 						}
 
-					// send data
-						callback(Object.keys(request.game.observers), {success: true, data: chamber})
-
-						for (var p in request.game.players) {
-							callback([p], {success: true, data: request.game.data.heroes[p]})
+					// deactivate portals
+						if (!isEdge) {
+							request.game.data.state.portalCooldown = PORTALCOOLDOWN
+							updatePortals(request, request.game.data.chambers[oldX][oldY], PORTALCOOLDOWN, callback)
+							updatePortals(request, request.game.data.chambers[newY][newY], PORTALCOOLDOWN, callback)
 						}
+
+					// set cooldown
+						request.game.data.chambers[oldX][oldY].state.cooldown = CHAMBERCOOLDOWN
+						request.game.data.chambers[oldX][oldY].state.fadeout  = true
 				}
 			}
 			catch (error) {
@@ -1543,31 +1606,36 @@
 
 	/* updateChamber */
 		module.exports.updateChamber = updateChamber
-		function updateChamber(request, x, y, isEdge, callback) {
+		function updateChamber(request, callback) {
 			try {
-				if (request.game.data.chambers[x] && request.game.data.chambers[x][y]) {
+				if (request.game.data.state.nextChamber) {
 					// get old
 						var oldX = Number(request.game.data.state.chamber.x)
 						var oldY = Number(request.game.data.state.chamber.y)
 					
+					// get new
+						var newX = Number(request.game.data.state.nextChamber.x)
+						var newY = Number(request.game.data.state.nextChamber.y)
+						var isEdge = 	  request.game.data.state.nextChamber.isEdge
+					
 					// set new
-						request.game.data.state.chamber.x = Number(x)
-						request.game.data.state.chamber.y = Number(y)
+						request.game.data.state.chamber.x = newX
+						request.game.data.state.chamber.y = newY
+
+					// unset next
+						request.game.data.state.nextChamber = null
 
 					// flip hero positions
 						if (isEdge) {
-							var direction = (x !== oldX) ? "x" : "y"
+							var direction = (newX !== oldX) ? "x" : "y"
 							for (var h in request.game.data.heroes) {
 								request.game.data.heroes[h].state.position[direction] *= -1
 							}
 						}
 
-					// deactivate portals
-						else {
-							request.game.data.state.portalCooldown = PORTALCOOLDOWN
-							updatePortals(request, request.game.data.chambers[oldX][oldY], PORTALCOOLDOWN, callback)
-							updatePortals(request, request.game.data.chambers[   x][   y], PORTALCOOLDOWN, callback)
-						}
+					// set cooldown
+						request.game.data.chambers[newX][newY].state.cooldown = CHAMBERCOOLDOWN
+						request.game.data.chambers[oldX][oldY].state.fadeout  = false
 				}
 			}
 			catch (error) {

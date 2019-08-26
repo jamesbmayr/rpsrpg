@@ -138,6 +138,7 @@
 									'	var HEALTHHIGH = ' + getAsset("healthHigh") + '\n' +
 									'	var HEALTHLOW = ' + getAsset("healthLow") + '\n' +
 									'	var BUTTONCOOLDOWNMAX = ' + getAsset("buttonCooldownMax") + '\n' +
+									'	var CHAMBERCOOLDOWN = ' + getAsset("chamberCooldown") + '\n' +
 									'')
 						break
 
@@ -162,6 +163,9 @@
 						break
 						case "portalCooldown":
 							return Math.floor(1000 / getAsset("loopInterval")) * 3
+						break
+						case "chamberCooldown":
+							return Math.floor(1000 / getAsset("loopInterval")) / 5
 						break
 						case "monsterChance":
 							return [3,4]
@@ -225,7 +229,7 @@
 						break
 
 						case "actions":
-							return ["a", "b", "x", "y"]
+							return ["a", "b"]
 						break
 
 					// functions
@@ -731,11 +735,13 @@
 								state: {
 									start: 	true,
 									end: 	false,
+									paused: false,
 									time: 	0,
 									chamber: {
 										x: 	0,
 										y: 	0
 									},
+									nextChamber: null,
 									portalCooldown: 0
 								},
 								heroes: 	{},
@@ -748,7 +754,6 @@
 					case "player":
 						return {
 							id: 			null,
-							name: 			null,
 							created: 		(new Date().getTime()),
 							connected: 		false,
 							connection: 	null
@@ -765,6 +770,10 @@
 								y: 0,
 								chamberSize: getAsset("chamberSize"),
 								cellSize: getAsset("cellSize")
+							},
+							state: {
+								cooldown: 0,
+								fadeout:  false
 							},
 							cells:          {},
 							heroes: 		{},

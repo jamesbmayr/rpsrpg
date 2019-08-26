@@ -29,7 +29,7 @@
 				context.lineWidth   = options.border || 1
 				context.shadowBlur  = options.blur ? options.blur : 0
 				context.shadowColor = options.shadow ? options.shadow : "transparent"
-				context.globalAlpha = options.opacity || 1
+				context.globalAlpha = options.opacity !== undefined ? options.opacity : 1
 				
 			// draw
 				context.moveTo(x1, canvas.height - y1)
@@ -47,7 +47,7 @@
 				context.lineWidth   = options.border || 0
 				context.shadowBlur  = options.blur ? options.blur : 0
 				context.shadowColor = options.shadow ? options.shadow : "transparent"
-				context.globalAlpha = options.opacity || 1
+				context.globalAlpha = options.opacity !== undefined ? options.opacity : 1
 
 			// draw
 				if (options.border) {
@@ -72,7 +72,7 @@
 				context.lineWidth   = options.border || 0
 				context.shadowBlur  = options.blur ? options.blur : 0
 				context.shadowColor = options.shadow ? options.shadow : "transparent"
-				context.globalAlpha = options.opacity || 1
+				context.globalAlpha = options.opacity !== undefined ? options.opacity : 1
 
 			// draw
 				context.moveTo(x1, canvas.height - y1)
@@ -100,7 +100,7 @@
 				context.lineWidth   = options.border || 0
 				context.shadowBlur  = options.blur ? options.blur : 0
 				context.shadowColor = options.shadow ? options.shadow : "transparent"
-				context.globalAlpha = options.opacity || 1
+				context.globalAlpha = options.opacity !== undefined ? options.opacity : 1
 
 			// draw
 				if (options.radii) {
@@ -138,7 +138,7 @@
 				context.lineWidth   = options.border || 0
 				context.shadowBlur  = options.blur ? options.blur : 0
 				context.shadowColor = options.shadow ? options.shadow : "transparent"
-				context.globalAlpha = options.opacity || 1
+				context.globalAlpha = options.opacity !== undefined ? options.opacity : 1
 
 			// coordinates
 				options.coordinates = options.coordinates.split(/\s?,\s?/)
@@ -170,12 +170,13 @@
 			// variables
 				options = options || {}
 				context.font = (options.style ? options.style + " " : "") + (options.size || 32) + "px " + (options.font || FONT)
-				context.fillStyle   = options.gradient ? drawGradient(canvas, context, options) : (options.color || "transparent")
-				context.strokeStyle = options.gradient ? drawGradient(canvas, context, options) : (options.color || "transparent")
-				context.textAlign   = options.alignment || "center"
-				context.shadowBlur  = options.blur ? options.blur : 0
-				context.shadowColor = options.shadow ? options.shadow : "transparent"
-				context.globalAlpha = options.opacity || 1
+				context.fillStyle    = options.gradient ? drawGradient(canvas, context, options) : (options.color || "transparent")
+				context.strokeStyle  = options.gradient ? drawGradient(canvas, context, options) : (options.color || "transparent")
+				context.textAlign    = options.alignment || "center"
+				context.textBaseline = options.baseline || "middle"
+				context.shadowBlur   = options.blur ? options.blur : 0
+				context.shadowColor  = options.shadow ? options.shadow : "transparent"
+				context.globalAlpha  = options.opacity !== undefined ? options.opacity : 1
 
 			// draw
 				context.fillText((text || ""), x, canvas.height - y)

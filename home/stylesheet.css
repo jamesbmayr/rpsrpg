@@ -119,21 +119,6 @@
 			top: calc(50vh - 150px);
 			right: 40vw;
 		}
-
-		#name {
-			position: absolute;
-			top: 0px;
-			left: 0px;
-			width: 30vw;
-			height: 40px;
-			padding: 5px;
-			text-align: center;
-			line-height: 1;
-			font-size: 100%;
-			border-radius: 0px var(--borderRadius) var(--borderRadius) 0px;
-			border-width: 5px 5px 5px 0px;
-			background-color: var(--red-0);
-		}
 		
 		#gameCode {
 			position: absolute;

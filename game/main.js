@@ -60,9 +60,20 @@
 				if (data.data) {
 					drawChamber(data.data)
 				}
+
+			// paused
+				if (data.paused) {
+					drawPaused()
+				}
 		}
 
 /*** draws ***/
+	/* drawPaused */
+		function drawPaused() {
+			drawRectangle(CANVAS, CONTEXT, 0, 0, canvas.width, canvas.height, {color: COLORS.black[4], opacity: 0.5})
+			drawText(CANVAS, CONTEXT, CANVAS.width / 2, CANVAS.height / 2, "PAUSED", {size: 256, color: COLORS.white[4], shadow: COLORS.black[4], blur: 16})
+		}
+
 	/* drawChamber */
 		function drawChamber(chamber) {
 			// resize
@@ -100,6 +111,23 @@
 				for (var h in chamber.heroes) {
 					drawHero(chamber.heroes[h])
 				}
+
+			// overlay
+				if (chamber.state.cooldown) {
+					drawOverlay(chamber.state.cooldown, chamber.state.fadeout)
+				}
+		}
+
+	/* drawOverlay */
+		function drawOverlay(cooldown, fadeout) {
+			if (fadeout) {
+				var opacity = Math.max(0, Math.min(1, (CHAMBERCOOLDOWN - cooldown) / CHAMBERCOOLDOWN))
+			}
+			else {
+				var opacity = Math.max(0, Math.min(1, cooldown / CHAMBERCOOLDOWN))
+			}
+
+			drawRectangle(CANVAS, CONTEXT, 0, 0, CANVAS.width, CANVAS.height, {color: COLORS.black[4], opacity: opacity})
 		}
 
 	/* drawMinimap */
