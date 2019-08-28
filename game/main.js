@@ -3,8 +3,6 @@
 		var CANVAS = document.getElementById("canvas")
 		var CONTEXT = CANVAS.getContext("2d")
 		var CHAMBERID = null
-		var CHAMBERRADIUSX = 0
-		var CHAMBERRADIUSY = 0
 
 /*** websocket ***/
 	/* socket */
@@ -70,8 +68,8 @@
 /*** draws ***/
 	/* drawPaused */
 		function drawPaused() {
-			drawRectangle(CANVAS, CONTEXT, 0, 0, canvas.width, canvas.height, {color: COLORS.black[4], opacity: 0.5})
-			drawText(CANVAS, CONTEXT, CANVAS.width / 2, CANVAS.height / 2, "PAUSED", {size: 256, color: COLORS.white[4], shadow: COLORS.black[4], blur: 16})
+			drawRectangle(CANVAS, CONTEXT, 0, 0, CANVAS.width, CANVAS.height, {color: CONSTANTS.colors.black[4], opacity: CONSTANTS.pauseOpacity})
+			drawText(CANVAS, CONTEXT, CANVAS.width / 2, CANVAS.height / 2, "PAUSED", {size: CONSTANTS.cellSize * 2, color: CONSTANTS.colors.white[4], shadow: CONSTANTS.colors.black[4], blur: CONSTANTS.borderRadius})
 		}
 
 	/* drawChamber */
@@ -81,15 +79,13 @@
 					CHAMBERID 	   = chamber.id
 					CANVAS.width   = chamber.info.chamberSize * chamber.info.cellSize
 					CANVAS.height  = chamber.info.chamberSize * chamber.info.cellSize
-					CHAMBERRADIUSX = Math.ceil(CANVAS.width  / 2)
-					CHAMBERRADIUSY = Math.ceil(CANVAS.height / 2)
 				}
 
 			// clear
 				clearCanvas(CANVAS, CONTEXT)
 
 			// background
-				drawRectangle(CANVAS, CONTEXT, 0, 0, canvas.width, canvas.height, {color: chamber.info.colors[0]})
+				drawRectangle(CANVAS, CONTEXT, 0, 0, CANVAS.width, CANVAS.height, {color: chamber.info.colors[0]})
 
 			// minimap
 				drawMinimap(chamber)
@@ -121,31 +117,31 @@
 	/* drawOverlay */
 		function drawOverlay(cooldown, fadeout) {
 			if (fadeout) {
-				var opacity = Math.max(0, Math.min(1, (CHAMBERCOOLDOWN - cooldown) / CHAMBERCOOLDOWN))
+				var opacity = Math.max(0, Math.min(1, (CONSTANTS.chamberCooldown - cooldown) / CONSTANTS.chamberCooldown))
 			}
 			else {
-				var opacity = Math.max(0, Math.min(1, cooldown / CHAMBERCOOLDOWN))
+				var opacity = Math.max(0, Math.min(1, cooldown / CONSTANTS.chamberCooldown))
 			}
 
-			drawRectangle(CANVAS, CONTEXT, 0, 0, CANVAS.width, CANVAS.height, {color: COLORS.black[4], opacity: opacity})
+			drawRectangle(CANVAS, CONTEXT, 0, 0, CANVAS.width, CANVAS.height, {color: CONSTANTS.colors.black[4], opacity: opacity})
 		}
 
 	/* drawMinimap */
 		function drawMinimap(chamber) {
-			var squareRadius = Math.floor(CELLSIZE / (2 * LAYERS) / 2)
+			var squareRadius = Math.floor(chamber.info.cellSize / (2 * CONSTANTS.layers) / 2)
 			var squareSize = squareRadius * 2
 			var radii = {
-				topLeft: 4,
-				topRight: 4,
-				bottomLeft: 4,
-				bottomRight: 4
+				topLeft: CONSTANTS.borderRadius / 4,
+				topRight: CONSTANTS.borderRadius / 4,
+				bottomLeft: CONSTANTS.borderRadius / 4,
+				bottomRight: CONSTANTS.borderRadius / 4
 			}
 
-			for (var x = 1 - LAYERS; x < LAYERS; x++) {
-				for (var y = 1 - LAYERS; y < LAYERS; y++) {
-					if (Math.abs(x) + Math.abs(y) < LAYERS) {
-						var positionX = (x * squareSize) - squareRadius + CHAMBERRADIUSX
-						var positionY = (y * squareSize) - squareRadius + CHAMBERRADIUSY
+			for (var x = 1 - CONSTANTS.layers; x < CONSTANTS.layers; x++) {
+				for (var y = 1 - CONSTANTS.layers; y < CONSTANTS.layers; y++) {
+					if (Math.abs(x) + Math.abs(y) < CONSTANTS.layers) {
+						var positionX = (x * squareSize) - squareRadius + Math.ceil(CANVAS.width  / 2)
+						var positionY = (y * squareSize) - squareRadius + Math.ceil(CANVAS.height / 2)
 						var color = (x == chamber.info.x && y == chamber.info.y) ? chamber.info.colors[2] : chamber.info.colors[1]
 
 						drawRectangle(CANVAS, CONTEXT, positionX, positionY, squareSize, squareSize, {color: color, radii: radii})
@@ -156,8 +152,8 @@
 
 	/* drawWalls */
 		function drawWalls(chamber) {
-			var wallWidth  = CELLSIZE
-			var wallHeight = CELLSIZE
+			var wallWidth  = chamber.info.cellSize
+			var wallHeight = chamber.info.cellSize
 
 			for (var x in chamber.cells) {
 				for (var y in chamber.cells[x]) {
@@ -165,8 +161,8 @@
 						x = Number(x)
 						y = Number(y)
 
-						var wallX = x * wallWidth  + CHAMBERRADIUSX - (wallWidth / 2)
-						var wallY = y * wallHeight + CHAMBERRADIUSY - (wallHeight / 2)
+						var wallX = x * wallWidth  + Math.ceil(CANVAS.width  / 2) - (wallWidth / 2)
+						var wallY = y * wallHeight + Math.ceil(CANVAS.height / 2) - (wallHeight / 2)
 
 						var neighbors = {
 							up: 	(chamber.cells[x]     && chamber.cells[x][y + 1] && chamber.cells[x][y + 1].wall),
@@ -176,10 +172,10 @@
 						}
 
 						var radii = {
-							topRight: 		(!neighbors.up   && !neighbors.right) ? BORDERRADIUS : 0,
-							topLeft: 		(!neighbors.up   && !neighbors.left ) ? BORDERRADIUS : 0,
-							bottomRight: 	(!neighbors.down && !neighbors.right) ? BORDERRADIUS : 0,
-							bottomLeft: 	(!neighbors.down && !neighbors.left ) ? BORDERRADIUS : 0
+							topRight: 		(!neighbors.up   && !neighbors.right) ? CONSTANTS.borderRadius : 0,
+							topLeft: 		(!neighbors.up   && !neighbors.left ) ? CONSTANTS.borderRadius : 0,
+							bottomRight: 	(!neighbors.down && !neighbors.right) ? CONSTANTS.borderRadius : 0,
+							bottomLeft: 	(!neighbors.down && !neighbors.left ) ? CONSTANTS.borderRadius : 0
 						}
 
 						drawRectangle(CANVAS, CONTEXT, wallX, wallY, wallWidth, wallHeight, {color: chamber.info.colors[4], radii: radii})
@@ -191,13 +187,14 @@
 	/* drawHero */
 		function drawHero(hero) {
 			// variables
-				var heroX = hero.state.position.x + CHAMBERRADIUSX
-				var heroY = hero.state.position.y + CHAMBERRADIUSY
+				var heroX = hero.state.position.x + Math.ceil(CANVAS.width  / 2)
+				var heroY = hero.state.position.y + Math.ceil(CANVAS.height / 2)
 				var heroRadius = Math.ceil(((hero.info.size.x + hero.info.size.y) / 2) / 2)
 				var heroColor = hero.info.color
+				var heroOpacity = hero.state.alive ? 1 : CONSTANTS.deadOpacity
 
 			// draw
-				drawCircle(CANVAS, CONTEXT, heroX, heroY, heroRadius, {color: heroColor})
+				drawCircle(CANVAS, CONTEXT, heroX, heroY, heroRadius, {color: heroColor, opacity: heroOpacity})
 
 			// orb ?
 				for (var i in hero.items) {
@@ -206,7 +203,7 @@
 						var itemRadius = Math.ceil(((item.info.size.x + item.info.size.y) / 2) / 2)
 						var itemColor = item.info.color
 
-						drawCircle(CANVAS, CONTEXT, heroX, heroY, itemRadius, {color: itemColor})
+						drawCircle(CANVAS, CONTEXT, heroX, heroY, itemRadius, {color: itemColor, opacity: heroOpacity})
 					}
 				}
 		}
@@ -214,15 +211,15 @@
 	/* drawItem */
 		function drawItem(item) {
 			// variables
-				var itemX = item.state.position.x + CHAMBERRADIUSX
-				var itemY = item.state.position.y + CHAMBERRADIUSY
+				var itemX = item.state.position.x + Math.ceil(CANVAS.width  / 2)
+				var itemY = item.state.position.y + Math.ceil(CANVAS.height / 2)
 				var itemRadius = Math.ceil(((item.info.size.x + item.info.size.y) / 2) / 2)
 				var itemOptions = {
 					color: item.info.color
 				}
 
 				if (item.info.style == "border") {
-					itemOptions.border = 8
+					itemOptions.border = CONSTANTS.borderThickness
 				}
 
 			// draw
@@ -231,10 +228,10 @@
 				}
 				else if (item.info.shape == "square") {
 					itemOptions.radii = {
-						topLeft: BORDERRADIUS,
-						topRight: BORDERRADIUS,
-						bottomRight: BORDERRADIUS,
-						bottomLeft: BORDERRADIUS
+						topLeft: 		CONSTANTS.borderRadius,
+						topRight: 		CONSTANTS.borderRadius,
+						bottomRight: 	CONSTANTS.borderRadius,
+						bottomLeft: 	CONSTANTS.borderRadius
 					}
 					drawRectangle(CANVAS, CONTEXT, itemX - itemRadius, itemY - itemRadius, itemRadius * 2, itemRadius * 2, itemOptions)
 				}
@@ -243,13 +240,19 @@
 	/* drawCreature */
 		function drawCreature(creature) {
 			// variables
-				var x1 = creature.state.position.x                                       + CHAMBERRADIUSX
-				var y1 = creature.state.position.y + Math.ceil(creature.info.size.y / 2) + CHAMBERRADIUSY
-				var x2 = creature.state.position.x + Math.ceil(creature.info.size.x / 2) + CHAMBERRADIUSX
-				var y2 = creature.state.position.y - Math.ceil(creature.info.size.y / 2) + CHAMBERRADIUSY
-				var x3 = creature.state.position.x - Math.ceil(creature.info.size.x / 2) + CHAMBERRADIUSX
-				var y3 = creature.state.position.y - Math.ceil(creature.info.size.y / 2) + CHAMBERRADIUSY
 				var creatureColor = creature.info.color
+				var creatureRadius = Math.ceil(((creature.info.size.x + creature.info.size.y) / 2) / 2)
+				if (creature.state.cooldowns.death !== undefined) {
+					creatureRadius = Math.ceil(creatureRadius * creature.state.cooldowns.death / CONSTANTS.deathCooldown)
+				}
+
+			// coordinates
+				var x1 = creature.state.position.x                  + Math.ceil(CANVAS.width  / 2)
+				var y1 = creature.state.position.y + creatureRadius + Math.ceil(CANVAS.height / 2)
+				var x2 = creature.state.position.x + creatureRadius + Math.ceil(CANVAS.width  / 2)
+				var y2 = creature.state.position.y - creatureRadius + Math.ceil(CANVAS.height / 2)
+				var x3 = creature.state.position.x - creatureRadius + Math.ceil(CANVAS.width  / 2)
+				var y3 = creature.state.position.y - creatureRadius + Math.ceil(CANVAS.height / 2)
 
 			// draw
 				drawTriangle(CANVAS, CONTEXT, x1, y1, x2, y2, x3, y3, {color: creature.info.color})

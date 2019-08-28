@@ -1,18 +1,17 @@
 /*** modules ***/
 	var http       = require("http")
 	var fs         = require("fs")
-	var DEBUG      = getEnvironment("debug")
 	module.exports = {}
 
-/*** maps ***/
-	var COLORS = getAsset("colors")
-	var CELLSIZE = getAsset("cellSize")
+/*** constants ***/
+	var ENVIRONMENT = getEnvironment()
+	var CONSTANTS   = getAsset("constants")
 
 /*** logs ***/
 	/* logError */
 		module.exports.logError = logError
 		function logError(error, functionName, recipients, callback) {
-			if (DEBUG) {
+			if (ENVIRONMENT.debug) {
 				console.log("\n*** ERROR @ " + new Date().toLocaleString() + " ***")
 				console.log(" - " + error)
 				console.dir(arguments)
@@ -28,7 +27,7 @@
 	/* logStatus */
 		module.exports.logStatus = logStatus
 		function logStatus(status) {
-			if (DEBUG) {
+			if (ENVIRONMENT.debug) {
 				console.log("\n--- STATUS @ " + new Date().toLocaleString() + " ---")
 				console.log(" - " + status)
 			}
@@ -37,7 +36,7 @@
 	/* logMessage */
 		module.exports.logMessage = logMessage
 		function logMessage(message) {
-			if (DEBUG) {
+			if (ENVIRONMENT.debug) {
 				console.log(" - " + new Date().toLocaleString() + ": " + message)
 			}
 		}
@@ -45,7 +44,7 @@
 	/* logTime */
 		module.exports.logTime = logTime
 		function logTime(flag, callback) {
-			if (DEBUG) {
+			if (ENVIRONMENT.debug) {
 				var before = process.hrtime()
 				callback()
 				
@@ -62,24 +61,22 @@
 /*** maps ***/
 	/* getEnvironment */
 		module.exports.getEnvironment = getEnvironment
-		function getEnvironment(index) {
+		function getEnvironment() {
 			try {
 				if (process.env.DOMAIN !== undefined) {
-					var environment = {
+					return {
 						port:   process.env.PORT,
 						domain: process.env.DOMAIN,
 						debug:  (process.env.DEBUG || false)
 					}
 				}
 				else {
-					var environment = {
+					return {
 						port:   3000,
 						domain: "localhost",
 						debug:  true
 					}
 				}
-
-				return environment[index]
 			}
 			catch (error) {
 				logError(error)
@@ -113,123 +110,78 @@
 						case "css variables":
 							// colors
 								var cssColors = ""
-								for (var hue in COLORS) {
-									for (var shade in COLORS[hue]) {
-										cssColors += "		--" + hue + "-" + shade + ": " + COLORS[hue][shade] + ";\n"
+								for (var hue in CONSTANTS.colors) {
+									for (var shade in CONSTANTS.colors[hue]) {
+										cssColors += "		--" + hue + "-" + shade + ": " + CONSTANTS.colors[hue][shade] + ";\n"
 									}
 								}
 							
 							// data
 								return ('/*** variables ***/\n' +
 										'	:root {\n' +
-										'		--font: ' + getAsset("font") + ';\n' +
-										'		--borderRadius: ' + getAsset("borderRadius") + 'px;\n' +
+										'		--font: ' + CONSTANTS.font + ';\n' +
+										'		--borderRadius: ' + CONSTANTS.borderRadius + 'px;\n' +
 												cssColors +
 										'	}')
 						break
 						case "js variables":
 							return ('/*** superglobals ***/\n' +
-									'	var LAYERS = ' + getAsset("layers") + '\n' +
-									'	var CHAMBERSIZE = ' + getAsset("chamberSize") + '\n' +
-									'	var CELLSIZE = ' + getAsset("cellSize") + '\n' +
-									'	var BORDERRADIUS = ' + getAsset("borderRadius") + '\n' +
-									'	var FONT = "' + getAsset("font") + '"\n' +
-									'	var COLORS = ' + JSON.stringify(COLORS) + '\n' +
-									'	var HEALTHHIGH = ' + getAsset("healthHigh") + '\n' +
-									'	var HEALTHLOW = ' + getAsset("healthLow") + '\n' +
-									'	var BUTTONCOOLDOWNMAX = ' + getAsset("buttonCooldownMax") + '\n' +
-									'	var CHAMBERCOOLDOWN = ' + getAsset("chamberCooldown") + '\n' +
+									'	var CONSTANTS = ' + JSON.stringify(CONSTANTS) + '\n' +
 									'')
 						break
 
 					// game parameters
-						case "loopInterval":
-							return 50
-						break
-						case "layers":
-							return 3
-						break
-						case "chamberSize":
-							return 9
-						break
-						case "cellSize":
-							return 128
-						break
-						case "baseHealth":
-							return 128
-						break
-						case "heal":
-							return 1
-						break
-						case "portalCooldown":
-							return Math.floor(1000 / getAsset("loopInterval")) * 3
-						break
-						case "chamberCooldown":
-							return Math.floor(1000 / getAsset("loopInterval")) / 5
-						break
-						case "monsterChance":
-							return [3,4]
-						break
-						case "monsterMax":
-							return 1
-						break
-						case "monsterMin":
-							return 1
-						break
-						case "bumpDistance":
-							return Math.floor(getAsset("cellSize") / 4)
-						break
-						case "projectileFade":
-							return 1
-						break
-						case "aCooldown":
-							return Math.floor(1000 / getAsset("loopInterval") / 4)
-						break
-						case "healthHigh":
-							return 60
-						break
-						case "healthLow":
-							return 30
-						break
-						case "buttonCooldownMax":
-							return 10
-						break
-
-					// styling
-						case "font":
-							return "monospace"
-						break
-						case "borderRadius":
-							return 16
-						break
-						case "colors":
-							return {
-								magenta:    ["#ffcce6","#ff66b3","#e60073","#99004d","#33001a"],
-								red:        ["#fab7b7","#f66f6f","#d80e0e","#7c0808","#300303"],
-								brown:      ["#e09b06","#ae7804","#7c5603","#513802","#191101"],
-								browngray:  ["#d5cac3","#b6a196","#a18778","#786154","#4f4037"],
-								orange:     ["#fde4ce","#f9ae6c","#f68523","#ab5407","#442103"],
-								beige:      ["#f7f4ed","#e0d3b8","#c1a871","#91773f","#6a572f"],
-								yellow:     ["#f6f4d5","#e5dd80","#d8cb41","#beb227","#7f771a"],
-								green:      ["#a9d3ab","#539e57","#1a661e","#074f0b","#053007"],
-								greengray:  ["#d3ded4","#99b29b","#6a8c6c","#4d664e","#374938"],
-								cyan:       ["#e6ffff","#b3ffff","#33ffff","#00cccc","#008080"],
-								cerulean:   ["#dae7f1","#90b8d5","#4689b9","#2b5572","#1c374a"],
-								bluegray:   ["#dee9ed","#adc8d2","#7ba7b7","#487484","#2d4852"],
-								blue:       ["#d0e0fb","#7a9bd3","#2b76ef","#0b3d8e","#04142f"],
-								purple:     ["#dac0f7","#b08bda","#7b3dc2","#4a2574","#180c26"],
-								black:      ["#e4e6e7","#a2a7a9","#6e7477","#3d4142","#232526"],
-								white:      ["#c0dee5","#cee2e8","#dcf1f7","#e3f5f9","#f9fdff"]
+						case "constants":
+							var constants = {
+								font: 				"monospace",
+								borderRadius: 		16,
+								borderThickness: 	8,
+								loopInterval: 		50,
+								pauseOpacity: 		0.5,
+								deadOpacity: 		0.5,
+								layers: 			3,
+								chamberSize: 		9,
+								cellSize: 			128,
+								baseHealth: 		128,
+								heal: 				1,
+								monsterChance: 		[3,4],
+								monsterMax: 		1,
+								monsterMin: 		1,
+								projectileFade: 	1,
+								deathFade: 			1,
+								healthHigh: 		60,
+								healthLow: 			30,
+								rps: 				["rock", "paper", "scissors"],
+								directions: 		["up", "left", "right", "down"],
+								actions: 			["a", "b"],
+								colors: {
+									magenta:    ["#ffcce6","#ff66b3","#e60073","#99004d","#33001a"],
+									red:        ["#fab7b7","#f66f6f","#d80e0e","#7c0808","#300303"],
+									brown:      ["#e09b06","#ae7804","#7c5603","#513802","#191101"],
+									browngray:  ["#d5cac3","#b6a196","#a18778","#786154","#4f4037"],
+									orange:     ["#fde4ce","#f9ae6c","#f68523","#ab5407","#442103"],
+									beige:      ["#f7f4ed","#e0d3b8","#c1a871","#91773f","#6a572f"],
+									yellow:     ["#f6f4d5","#e5dd80","#d8cb41","#beb227","#7f771a"],
+									green:      ["#a9d3ab","#539e57","#1a661e","#074f0b","#053007"],
+									greengray:  ["#d3ded4","#99b29b","#6a8c6c","#4d664e","#374938"],
+									cyan:       ["#e6ffff","#b3ffff","#33ffff","#00cccc","#008080"],
+									cerulean:   ["#dae7f1","#90b8d5","#4689b9","#2b5572","#1c374a"],
+									bluegray:   ["#dee9ed","#adc8d2","#7ba7b7","#487484","#2d4852"],
+									blue:       ["#d0e0fb","#7a9bd3","#2b76ef","#0b3d8e","#04142f"],
+									purple:     ["#dac0f7","#b08bda","#7b3dc2","#4a2574","#180c26"],
+									black:      ["#e4e6e7","#a2a7a9","#6e7477","#3d4142","#232526"],
+									white:      ["#c0dee5","#cee2e8","#dcf1f7","#e3f5f9","#f9fdff"]
+								}
 							}
-						break
 
-					// lists
-						case "directions":
-							return ["up", "left", "right", "down"]
-						break
+							constants.portalCooldown 	= Math.floor(1000 / constants.loopInterval * 3)
+							constants.chamberCooldown 	= Math.floor(1000 / constants.loopInterval / 5)
+							constants.aCooldown 		= Math.floor(1000 / constants.loopInterval / 4)
+							constants.deathCooldown 	= Math.floor(1000 / constants.loopInterval / 2)
+							constants.bumpDistance 		= Math.floor(constants.cellSize / 4)
+							constants.acceleration 		= Math.floor(constants.cellSize / 16)
 
-						case "actions":
-							return ["a", "b"]
+							return constants
 						break
 
 					// functions
@@ -400,9 +352,9 @@
 									// get target cell
 										var targetX = closestHero.state.position.x
 										var targetY = closestHero.state.position.y
-										var cellX = Math.round(Math.abs(targetX / CELLSIZE)) * Math.sign(targetX)
+										var cellX = Math.round(Math.abs(targetX / CONSTANTS.cellSize)) * Math.sign(targetX)
 											if (cellX == -0) { cellX = 0 }
-										var cellY = Math.round(Math.abs(targetY / CELLSIZE)) * Math.sign(targetY)
+										var cellY = Math.round(Math.abs(targetY / CONSTANTS.cellSize)) * Math.sign(targetY)
 											if (cellY == -0) { cellY = 0 }
 
 									// return path
@@ -432,9 +384,9 @@
 									// get target cell
 										var targetX = targetHero.state.position.x
 										var targetY = targetHero.state.position.y
-										var cellX = Math.round(Math.abs(targetX / CELLSIZE)) * Math.sign(targetX)
+										var cellX = Math.round(Math.abs(targetX / CONSTANTS.cellSize)) * Math.sign(targetX)
 											if (cellX == -0) { cellX = 0 }
-										var cellY = Math.round(Math.abs(targetY / CELLSIZE)) * Math.sign(targetY)
+										var cellY = Math.round(Math.abs(targetY / CONSTANTS.cellSize)) * Math.sign(targetY)
 											if (cellY == -0) { cellY = 0 }
 
 									// return path
@@ -453,8 +405,7 @@
 
 					// creatures
 						case "heroes":
-							var quarterCell = Math.floor(getAsset("cellSize") / 4)
-							var baseHealth = getAsset("baseHealth")
+							var quarterCell = Math.floor(CONSTANTS.cellSize / 4)
 
 							return {
 								"barbarian": {
@@ -462,17 +413,19 @@
 										rps: "rock",
 										type: "hero",
 										subtype: "barbarian",
-										color: COLORS.orange[2],
+										color: CONSTANTS.colors.orange[2],
 										statistics: {
-											power: Math.floor(baseHealth / 8),
-											armor: Math.floor(baseHealth / 8),
-											speed: Math.floor(quarterCell / 4),
-											throw: Math.floor(quarterCell / 2)
+											moveSpeed: 	Math.floor(quarterCell / 2),
+											rangeSpeed: Math.floor(quarterCell / 2),
+											rangePower: Math.floor(CONSTANTS.baseHealth / 16),
+											bumpPower: 	Math.floor(CONSTANTS.baseHealth / 8),
+											areaPower: 	Math.floor(CONSTANTS.baseHealth / 8),
+											armorPower: Math.floor(CONSTANTS.baseHealth / 16)
 										}
 									},
 									state: {
-										health: baseHealth / 4,
-										healthMax: baseHealth,
+										health: CONSTANTS.baseHealth / 4,
+										healthMax: CONSTANTS.baseHealth,
 										position: {
 											x: -3 * quarterCell,
 											y:  3 * quarterCell
@@ -484,17 +437,19 @@
 										rps: "paper",
 										type: "hero",
 										subtype: "wizard",
-										color: COLORS.purple[2],
+										color: CONSTANTS.colors.purple[2],
 										statistics: {
-											power: Math.floor(baseHealth / 8),
-											armor: Math.floor(baseHealth / 16),
-											speed: Math.floor(quarterCell / 4),
-											throw: Math.floor(quarterCell)
+											moveSpeed: 	Math.floor(quarterCell / 2),
+											rangeSpeed: Math.floor(quarterCell / 1),
+											rangePower: Math.floor(CONSTANTS.baseHealth / 4),
+											bumpPower: 	Math.floor(CONSTANTS.baseHealth / 16),
+											areaPower: 	Math.floor(CONSTANTS.baseHealth / 8),
+											armorPower: Math.floor(CONSTANTS.baseHealth / 8)
 										}
 									},
 									state: {
-										health: baseHealth / 4,
-										healthMax: baseHealth,
+										health: CONSTANTS.baseHealth / 4,
+										healthMax: CONSTANTS.baseHealth,
 										position: {
 											x: -1 * quarterCell,
 											y: -3 * quarterCell
@@ -506,17 +461,19 @@
 										rps: "scissors",
 										type: "hero",
 										subtype: "ranger",
-										color: COLORS.greengray[2],
+										color: CONSTANTS.colors.greengray[2],
 										statistics: {
-											power: Math.floor(baseHealth / 8),
-											armor: Math.floor(baseHealth / 8),
-											speed: Math.floor(quarterCell / 2),
-											throw: Math.floor(quarterCell)
+											moveSpeed: 	Math.floor(quarterCell / 1),
+											rangeSpeed: Math.floor(quarterCell / 1),
+											rangePower: Math.floor(CONSTANTS.baseHealth / 8),
+											bumpPower: 	Math.floor(CONSTANTS.baseHealth / 16),
+											areaPower: 	Math.floor(CONSTANTS.baseHealth / 16),
+											armorPower: Math.floor(CONSTANTS.baseHealth / 16)
 										}
 									},
 									state: {
-										health: baseHealth / 4,
-										healthMax: baseHealth,
+										health: CONSTANTS.baseHealth / 4,
+										healthMax: CONSTANTS.baseHealth,
 										position: {
 											x:  3 * quarterCell,
 											y:  3 * quarterCell
@@ -527,8 +484,7 @@
 						break
 
 						case "monsters":
-							var quarterCell = Math.floor(getAsset("cellSize") / 4)
-							var baseHealth = getAsset("baseHealth")
+							var quarterCell = Math.floor(CONSTANTS.cellSize / 4)
 
 							return {
 								"troll": {
@@ -536,18 +492,20 @@
 										rps: "rock",
 										type: "monster",
 										subtype: "troll",
-										color: COLORS.orange[2],
+										color: CONSTANTS.colors.orange[2],
 										pathing: "aggressive",
 										statistics: {
-											power: Math.floor(baseHealth / 8),
-											armor: Math.floor(baseHealth / 8),
-											speed: Math.floor(quarterCell / 2),
-											throw: Math.floor(quarterCell / 2)
+											moveSpeed: 	Math.floor(quarterCell / 2),
+											rangeSpeed: Math.floor(quarterCell / 2),
+											rangePower: Math.floor(CONSTANTS.baseHealth / 16),
+											bumpPower: 	Math.floor(CONSTANTS.baseHealth / 8),
+											areaPower: 	Math.floor(CONSTANTS.baseHealth / 8),
+											armorPower: Math.floor(CONSTANTS.baseHealth / 16)
 										}
 									},
 									state: {
-										health: baseHealth / 4,
-										healthMax: baseHealth / 4
+										health: CONSTANTS.baseHealth / 4,
+										healthMax: CONSTANTS.baseHealth / 4
 									}
 								},
 								"dendroid": {
@@ -555,18 +513,20 @@
 										rps: "paper",
 										type: "monster",
 										subtype: "dendroid",
-										color: COLORS.purple[2],
+										color: CONSTANTS.colors.purple[2],
 										pathing: "aggressive",
 										statistics: {
-											power: Math.floor(baseHealth / 8),
-											armor: Math.floor(baseHealth / 4),
-											speed: Math.floor(quarterCell / 4),
-											throw: Math.floor(quarterCell / 2)
+											moveSpeed: 	Math.floor(quarterCell / 4),
+											rangeSpeed: Math.floor(quarterCell / 2),
+											rangePower: Math.floor(CONSTANTS.baseHealth / 16),
+											bumpPower: 	Math.floor(CONSTANTS.baseHealth / 8),
+											areaPower: 	Math.floor(CONSTANTS.baseHealth / 4),
+											armorPower: Math.floor(CONSTANTS.baseHealth / 8)
 										}
 									},
 									state: {
-										health: baseHealth / 4,
-										healthMax: baseHealth / 4
+										health: CONSTANTS.baseHealth / 4,
+										healthMax: CONSTANTS.baseHealth / 4
 									}
 								},
 								"golem": {
@@ -574,18 +534,20 @@
 										rps: "scissors",
 										type: "monster",
 										subtype: "golem",
-										color: COLORS.greengray[2],
+										color: CONSTANTS.colors.greengray[2],
 										pathing: "aggressive",
 										statistics: {
-											power: Math.floor(baseHealth / 4),
-											armor: Math.floor(baseHealth / 8),
-											speed: Math.floor(quarterCell / 4),
-											throw: Math.floor(quarterCell / 2)
+											moveSpeed: 	Math.floor(quarterCell / 4),
+											rangeSpeed: Math.floor(quarterCell / 2),
+											rangePower: Math.floor(CONSTANTS.baseHealth / 8),
+											bumpPower: 	Math.floor(CONSTANTS.baseHealth / 4),
+											areaPower: 	Math.floor(CONSTANTS.baseHealth / 16),
+											armorPower: Math.floor(CONSTANTS.baseHealth / 16)
 										}
 									},
 									state: {
-										health: baseHealth / 4,
-										healthMax: baseHealth / 4
+										health: CONSTANTS.baseHealth / 4,
+										healthMax: CONSTANTS.baseHealth / 4										
 									}
 								}
 							}
@@ -593,7 +555,7 @@
 
 					// items
 						case "orbs":
-							var orbSize = Math.floor(getAsset("cellSize") / 8 * 3)
+							var orbSize = Math.floor(CONSTANTS.cellSize / 8 * 3)
 
 							return {
 								"rock": {
@@ -608,7 +570,7 @@
 										},
 										shape: "circle",
 										style: "fill",
-										color: COLORS.orange[3]
+										color: CONSTANTS.colors.orange[3]
 									}
 								},
 								"paper": {
@@ -623,7 +585,7 @@
 										},
 										shape: "circle",
 										style: "fill",
-										color: COLORS.purple[3]
+										color: CONSTANTS.colors.purple[3]
 									}
 								},
 								"scissors": {
@@ -638,14 +600,14 @@
 										},
 										shape: "circle",
 										style: "fill",
-										color: COLORS.greengray[3]
+										color: CONSTANTS.colors.greengray[3]
 									}
 								}
 							}
 						break
 
 						case "pedestals":
-							var quarterCell = Math.floor(getAsset("cellSize") / 4)
+							var quarterCell = Math.floor(CONSTANTS.cellSize / 4)
 							var pedestals = getAsset("orbs")
 							
 							for (var p in pedestals) {
@@ -677,10 +639,10 @@
 									type: "tile",
 									subtype: "heal",
 									size: {
-										x: Math.floor(getAsset("cellSize") / 4) * 3,
-										y: Math.floor(getAsset("cellSize") / 4) * 3
+										x: Math.floor(CONSTANTS.cellSize / 4) * 3,
+										y: Math.floor(CONSTANTS.cellSize / 4) * 3
 									},
-									color: COLORS.green[1],
+									color: CONSTANTS.colors.green[1],
 									shape: "square",
 									style: "border"
 								}
@@ -693,11 +655,11 @@
 									type: "tile",
 									subtype: "portal",
 									size: {
-										max: Math.floor(getAsset("cellSize") / 4) * 3,
-										x: Math.floor(getAsset("cellSize") / 4) * 3,
-										y: Math.floor(getAsset("cellSize") / 4) * 3
+										max: Math.floor(CONSTANTS.cellSize / 4) * 3,
+										x: Math.floor(CONSTANTS.cellSize / 4) * 3,
+										y: Math.floor(CONSTANTS.cellSize / 4) * 3
 									},
-									color: COLORS.blue[1],
+									color: CONSTANTS.colors.blue[1],
 									shape: "square",
 									style: "border"
 								},
@@ -730,7 +692,7 @@
 							players: 		{},
 							data: {
 								info: {
-									layers: getAsset("layers")
+									layers: CONSTANTS.layers
 								},
 								state: {
 									start: 	true,
@@ -764,12 +726,11 @@
 						return {
 							id: 			generateRandom(),
 							info: {
-								name: 		null,
 								colors: 	[],
 								x: 0,
 								y: 0,
-								chamberSize: getAsset("chamberSize"),
-								cellSize: getAsset("cellSize")
+								chamberSize: CONSTANTS.chamberSize,
+								cellSize: CONSTANTS.cellSize
 							},
 							state: {
 								cooldown: 0,
@@ -786,20 +747,21 @@
 						return {
 							id: 			generateRandom(),
 							info: {
-								name: 		null,
 								rps: 		null,
 								type: 		"creature",
 								subtype:	null,
 								size: {
-									x: 		Math.floor(getAsset("cellSize") / 2),
-									y: 		Math.floor(getAsset("cellSize") / 2)
+									x: 		Math.floor(CONSTANTS.cellSize / 2),
+									y: 		Math.floor(CONSTANTS.cellSize / 2)
 								},
 								color: 		null,
 								statistics: {
-									power: 	0,
-									armor: 	0,
-									speed: 	0,
-									throw: 	0
+									moveSpeed:  0,
+									rangeSpeed: 0,
+									rangePower: 0,
+									bumpPower: 	0,
+									areaPower: 	0,
+									armorPower: 0
 								}
 							},
 							state: {
@@ -807,6 +769,8 @@
 								health: 	0,
 								healthMax: 	0,
 								position: {
+									vx: 	0,
+									vy: 	0,
 									x: 		0,
 									y: 		0,
 									edge: 	null
@@ -820,17 +784,11 @@
 								},
 								actions: {
 									a: 		false,
-									b: 		false,
-									x: 		false,
-									y: 		false,
-									start: 	false
+									b: 		false
 								},
 								cooldowns: {
 									a: 		0,
-									b: 		0,
-									x: 		0,
-									y: 		0,
-									start: 	0
+									b: 		0
 								},
 								kills: 		0,
 								points: 	0
@@ -843,13 +801,12 @@
 						return {
 							id: 			generateRandom(),
 							info: {
-								name: 		null,
 								rps: 		null,
 								type: 		"item",
 								subtype: 	null,
 								size: {
-									x: Math.floor(getAsset("cellSize") / 4),
-									y: Math.floor(getAsset("cellSize") / 4)
+									x: Math.floor(CONSTANTS.cellSize / 4),
+									y: Math.floor(CONSTANTS.cellSize / 4)
 								},
 								color: 		null
 							},

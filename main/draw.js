@@ -169,7 +169,7 @@
 		function drawText(canvas, context, x, y, text, options) {
 			// variables
 				options = options || {}
-				context.font = (options.style ? options.style + " " : "") + (options.size || 32) + "px " + (options.font || FONT)
+				context.font = (options.style ? options.style + " " : "") + (options.size || 32) + "px " + (options.font || "monospace")
 				context.fillStyle    = options.gradient ? drawGradient(canvas, context, options) : (options.color || "transparent")
 				context.strokeStyle  = options.gradient ? drawGradient(canvas, context, options) : (options.color || "transparent")
 				context.textAlign    = options.alignment || "center"

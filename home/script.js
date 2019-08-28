@@ -20,7 +20,7 @@
 
 	/* joinGame */
 		document.getElementById("joinGame").addEventListener(on.click, joinGame)
-		document.getElementById("gameCode").addEventListener("keyup", function (event) { if (event.which == 13) { joinGame() } })
+		document.getElementById("gameCode").addEventListener(on.keyup, function (event) { if (event.which == 13) { joinGame() } })
 		function joinGame() {
 			// get values
 				var gameCode = document.getElementById("gameCode").value.replace(" ","").trim().toLowerCase() || false

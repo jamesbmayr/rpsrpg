@@ -3,24 +3,9 @@
 	module.exports = {}
 
 /*** maps ***/
-	var DIRECTIONS 		= main.getAsset("directions")
-	var ACTIONS 		= main.getAsset("actions")
-	var HEROES 			= main.getAsset("heroes")
-	var MONSTERS		= main.getAsset("monsters")
-	var ORBS 			= main.getAsset("orbs")
-	var COLORS 			= main.getAsset("colors")
+	var CONSTANTS 		= main.getAsset("constants")
 	var WALLMAKERS 		= main.getAsset("wallMakers")
-	var CELLSIZE 		= main.getAsset("cellSize")
-	var PORTALCOOLDOWN 	= main.getAsset("portalCooldown")
-	var LOOPINTERVAL 	= main.getAsset("loopInterval")
-	var MONSTERCHANCE 	= main.getAsset("monsterChance")
-	var MONSTERMAX 		= main.getAsset("monsterMax")
-	var MONSTERMIN 		= main.getAsset("monsterMin")
-	var BUMPDISTANCE 	= main.getAsset("bumpDistance")
 	var PATHINGAI 		= main.getAsset("pathingAI")
-	var PROJECTILEFADE 	= main.getAsset("projectileFade")
-	var ACOOLDOWN 		= main.getAsset("aCooldown")
-	var CHAMBERCOOLDOWN = main.getAsset("chamberCooldown")
 
 /*** players ***/
 	/* addPlayer */
@@ -108,11 +93,11 @@
 				}
 				else {
 					switch (true) {
-						case (DIRECTIONS.includes(request.post.input)):
+						case (CONSTANTS.directions.includes(request.post.input)):
 							triggerMove(request, callback)
 						break
 
-						case (ACTIONS.includes(request.post.input)):
+						case (CONSTANTS.actions.includes(request.post.input)):
 							triggerAction(request, callback)
 						break
 
@@ -139,11 +124,11 @@
 				}
 				else {
 					switch (true) {
-						case (DIRECTIONS.includes(request.post.input)):
+						case (CONSTANTS.directions.includes(request.post.input)):
 							untriggerMove(request, callback)
 						break
 
-						case (ACTIONS.includes(request.post.input)):
+						case (CONSTANTS.actions.includes(request.post.input)):
 							untriggerAction(request, callback)
 						break
 					}
@@ -263,6 +248,9 @@
 		module.exports.createMap = createMap
 		function createMap(request, callback) {
 			try {
+				// assets
+					var monsters = main.getAsset("monsters")
+
 				// set starting values
 					var layer = 0
 					var x = 0
@@ -272,7 +260,7 @@
 					var allChambers = []
 					var orbChambers = []
 					var portalChambers = []
-					var orbTypes = main.sortRandom(Object.keys(ORBS))
+					var orbTypes = main.sortRandom(CONSTANTS.rps)
 				
 				// spiral to fill coordinate arrays
 					while (layer < request.game.data.info.layers) {
@@ -334,13 +322,13 @@
 							}
 
 						// monsters ?
-							if (!(x == 0 && y == 0) && main.rollRandom(MONSTERCHANCE[0], MONSTERCHANCE[1])) {
-								var monsterCount = main.rangeRandom(MONSTERMIN, MONSTERMAX)
+							if (!(x == 0 && y == 0) && main.rollRandom(CONSTANTS.monsterChance[0], CONSTANTS.monsterChance[1])) {
+								var monsterCount = main.rangeRandom(CONSTANTS.monsterMin, CONSTANTS.monsterMax)
 								options.monsters = []
 
 								for (var m = 0; m < monsterCount; m++) {
-									var monsterType = main.chooseRandom(Object.keys(MONSTERS))
-									options.monsters.push(main.duplicateObject(MONSTERS[monsterType]))
+									var monsterType = main.chooseRandom(Object.keys(monsters))
+									options.monsters.push(main.duplicateObject(monsters[monsterType]))
 								}
 							}
 
@@ -361,7 +349,7 @@
 					var chamber = main.getSchema("chamber")
 						chamber.info.x = chamberX
 						chamber.info.y = chamberY
-						chamber.info.colors = COLORS[main.chooseRandom(Object.keys(COLORS))]
+						chamber.info.colors = CONSTANTS.colors[main.chooseRandom(Object.keys(CONSTANTS.colors))]
 
 				// attach heroes
 					chamber.heroes = request.game.data.heroes
@@ -472,7 +460,7 @@
 			try {
 				// doors
 					var doors = []
-					var possibleDoors = main.duplicateArray(DIRECTIONS)
+					var possibleDoors = main.duplicateArray(CONSTANTS.directions)
 					var layers = request.game.data.info.layers
 
 				// get neighbors
@@ -498,7 +486,7 @@
 
 				// center chamber
 					if (chamber.info.x == 0 && chamber.info.y == 0) {
-						doors = main.duplicateArray(DIRECTIONS)
+						doors = main.duplicateArray(CONSTANTS.directions)
 					}
 
 				// point chamber
@@ -652,8 +640,8 @@
 									main.overwriteObject(healTile, {
 										state: {
 											position: {
-												x: CELLSIZE * x,
-												y: CELLSIZE * y
+												x: CONSTANTS.cellSize * x,
+												y: CONSTANTS.cellSize * y
 											}
 										}
 									})
@@ -852,7 +840,7 @@
 								var itemKeys = Object.keys(chamber.items)
 								if (!itemKeys.find(function(key) {
 									var item = chamber.items[key]
-									return ((x == Math.floor(item.state.position.x / CELLSIZE)) && (y == Math.floor(item.state.position.y / CELLSIZE)))
+									return ((x == Math.floor(item.state.position.x / CONSTANTS.cellSize)) && (y == Math.floor(item.state.position.y / CONSTANTS.cellSize)))
 								})) {
 									emptyCells.push(x + "," + y)
 								}
@@ -874,8 +862,8 @@
 							main.overwriteObject(monster, {
 								state: {
 									position: {
-										x: CELLSIZE * x,
-										y: CELLSIZE * y
+										x: CONSTANTS.cellSize * x,
+										y: CONSTANTS.cellSize * y
 									}
 								}
 							})
@@ -892,8 +880,11 @@
 		module.exports.createHero = createHero
 		function createHero(request, callback) {
 			try {
+				// get all heroes
+					var heroes = main.getAsset("heroes")
+
 				// get remaining heroes
-					var remainingTypes = Object.keys(HEROES)
+					var remainingTypes = Object.keys(heroes)
 					for (var h in request.game.data.heroes) {
 						remainingTypes = remainingTypes.filter(function (r) {
 							return r !== request.game.data.heroes[h].info.subtype
@@ -906,7 +897,7 @@
 					}
 
 				// create hero & add to game
-					var hero = createCreature(request, HEROES[main.chooseRandom(remainingTypes)], callback)
+					var hero = createCreature(request, heroes[main.chooseRandom(remainingTypes)], callback)
 						main.overwriteObject(hero, {
 							id: request.session.id,
 							info: {
@@ -940,7 +931,7 @@
 		function createOrb(request, chamber, orbType, callback) {
 			try {
 				// add orb to chamber
-					var orb = createItem(request, ORBS[orbType], callback)
+					var orb = createItem(request, main.getAsset("orbs")[orbType], callback)
 					chamber.items[orb.id] = orb
 			}
 			catch (error) {
@@ -966,13 +957,13 @@
 							rps: creature.info.rps,
 							subtype: creature.info.subtype,
 							size: {
-								x: creature.info.statistics.power,
-								y: creature.info.statistics.power
+								x: creature.info.statistics.rangePower,
+								y: creature.info.statistics.rangePower
 							},
 							color: creature.info.color,
 							statistics: {
-								power: creature.info.statistics.power,
-								speed: creature.info.statistics.throw
+								power: creature.info.statistics.rangePower,
+								speed: creature.info.statistics.rangeSpeed
 							}
 						},
 						state: {
@@ -1038,10 +1029,10 @@
 		function getEdge(request, chamber, targetCoordinates, callback) {
 			try {
 				// get edges
-					var chamberUp    =  chamber.info.chamberSize * CELLSIZE / 2
-					var chamberLeft  = -chamber.info.chamberSize * CELLSIZE / 2
-					var chamberRight =  chamber.info.chamberSize * CELLSIZE / 2
-					var chamberDown  = -chamber.info.chamberSize * CELLSIZE / 2
+					var chamberUp    =  chamber.info.chamberSize * CONSTANTS.cellSize / 2
+					var chamberLeft  = -chamber.info.chamberSize * CONSTANTS.cellSize / 2
+					var chamberRight =  chamber.info.chamberSize * CONSTANTS.cellSize / 2
+					var chamberDown  = -chamber.info.chamberSize * CONSTANTS.cellSize / 2
 
 				// test each size
 					if (targetCoordinates.up > chamberUp) {
@@ -1070,18 +1061,18 @@
 		function getCells(request, chamber, targetCoordinates, callback) {
 			try {
 				// get x and y
-					var leftX 	= Math.round(Math.abs((targetCoordinates.left + 1)  / CELLSIZE)) * Math.sign(targetCoordinates.left )
+					var leftX 	= Math.round(Math.abs((targetCoordinates.left + 1)  / CONSTANTS.cellSize)) * Math.sign(targetCoordinates.left )
 						if (leftX   == -0) { leftX   = 0 }
-					var centerX = Math.round(Math.abs(targetCoordinates.x           / CELLSIZE)) * Math.sign(targetCoordinates.x    )
+					var centerX = Math.round(Math.abs(targetCoordinates.x           / CONSTANTS.cellSize)) * Math.sign(targetCoordinates.x    )
 						if (centerX == -0) { centerX = 0 }
-					var rightX 	= Math.round(Math.abs((targetCoordinates.right - 1) / CELLSIZE)) * Math.sign(targetCoordinates.right)
+					var rightX 	= Math.round(Math.abs((targetCoordinates.right - 1) / CONSTANTS.cellSize)) * Math.sign(targetCoordinates.right)
 						if (rightX  == -0) { rightX  = 0 }
 
-					var upY 	= Math.round(Math.abs((targetCoordinates.up - 1)    / CELLSIZE)) * Math.sign(targetCoordinates.up   )
+					var upY 	= Math.round(Math.abs((targetCoordinates.up - 1)    / CONSTANTS.cellSize)) * Math.sign(targetCoordinates.up   )
 						if (upY     == -0) { upY     = 0 }
-					var centerY = Math.round(Math.abs(targetCoordinates.y           / CELLSIZE)) * Math.sign(targetCoordinates.y    )
+					var centerY = Math.round(Math.abs(targetCoordinates.y           / CONSTANTS.cellSize)) * Math.sign(targetCoordinates.y    )
 						if (centerY == -0) { centerY = 0 }
-					var downY 	= Math.round(Math.abs((targetCoordinates.down + 1)  / CELLSIZE)) * Math.sign(targetCoordinates.down )
+					var downY 	= Math.round(Math.abs((targetCoordinates.down + 1)  / CONSTANTS.cellSize)) * Math.sign(targetCoordinates.down )
 						if (downY   == -0) { downY   = 0 }
 
 				// return cell coordinates
@@ -1118,7 +1109,7 @@
 
 						if (chamber.cells[x] && chamber.cells[x][y] && chamber.cells[x][y].wall) {
 							collisions.push({
-								side: o,
+								sides: [getCollisionSide(request, {id: "wall", x: x, y: y}, targetCoordinates, callback)],
 								supertype: "wall",
 								type: "wall",
 								id: occupiedCells[o]
@@ -1131,7 +1122,7 @@
 						var collisionSide = getCollisionSide(request, chamber.heroes[h], targetCoordinates, callback)
 						if (collisionSide) {
 							collisions.push({
-								side: collisionSide,
+								sides: [collisionSide],
 								supertype: "hero",
 								type: chamber.heroes[h].info.type,
 								id: chamber.heroes[h].id
@@ -1144,7 +1135,7 @@
 						var collisionSide = getCollisionSide(request, chamber.creatures[c], targetCoordinates)
 						if (collisionSide) {
 							collisions.push({
-								side: collisionSide,
+								sides: [collisionSide],
 								supertype: "creature",
 								type: chamber.creatures[c].info.type,
 								id: chamber.creatures[c].id
@@ -1157,7 +1148,7 @@
 						var collisionSide = getCollisionSide(request, chamber.items[i], targetCoordinates)
 						if (collisionSide) {
 							collisions.push({
-								side: collisionSide,
+								sides: [collisionSide],
 								supertype: "item",
 								type: chamber.items[i].info.type,
 								id: chamber.items[i].id
@@ -1181,14 +1172,27 @@
 						return false
 					}
 
-				// radii
-					var radiusX = Math.ceil(item.info.size.x / 2)
-					var radiusY = Math.ceil(item.info.size.y / 2)
+				// wall?
+					if (item.id == "wall") {
+						var radiusX = Math.ceil(CONSTANTS.cellSize / 2)
+						var radiusY = radiusX
+						var positionX = item.x * CONSTANTS.cellSize
+						var positionY = item.y * CONSTANTS.cellSize
+					}
 
-					var itemUp    = item.state.position.y + radiusY
-					var itemLeft  = item.state.position.x - radiusX
-					var itemRight = item.state.position.x + radiusX
-					var itemDown  = item.state.position.y - radiusY
+				// radii
+					else {
+						var radiusX = Math.ceil(item.info.size.x / 2)
+						var radiusY = Math.ceil(item.info.size.y / 2)
+						var positionX = item.state.position.x
+						var positionY = item.state.position.y
+					}
+
+				// sides
+					var itemUp    = positionY + radiusY
+					var itemLeft  = positionX - radiusX
+					var itemRight = positionX + radiusX
+					var itemDown  = positionY - radiusY
 				
 				// collision?
 					if ((itemUp    > targetCoordinates.down )
@@ -1220,14 +1224,19 @@
 		function resolveEdge(request, chamber, creature, destination, callback) {
 			try {
 				// assume we keep moving
-					var keepMoving = true
-					var isEdge = DIRECTIONS.includes(destination)
+					var keepMoving = {
+						up: 	true,
+						down: 	true,
+						left: 	true,
+						right: 	true
+					}
+					var isEdge = CONSTANTS.directions.includes(destination)
 
 				// other creatures are stuck in this chamber
 					if (creature.info.type !== "hero") {
 						// other creatures stop at edge
 							if (isEdge) {
-								keepMoving = false
+								keepMoving[destination] = false
 							}
 					}
 
@@ -1260,7 +1269,9 @@
 
 								// updateNextChamber
 									updateNextChamber(request, nextChamberX, nextChamberY, isEdge, callback)
-									keepMoving = false
+									for (var s in keepMoving) {
+										keepMoving[s] = false
+									}
 
 								// reset heroes
 									for (var h in request.game.data.heroes) {
@@ -1270,7 +1281,7 @@
 
 						// disagree? stop at edges
 							else if (isEdge) {
-								keepMoving = false
+								keepMoving[destination] = false
 							}
 					}
 
@@ -1286,11 +1297,18 @@
 		function resolveCollision(request, chamber, creature, collision, callback) {
 			try {
 				// set defaults
-					var keepMoving = true
+					var keepMoving = {
+						up: 	true,
+						down: 	true,
+						left: 	true,
+						right: 	true
+					}
 
 				// wall
 					if (collision.supertype == "wall") {
-						keepMoving = false
+						for (var s in collision.sides) {
+							keepMoving[collision.sides[s]] = false
+						}
 					}
 
 				// items
@@ -1301,32 +1319,43 @@
 							if (collision.type == "tile") {
 								// healTile
 									if (creature.info.type == "hero" && chamber.items[collision.id].info.subtype == "heal") {
-										creature.state.health = Math.min(creature.state.healthMax, creature.state.health + main.getAsset("heal"))
+										if (!creature.state.alive) {
+											creature.state.alive = true
+										}
+
+										creature.state.health = Math.min(creature.state.healthMax, creature.state.health + CONSTANTS.heal)
 									}
 
 								// portalTile
-									if (creature.info.type == "hero" && chamber.items[collision.id].info.subtype == "portal") {
+									if (creature.state.alive && creature.info.type == "hero" && chamber.items[collision.id].info.subtype == "portal") {
 										var portal = chamber.items[collision.id]
 										if (portal.state.active) {
-											keepMoving = resolveEdge(request, chamber, creature, portal.state.link, callback)
+											var edges = resolveEdge(request, chamber, creature, portal.state.link, callback)
+											for (var s in edges) {
+												keepMoving[s] = false
+											}
 										}
 									}
 							}
 
 						// orbs
-							else if (collision.type == "orb") {
+							else if (creature.state.alive && collision.type == "orb") {
 								if (creature.info.type == "hero" && creature.info.rps == chamber.items[collision.id].info.rps) {
 									creature.items[collision.id] = main.duplicateObject(chamber.items[collision.id])
 									delete chamber.items[collision.id]
 								}
 								else {
-									keepMoving = false
+									for (var s in collision.sides) {
+										keepMoving[collision.sides[s]] = false
+									}
 								}
 							}
 
 						// pedestal
-							else if (collision.type == "pedestal") {
-								keepMoving = false
+							else if (creature.state.alive && collision.type == "pedestal") {
+								for (var s in collision.sides) {
+									keepMoving[collision.sides[s]] = false
+								}
 
 								if (creature.info.type == "hero" && creature.info.rps == chamber.items[collision.id].info.rps) {
 									var itemKeys = Object.keys(creature.items)
@@ -1344,46 +1373,62 @@
 					}
 
 				// heroes & creatures
-					if (collision.supertype == "hero" || collision.supertype == "creature") {
-						keepMoving = false
+					if (creature.state.alive && (collision.supertype == "hero" || collision.supertype == "creature")) {
+						for (var s in collision.sides) {
+							keepMoving[collision.sides[s]] = false
+						}
 
 						// get recipient
-							var other = chamber[collision.supertype == "hero" ? "heroes" : "creatures"][collision.id]
+							var recipient = chamber[collision.supertype == "hero" ? "heroes" : "creatures"][collision.id]
 
-						// bump them...
-							var newX = other.state.position.x + (collision.side == "right" ? BUMPDISTANCE : collision.side == "left" ? -BUMPDISTANCE : 0)
-							var newY = other.state.position.y + (collision.side == "up"    ? BUMPDISTANCE : collision.side == "down" ? -BUMPDISTANCE : 0)
-							var radiusX = Math.ceil(other.info.size.x / 2)
-							var radiusY = Math.ceil(other.info.size.y / 2)
+						// damage them
+							var alive = resolveDamage(request, chamber, recipient, {
+								power: 	creature.info.statistics.bumpPower,
+								rps: 	creature.info.rps,
+								type: 	creature.info.type
+							}, callback)
 
-							var bumpCoordinates = {
-								id: 	other.id,
-								x: 		newX,
-								y: 		newY,
-								up: 	newY + radiusY,
-								left: 	newX - radiusX,
-								right: 	newX + radiusX,
-								down: 	newY - radiusY
+						// kill ?
+							if (!alive) {
+								creature.state.kills++
 							}
+						
+						// still alive ?
+							else {
+								// bump them...
+									var newX = recipient.state.position.x + (collision.sides.includes("right") ? CONSTANTS.bumpDistance : collision.sides.includes("left") ? -CONSTANTS.bumpDistance : 0)
+									var newY = recipient.state.position.y + (collision.sides.includes("up")    ? CONSTANTS.bumpDistance : collision.sides.includes("down") ? -CONSTANTS.bumpDistance : 0)
+									var radiusX = Math.ceil(recipient.info.size.x / 2)
+									var radiusY = Math.ceil(recipient.info.size.y / 2)
 
-						// but only if the cells are empty
-							var bumpCells = getCells(request, chamber, bumpCoordinates, callback)
-							var bump = true
-							for (var b in bumpCells) {
-								var coords = bumpCells[b].split(",")
-								var x = Number(coords[0])
-								var y = Number(coords[1])
+									var bumpCoordinates = {
+										id: 	recipient.id,
+										x: 		newX,
+										y: 		newY,
+										up: 	newY + radiusY,
+										left: 	newX - radiusX,
+										right: 	newX + radiusX,
+										down: 	newY - radiusY
+									}
 
-								if (!chamber.cells[x] || !chamber.cells[x][y] || chamber.cells[x][y].wall) {
-									bump = false
-								}
+								// but only if the cells are empty
+									var bumpCells = getCells(request, chamber, bumpCoordinates, callback)
+									var bump = true
+									for (var b in bumpCells) {
+										var coords = bumpCells[b].split(",")
+										var x = Number(coords[0])
+										var y = Number(coords[1])
+
+										if (!chamber.cells[x] || !chamber.cells[x][y] || chamber.cells[x][y].wall) {
+											bump = false
+										}
+									}
+
+									if (bump) {
+										recipient.state.position.x = bumpCoordinates.x
+										recipient.state.position.y = bumpCoordinates.y
+									}
 							}
-
-							if (bump) {
-								other.state.position.x = bumpCoordinates.x
-								other.state.position.y = bumpCoordinates.y
-							}
-
 					}
 
 				// stop ?
@@ -1408,7 +1453,7 @@
 					}
 
 				// wall / edge / dissipation
-						else if (collision.supertype == "wall" || collision.supertype == "edge" || collision.supertype == "dissipation") {
+					else if (collision.supertype == "wall" || collision.supertype == "edge" || collision.supertype == "dissipation") {
 						keepMoving = false
 					}
 
@@ -1427,20 +1472,25 @@
 
 				// creatures
 					else if (collision.supertype == "hero" || collision.supertype == "creature") {
-						keepMoving = false
+						// shooter
+							var shooter = chamber[projectile.info.shooter.type == "hero" ? "heroes" : "creatures"][projectile.info.shooter.id]
 
 						// recipient
 							var recipient = chamber[collision.supertype == "hero" ? "heroes" : "creatures"][collision.id]
-							var alive = resolveDamage(request, chamber, recipient, {
-								power: projectile.info.statistics.power,
-								rps: projectile.info.rps
-							}, callback)
+							if (recipient.state.alive) {
+								keepMoving = false
 
-						// shooter
-							var shooter = chamber[projectile.info.shooter.type == "hero" ? "heroes" : "creatures"][projectile.info.shooter.id]
-							if (!alive && shooter) {
-								shooter.state.kills++
-							}
+								var alive = resolveDamage(request, chamber, recipient, {
+									power: 	projectile.info.statistics.power,
+									rps: 	projectile.info.rps,
+									type: 	projectile.info.shooter.type
+								}, callback)
+
+								// kills
+									if (!alive && shooter) {
+										shooter.state.kills++
+									}
+							}							
 					}
 
 					return keepMoving
@@ -1455,36 +1505,43 @@
 		module.exports.resolveDamage = resolveDamage
 		function resolveDamage(request, chamber, creature, damage, callback) {
 			try {
-				// multiplier
-					var multiplier = 1
-					switch (damage.rps) {
-						case "rock":
-							multiplier = creature.info.rps == "scissors" ? 2 : creature.info.rps == "paper" ? 0.5 : 1
-						break
-						case "paper":
-							multiplier = creature.info.rps == "rock" ? 2 : creature.info.rps == "scissors" ? 0.5 : 1
-						break
-						case "scissors":
-							multiplier = creature.info.rps == "paper" ? 2 : creature.info.rps == "rock" ? 0.5 : 1
-						break
+				// friendly fire?
+					if (creature.type == damage.type) {
+						return creature.state.alive
 					}
 
-				// damage
-					var damage = Math.max(0, Math.floor(damage.power * multiplier))
+				// enemy fire
+					else {
+						// multiplier
+							var multiplier = 1
+							switch (damage.rps) {
+								case "rock":
+									multiplier = creature.info.rps == "scissors" ? 2 : creature.info.rps == "paper" ? 0.5 : 1
+								break
+								case "paper":
+									multiplier = creature.info.rps == "rock" ? 2 : creature.info.rps == "scissors" ? 0.5 : 1
+								break
+								case "scissors":
+									multiplier = creature.info.rps == "paper" ? 2 : creature.info.rps == "rock" ? 0.5 : 1
+								break
+							}
 
-				// reduce health
-					creature.state.health = Math.max(0, Math.min(creature.state.healthMax, creature.state.health - damage))
-					if (creature.state.health <= 0) {
-						if (creature.info.type == "hero") {
-							creature.state.alive = false
-						}
-						else {
-							delete chamber.creatures[creature.id]
-						}
+						// damage
+							var damage = Math.max(0, Math.floor(damage.power * multiplier) - creature.info.statistics.armorPower)
+
+						// reduce health
+							creature.state.health = Math.max(0, Math.min(creature.state.healthMax, creature.state.health - damage))
+							if (creature.state.health <= 0) {
+								creature.state.alive = false
+
+								if (creature.info.type !== "hero") {
+									creature.state.cooldowns.death = CONSTANTS.deathCooldown
+								}
+							}
+
+						// return alive
+							return creature.state.alive
 					}
-
-				// return alive
-					return creature.state.alive
 			}
 			catch (error) {
 				main.logError(error, arguments.callee.name, [request.session.id], callback)
@@ -1516,7 +1573,7 @@
 					// play
 						else {
 							// time
-								request.game.data.state.time += LOOPINTERVAL
+								request.game.data.state.time += CONSTANTS.loopInterval
 
 							// chamber switch
 								if (request.game.data.state.nextChamber) {
@@ -1589,13 +1646,13 @@
 
 					// deactivate portals
 						if (!isEdge) {
-							request.game.data.state.portalCooldown = PORTALCOOLDOWN
-							updatePortals(request, request.game.data.chambers[oldX][oldY], PORTALCOOLDOWN, callback)
-							updatePortals(request, request.game.data.chambers[newY][newY], PORTALCOOLDOWN, callback)
+							request.game.data.state.portalCooldown = CONSTANTS.portalCooldown
+							updatePortals(request, request.game.data.chambers[oldX][oldY], CONSTANTS.portalCooldown, callback)
+							updatePortals(request, request.game.data.chambers[newX][newY], CONSTANTS.portalCooldown, callback)
 						}
 
 					// set cooldown
-						request.game.data.chambers[oldX][oldY].state.cooldown = CHAMBERCOOLDOWN
+						request.game.data.chambers[oldX][oldY].state.cooldown = CONSTANTS.chamberCooldown
 						request.game.data.chambers[oldX][oldY].state.fadeout  = true
 				}
 			}
@@ -1612,6 +1669,14 @@
 					// get old
 						var oldX = Number(request.game.data.state.chamber.x)
 						var oldY = Number(request.game.data.state.chamber.y)
+						var oldChamber = request.game.data.chambers[oldX][oldY]
+
+					// remove dead creatures
+						for (var c in oldChamber.creatures) {
+							if (!oldChamber.creatures[c].state.alive) {
+								delete oldChamber.creatures[c]
+							}
+						}
 					
 					// get new
 						var newX = Number(request.game.data.state.nextChamber.x)
@@ -1634,7 +1699,7 @@
 						}
 
 					// set cooldown
-						request.game.data.chambers[newX][newY].state.cooldown = CHAMBERCOOLDOWN
+						request.game.data.chambers[newX][newY].state.cooldown = CONSTANTS.chamberCooldown
 						request.game.data.chambers[oldX][oldY].state.fadeout  = false
 				}
 			}
@@ -1652,7 +1717,7 @@
 						var item = chamber.items[i]
 						if (item.info.type == "tile" && item.info.subtype == "portal") {
 							item.state.active = cooldown ? false : true
-							item.info.size.x = item.info.size.y = item.info.size.max * ((PORTALCOOLDOWN - cooldown) / PORTALCOOLDOWN)
+							item.info.size.x = item.info.size.y = item.info.size.max * ((CONSTANTS.portalCooldown - cooldown) / CONSTANTS.portalCooldown)
 						}
 					}
 			}
@@ -1666,12 +1731,21 @@
 		function updateHero(request, chamber, hero, callback) {
 			try {
 				// don't stop yet, but reset edge
-					var move = true
+					var move = {
+						up: 	true,
+						down: 	true,
+						left: 	true,
+						right: 	true
+					}
 					hero.state.position.edge = null
 
+				// accelerate
+					hero.state.position.vx = Math.max(-hero.info.statistics.moveSpeed, Math.min(hero.info.statistics.moveSpeed, hero.state.position.vx + (hero.state.movement.left ? -CONSTANTS.acceleration : hero.state.movement.right ? CONSTANTS.acceleration : -CONSTANTS.acceleration * Math.sign(hero.state.position.vx))))
+					hero.state.position.vy = Math.max(-hero.info.statistics.moveSpeed, Math.min(hero.info.statistics.moveSpeed, hero.state.position.vy + (hero.state.movement.down ? -CONSTANTS.acceleration : hero.state.movement.up    ? CONSTANTS.acceleration : -CONSTANTS.acceleration * Math.sign(hero.state.position.vy))))
+
 				// get target coordinates
-					var newX = hero.state.position.x + (hero.state.movement.left ? -hero.info.statistics.speed : hero.state.movement.right ? hero.info.statistics.speed : 0)
-					var newY = hero.state.position.y + (hero.state.movement.down ? -hero.info.statistics.speed : hero.state.movement.up    ? hero.info.statistics.speed : 0)
+					var newX = hero.state.position.x + hero.state.position.vx
+					var newY = hero.state.position.y + hero.state.position.vy
 					var radiusX = Math.ceil(hero.info.size.x / 2)
 					var radiusY = Math.ceil(hero.info.size.y / 2)
 
@@ -1690,7 +1764,9 @@
 					if (collisions.length) {
 						for (var c in collisions) {
 							var keepMoving = resolveCollision(request, chamber, hero, collisions[c], callback)
-							if (!keepMoving) { move = false }
+							for (var s in keepMoving) {
+								if (!keepMoving[s]) { move[s] = false }
+							}
 						}
 					}
 
@@ -1698,18 +1774,28 @@
 					var edge = getEdge(request, chamber, targetCoordinates, callback)
 					if (edge) {
 						var keepMoving = resolveEdge(request, chamber, hero, edge, callback)
-						if (!keepMoving) { move = false }
+						for (var s in keepMoving) {
+							if (!keepMoving[s]) { move[s] = false }
+						}
 					}
 
 				// move hero
-					if (move) {
+					if ((move.left && hero.state.position.vx < 1) || (move.right && hero.state.position.vx > 1)) {
 						hero.state.position.x = targetCoordinates.x
+					}
+					else {
+						hero.state.position.vx = 0
+					}
+					if ((move.down && hero.state.position.vy < 1) || (move.up    && hero.state.position.vy > 1)) {
 						hero.state.position.y = targetCoordinates.y
+					}
+					else {
+						hero.state.position.vy = 0
 					}
 
 				// create projectiles
-					if (hero.state.actions.a && !hero.state.cooldowns.a) {
-						hero.state.cooldowns.a = ACOOLDOWN
+					if (hero.state.alive && hero.state.actions.a && !hero.state.cooldowns.a) {
+						hero.state.cooldowns.a = CONSTANTS.aCooldown
 						createProjectile(request, chamber, hero, callback)
 					}
 
@@ -1729,92 +1815,124 @@
 		module.exports.updateCreature = updateCreature
 		function updateCreature(request, chamber, creature, callback) {
 			try {
-				// don't stop yet, but reset edge
-					var move = true
-					creature.state.position.edge = null
-
-				// get path
-					var cellX = Math.round(Math.abs(creature.state.position.x / CELLSIZE)) * Math.sign(creature.state.position.x)
-						if (cellX == -0) { cellX = 0 }
-					var cellY = Math.round(Math.abs(creature.state.position.y / CELLSIZE)) * Math.sign(creature.state.position.y)
-						if (cellY == -0) { cellY = 0 }
-					var path = PATHINGAI[creature.info.pathing](chamber, creature, cellX + "," + cellY, request.game.data.nodemaps[chamber.id])
-
-				// get direction of next cell
-					var nextCoords = path.split(" > ")[1] || path.split(" > ")[0]
-					var nextCellCenterX = Number(nextCoords.split(",")[0]) * CELLSIZE
-					var nextCellCenterY = Number(nextCoords.split(",")[1]) * CELLSIZE
-
-					if (nextCellCenterY > creature.state.position.y) {
-						creature.state.movement.up    = true
-						creature.state.movement.down  = false
-						creature.state.movement.direction = "up"
-					}
-					else if (nextCellCenterY < creature.state.position.y) {
-						creature.state.movement.down  = true
-						creature.state.movement.up    = false
-						creature.state.movement.direction = "down"
-					}
-					if (nextCellCenterX > creature.state.position.x) {
-						creature.state.movement.right = true
-						creature.state.movement.left  = false
-						creature.state.movement.direction = "right"
-					}
-					else if (nextCellCenterX < creature.state.position.x) {
-						creature.state.movement.left  = true
-						creature.state.movement.right = false
-						creature.state.movement.direction = "left"
-					}
-
-				// get actual target coordinates
-					var newX = creature.state.position.x + (creature.state.movement.left ? -creature.info.statistics.speed : creature.state.movement.right ? creature.info.statistics.speed : 0)
-					var newY = creature.state.position.y + (creature.state.movement.down ? -creature.info.statistics.speed : creature.state.movement.up    ? creature.info.statistics.speed : 0)
-					var radiusX = Math.ceil(creature.info.size.x / 2)
-					var radiusY = Math.ceil(creature.info.size.y / 2)
-
-					var targetCoordinates = {
-						id: 	creature.id,
-						x: 		newX,
-						y: 		newY,
-						up: 	newY + radiusY,
-						left: 	newX - radiusX,
-						right: 	newX + radiusX,
-						down: 	newY - radiusY
-					}
-
-				// get collisions
-					var collisions = getCollisions(request, chamber, targetCoordinates, callback)
-					if (collisions.length) {
-						for (var c in collisions) {
-							var keepMoving = resolveCollision(request, chamber, creature, collisions[c], callback)
-							if (!keepMoving) { move = false }
+				// dead ?
+					if (!creature.state.alive) {
+						creature.state.cooldowns.death = Math.max(0, creature.state.cooldowns.death - CONSTANTS.deathFade)
+						if (!creature.state.cooldowns.death) {
+							delete chamber.creatures[creature.id]
 						}
 					}
 
-				// get edges
-					var edge = getEdge(request, chamber, targetCoordinates, callback)
-					if (edge) {
-						var keepMoving = resolveEdge(request, chamber, creature, edge, callback)
-						if (!keepMoving) { move = false }
-					}
+				// alive
+					else {
+						// don't stop yet, but reset edge
+							var move = {
+								up: 	true,
+								down: 	true,
+								left: 	true,
+								right: 	true
+							}
+							creature.state.position.edge = null
 
-				// move creature
-					if (move) {
-						creature.state.position.x = targetCoordinates.x
-						creature.state.position.y = targetCoordinates.y
-					}
+						// get path
+							var cellX = Math.round(Math.abs(creature.state.position.x / CONSTANTS.cellSize)) * Math.sign(creature.state.position.x)
+								if (cellX == -0) { cellX = 0 }
+							var cellY = Math.round(Math.abs(creature.state.position.y / CONSTANTS.cellSize)) * Math.sign(creature.state.position.y)
+								if (cellY == -0) { cellY = 0 }
+							var path = PATHINGAI[creature.info.pathing](chamber, creature, cellX + "," + cellY, request.game.data.nodemaps[chamber.id])
 
-				// create projectiles
-					if (!creature.state.cooldowns.a && main.rollRandom(1,3)) {
-						creature.state.cooldowns.a = ACOOLDOWN
-						createProjectile(request, chamber, creature, callback)
-					}
+						// get direction of next cell
+							var nextCoords = path.split(" > ")[1] || path.split(" > ")[0]
+							var nextCellCenterX = Number(nextCoords.split(",")[0]) * CONSTANTS.cellSize
+							var nextCellCenterY = Number(nextCoords.split(",")[1]) * CONSTANTS.cellSize
 
-				// reduce cooldowns
-					for (var c in creature.state.cooldowns) {
-						if (creature.state.cooldowns[c]) {
-							creature.state.cooldowns[c] = Math.max(0, creature.state.cooldowns[c] - 1)
-						}
+							if (nextCellCenterY > creature.state.position.y) {
+								creature.state.movement.up    = true
+								creature.state.movement.down  = false
+								creature.state.movement.direction = "up"
+							}
+							else if (nextCellCenterY < creature.state.position.y) {
+								creature.state.movement.down  = true
+								creature.state.movement.up    = false
+								creature.state.movement.direction = "down"
+							}
+							if (nextCellCenterX > creature.state.position.x) {
+								creature.state.movement.right = true
+								creature.state.movement.left  = false
+								creature.state.movement.direction = "right"
+							}
+							else if (nextCellCenterX < creature.state.position.x) {
+								creature.state.movement.left  = true
+								creature.state.movement.right = false
+								creature.state.movement.direction = "left"
+							}
+
+						// accelerate
+							creature.state.position.vx = Math.max(-creature.info.statistics.moveSpeed, Math.min(creature.info.statistics.moveSpeed, creature.state.position.vx + (creature.state.movement.left ? -CONSTANTS.acceleration : creature.state.movement.right ? CONSTANTS.acceleration : -CONSTANTS.acceleration * Math.sign(creature.state.position.vx))))
+							creature.state.position.vy = Math.max(-creature.info.statistics.moveSpeed, Math.min(creature.info.statistics.moveSpeed, creature.state.position.vy + (creature.state.movement.down ? -CONSTANTS.acceleration : creature.state.movement.up    ? CONSTANTS.acceleration : -CONSTANTS.acceleration * Math.sign(creature.state.position.vy))))
+
+						// get actual target coordinates
+							var newX = creature.state.position.x + creature.state.position.vx
+							var newY = creature.state.position.y + creature.state.position.vy
+							var radiusX = Math.ceil(creature.info.size.x / 2)
+							var radiusY = Math.ceil(creature.info.size.y / 2)
+
+							var targetCoordinates = {
+								id: 	creature.id,
+								x: 		newX,
+								y: 		newY,
+								up: 	newY + radiusY,
+								left: 	newX - radiusX,
+								right: 	newX + radiusX,
+								down: 	newY - radiusY
+							}
+
+						// get collisions
+							var collisions = getCollisions(request, chamber, targetCoordinates, callback)
+							if (collisions.length) {
+								for (var c in collisions) {
+									var keepMoving = resolveCollision(request, chamber, creature, collisions[c], callback)
+									for (var s in keepMoving) {
+										if (!keepMoving[s]) { move[s] = false }
+									}
+								}
+							}
+
+						// get edges
+							var edge = getEdge(request, chamber, targetCoordinates, callback)
+							if (edge) {
+								var keepMoving = resolveEdge(request, chamber, creature, edge, callback)
+								for (var s in keepMoving) {
+									if (!keepMoving[s]) { move[s] = false }
+								}
+							}
+
+						// move creature
+							if ((move.left && creature.state.position.vx < 1) || (move.right && creature.state.position.vx > 1)) {
+								creature.state.position.x = targetCoordinates.x
+							}
+							else {
+								creature.state.position.vx = 0
+							}
+							if ((move.down && creature.state.position.vy < 1) || (move.up    && creature.state.position.vy > 1)) {
+								creature.state.position.y = targetCoordinates.y
+							}
+							else {
+								creature.state.position.vy = 0
+							}
+
+						// create projectiles
+							if (creature.state.alive && !creature.state.cooldowns.a && main.rollRandom(1,3)) {
+								creature.state.cooldowns.a = CONSTANTS.aCooldown
+								createProjectile(request, chamber, creature, callback)
+							}
+
+						// reduce cooldowns
+							for (var c in creature.state.cooldowns) {
+								if (creature.state.cooldowns[c]) {
+									creature.state.cooldowns[c] = Math.max(0, creature.state.cooldowns[c] - 1)
+								}
+							}
 					}
 			}
 			catch (error) {
@@ -1844,7 +1962,7 @@
 						// no power?
 							if (item.info.statistics.power <= 0) {
 								var keepMoving = resolveProjectileCollision(request, chamber, item, {
-									side: null,
+									sides: [],
 									supertype: "dissipation",
 									type: "dissipation",
 									id: null
@@ -1885,7 +2003,7 @@
 									var edge = getEdge(request, chamber, targetCoordinates, callback)
 									if (edge) {
 										var keepMoving = resolveProjectileCollision(request, chamber, item, {
-											side: null,
+											sides: [edge],
 											supertype: "edge",
 											type: "edge",
 											id: null
@@ -1898,9 +2016,9 @@
 							if (move) {
 								item.state.position.x = targetCoordinates.x
 								item.state.position.y = targetCoordinates.y
-								item.info.statistics.power -= PROJECTILEFADE
-								item.info.size.x -= PROJECTILEFADE
-								item.info.size.y -= PROJECTILEFADE
+								item.info.statistics.power -= CONSTANTS.projectileFade
+								item.info.size.x -= CONSTANTS.projectileFade
+								item.info.size.y -= CONSTANTS.projectileFade
 							}
 
 						// or else delete it

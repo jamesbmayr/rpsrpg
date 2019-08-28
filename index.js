@@ -10,10 +10,11 @@
 	var home = require("./home/logic")
 	var db   = {}
 
-	var LOOPINTERVAL = main.getAsset("loopInterval")
+	var ENVIRONMENT = main.getEnvironment()
+	var CONSTANTS = main.getAsset("constants")
 
 /*** server ***/
-	var port = main.getEnvironment("port")
+	var port = ENVIRONMENT.port
 	var server = http.createServer(handleRequest)
 		server.listen(port, function (error) {
 			if (error) {
@@ -183,7 +184,7 @@
 					// get
 						else if (request.method == "GET") {
 							response.writeHead(200, {
-								"Set-Cookie": String( "session=" + request.session.id + "; expires=" + (new Date(new Date().getTime() + (1000 * 60 * 60 * 24 * 7)).toUTCString()) + "; path=/; domain=" + main.getEnvironment("domain") ),
+								"Set-Cookie": String( "session=" + request.session.id + "; expires=" + (new Date(new Date().getTime() + (1000 * 60 * 60 * 24 * 7)).toUTCString()) + "; path=/; domain=" + ENVIRONMENT.domain ),
 								"Content-Type": "text/html; charset=utf-8"
 							})
 
@@ -234,7 +235,7 @@
 								// data
 									case (/^\/data\/?$/).test(request.url):
 										try {
-											if (main.getEnvironment("debug")) {
+											if (ENVIRONMENT.debug) {
 												var data = {}
 												for (var d in db) {
 													data[d] = db[d].data
@@ -336,7 +337,7 @@
 /*** handleSocket ***/
 	function handleSocket(request) {
 		// collect data
-			if ((request.origin.replace("https://","").replace("http://","") !== main.getEnvironment("domain")) && (request.origin !== "http://" + main.getEnvironment("domain") + ":" + main.getEnvironment("port"))) {
+			if ((request.origin.replace("https://","").replace("http://","") !== ENVIRONMENT.domain) && (request.origin !== "http://" + ENVIRONMENT.domain + ":" + ENVIRONMENT.port)) {
 				main.logStatus("[REJECTED]: " + request.origin + " @ " + (request.socket._peername.address || "?"))
 				request.reject()
 			}
@@ -425,7 +426,7 @@
 								main.logTime(request.game.id + ":l ", function() {
 									game.updateTime(request, updateSocket)
 								})
-							}, LOOPINTERVAL)
+							}, CONSTANTS.loopInterval)
 						}
 				}
 				catch (error) {_400("unable to " + arguments.callee.name)}
