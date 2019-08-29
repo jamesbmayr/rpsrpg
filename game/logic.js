@@ -287,14 +287,27 @@
 								layer = nextCoords.layer
 					}
 
-				// pick orbChambers & portalChambers
+				// pick orbChambers
 					orbChambers = main.sortRandom(orbChambers)
 					portalChambers = portalChambers.concat(orbChambers.slice(3))
 					orbChambers = orbChambers.slice(0,3)
+
+				// pick portalChambers
 					portalChambers = main.sortRandom(portalChambers)
-					portalChambers = portalChambers.slice(0,2)
-					if (portalChambers.length < 2) {
-						portalChambers = []
+					var portalsNeeded = CONSTANTS.portalPairs * 2
+					var portalPairs = {}
+
+					if (portalChambers.length >= 2 && portalsNeeded >= 2) {
+						while (portalChambers.length < portalsNeeded) {
+							portalsNeeded -= 2
+						}
+
+						var portalsPlaced = 0
+						while (portalsPlaced < portalsNeeded) {
+							portalPairs[portalChambers[portalsPlaced]] = portalChambers[portalsPlaced + 1]
+							portalPairs[portalChambers[portalsPlaced + 1]] = portalChambers[portalsPlaced]
+							portalsPlaced += 2
+						}
 					}
 
 				// loop through spiral to make chambers
@@ -313,12 +326,8 @@
 							else if (orbChambers.includes(allChambers[a])) {
 								options.orb = orbTypes.shift()
 							}
-							else if (portalChambers.includes(allChambers[a])) {
-								var otherChamber = portalChambers.find(function(c) {
-									return c !== allChambers[a]
-								})
-
-								options.portal = otherChamber
+							else if (portalPairs[allChambers[a]]) {
+								options.portal = portalPairs[allChambers[a]]
 							}
 
 						// monsters ?

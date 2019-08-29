@@ -140,13 +140,15 @@
 								pauseOpacity: 		0.5,
 								deadOpacity: 		0.5,
 								layers: 			3,
+								portalPairs: 		2,
 								chamberSize: 		9,
 								cellSize: 			128,
 								baseHealth: 		128,
 								heal: 				1,
 								monsterChance: 		[3,4],
-								monsterMax: 		1,
-								monsterMin: 		1,
+								monsterMax: 		5,
+								monsterMin: 		2,
+								directionChance: 	[1,10],
 								projectileFade: 	1,
 								deathFade: 			1,
 								healthHigh: 		60,
@@ -326,24 +328,181 @@
 						case "pathingAI":
 							return {
 								docile: function(chamber, monster, currentCell, nodemap) {
-									return currentCell
+									// get x and y
+										var coords = currentCell.split(",")
+										var x = Number(coords[0])
+										var y = Number(coords[1])
+
+									// randomly change X% of the time
+										if (rangeRandom(CONSTANTS.directionChance[0], CONSTANTS.directionChance[1])) {
+											monster.state.movement.direction = null
+										}
+
+									// walls? change direction
+										else if (monster.state.movement.direction) {
+											if ((monster.state.movement.direction == "up") && (!chamber.cells[x] || !chamber.cells[x][y + 1] || chamber.cells[x][y + 1].wall)) {
+												monster.state.movement.direction = null
+											}
+											else if ((monster.state.movement.direction == "down") && (!chamber.cells[x] || !chamber.cells[x][y - 1] || chamber.cells[x][y - 1].wall)) {
+												monster.state.movement.direction = null
+											}
+											else if ((monster.state.movement.direction == "left") && (!chamber.cells[x - 1] || !chamber.cells[x - 1][y] || chamber.cells[x - 1][y].wall)) {
+												monster.state.movement.direction = null
+											}
+											else if ((monster.state.movement.direction == "right") && (!chamber.cells[x + 1] || !chamber.cells[x + 1][y] || chamber.cells[x + 1][y].wall)) {
+												monster.state.movement.direction = null
+											}
+										}
+
+									// no direction? get a random one
+										if (!monster.state.movement.direction) {
+											monster.state.movement.direction = chooseRandom(CONSTANTS.directions)
+										}
+
+									// get new target cell
+										var targetCell = currentCell
+										if ((monster.state.movement.direction == "up") && (chamber.cells[x] && chamber.cells[x][y + 1] && !chamber.cells[x][y + 1].wall)) {
+											targetCell = (x) + "," + (y + 1)
+										}
+										else if ((monster.state.movement.direction == "down") && (chamber.cells[x] && chamber.cells[x][y - 1] && !chamber.cells[x][y - 1].wall)) {
+											targetCell = (x) + "," + (y - 1)
+										}
+										else if ((monster.state.movement.direction == "left") && (chamber.cells[x - 1] && chamber.cells[x - 1][y] && !chamber.cells[x - 1][y].wall)) {
+											targetCell = (x - 1) + "," + (y)
+										}
+										else if ((monster.state.movement.direction == "right") && (chamber.cells[x + 1] && chamber.cells[x + 1][y] && !chamber.cells[x + 1][y].wall)) {
+											targetCell = (x + 1) + "," + (y)
+										}
+
+									// return path
+										var paths = nodemap[currentCell][targetCell] || []
+										if (!paths || !paths.length) {
+											return currentCell
+										}
+										else {
+											return paths.sort(function(a, b) {
+												return b.split(" > ").length - a.split(" > ").length
+											})[0] || currentCell
+										}
 								},
 								cowardly: function(chamber, monster, currentCell, nodemap) {
-									return currentCell
+									// distances
+										var distances = {}
+										for (var h in chamber.heroes) {
+											var hero = chamber.heroes[h]
+											if (hero.state.alive) {
+												distances[h] = getDistance(monster.state.position.x, monster.state.position.y, hero.state.position.x, hero.state.position.y)
+											}
+										}
+
+									// get closest
+										var keys = Object.keys(distances) || []
+										if (!keys.length) {
+											return currentCell
+										}
+											keys.sort(function(a,b) {
+												return distances[b] - distances[a]
+											})
+										var closestHero = chamber.heroes[keys[0]]
+
+									// get hero cell
+										var heroX = closestHero.state.position.x
+										var heroY = closestHero.state.position.y
+										var cellX = Math.round(Math.abs(heroX / CONSTANTS.cellSize)) * Math.sign(heroX)
+											if (cellX == -0 || cellX == 0) { cellX = 1 }
+										var cellY = Math.round(Math.abs(heroY / CONSTANTS.cellSize)) * Math.sign(heroY)
+											if (cellY == -0 || cellY == 0) { cellY = 1 }
+
+									// get cell in opposite quadrant
+										var targetX = Math.sign(cellX) * -1 * Math.floor(chamber.info.chamberSize / 2)
+										var targetY = Math.sign(cellY) * -1 * Math.floor(chamber.info.chamberSize / 2)
+										var targetCell = null
+										var changeDirection = "x"
+										while (!targetCell) {
+											if (chamber.cells[targetX] && chamber.cells[targetX][targetY] && !chamber.cells[targetX][targetY].wall) {
+												targetCell = targetX + "," + targetY
+											}
+											else if (changeDirection == "x") {
+												targetX = (Math.abs(targetX) - 1) * Math.sign(targetX)
+												changeDirection = "y"
+											}
+											else if (changeDirection == "y") {
+												targetY = (Math.abs(targetY) - 1) * Math.sign(targetY)
+												changeDirection = "x"
+											}
+										}
+
+									// return path
+										var paths = nodemap[currentCell][targetCell] || []
+										if (!paths || !paths.length) {
+											return currentCell
+										}
+										else {
+											return paths.sort(function(a, b) {
+												return a.split(" > ").length - b.split(" > ").length
+											})[0] || currentCell
+										}
 								},
 								protective: function(chamber, monster, currentCell, nodemap) {
-									return currentCell
+									// no items?
+										if (!Object.keys(chamber.items)) {
+											return currentCell
+										}
+
+									// some items
+										else {
+											// loop through to find best item (orb > pedestal > tile)
+												var cellX = null
+												var cellY = null
+												var itemType = null
+												for (var i in chamber.items) {
+													var item = chamber.items[i]
+
+													if ((item.info.type == "orb")
+													 || (!["orb"].includes(itemType) && item.info.type == "pedestal")
+													 || (!["orb", "pedestal"].includes(itemType) && item.info.type == "tile")) {
+														itemType = item.info.type
+														var targetX = item.state.position.x
+														var targetY = item.state.position.y
+														var cellX = Math.round(Math.abs(targetX / CONSTANTS.cellSize)) * Math.sign(targetX)
+															if (cellX == -0) { cellX = 0 }
+														var cellY = Math.round(Math.abs(targetY / CONSTANTS.cellSize)) * Math.sign(targetY)
+															if (cellY == -0) { cellY = 0 }
+													}
+												}
+
+											// no item?
+												if (!itemType) {
+													return currentCell
+												}
+
+											// return path
+												var paths = nodemap[currentCell][cellX + "," + cellY] || []
+												if (!paths || !paths.length) {
+													return currentCell
+												}
+												else {
+													return paths.sort(function(a, b) {
+														return a.split(" > ").length - b.split(" > ").length
+													})[0] || currentCell
+												}
+										}
 								},
 								aggressive: function(chamber, monster, currentCell, nodemap) {
 									// distances
 										var distances = {}
 										for (var h in chamber.heroes) {
 											var hero = chamber.heroes[h]
-											distances[h] = getDistance(monster.state.position.x, monster.state.position.y, hero.state.position.x, hero.state.position.y)
+											if (hero.state.alive) {
+												distances[h] = getDistance(monster.state.position.x, monster.state.position.y, hero.state.position.x, hero.state.position.y)
+											}
 										}
 
 									// get closest
-										var keys = Object.keys(distances)
+										var keys = Object.keys(distances) || []
+										if (!keys.length) {
+											return currentCell
+										}
 											keys.sort(function(a,b) {
 												return distances[b] - distances[a]
 											})
@@ -372,7 +531,7 @@
 									// get rps target
 										var rpsTarget = (monster.info.rps == "rock") ? "scissors" : (monster.info.rps == "scissors") ? "paper" : "rock"
 										var targetKey = Object.keys(chamber.heroes).find(function(k) {
-											return chamber.heroes[k].info.rps == rpsTarget
+											return (chamber.heroes[k].info.rps == rpsTarget && chamber.heroes[k].state.alive)
 										})
 										var targetHero = chamber.heroes[targetKey]
 
@@ -493,7 +652,7 @@
 										type: "monster",
 										subtype: "troll",
 										color: CONSTANTS.colors.orange[2],
-										pathing: "aggressive",
+										pathing: "cowardly",
 										statistics: {
 											moveSpeed: 	Math.floor(quarterCell / 2),
 											rangeSpeed: Math.floor(quarterCell / 2),
@@ -514,7 +673,7 @@
 										type: "monster",
 										subtype: "dendroid",
 										color: CONSTANTS.colors.purple[2],
-										pathing: "aggressive",
+										pathing: "cowardly",
 										statistics: {
 											moveSpeed: 	Math.floor(quarterCell / 4),
 											rangeSpeed: Math.floor(quarterCell / 2),
@@ -535,7 +694,7 @@
 										type: "monster",
 										subtype: "golem",
 										color: CONSTANTS.colors.greengray[2],
-										pathing: "aggressive",
+										pathing: "cowardly",
 										statistics: {
 											moveSpeed: 	Math.floor(quarterCell / 4),
 											rangeSpeed: Math.floor(quarterCell / 2),
