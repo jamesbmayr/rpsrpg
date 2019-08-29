@@ -148,6 +148,7 @@
 								monsterChance: 		[3,4],
 								monsterMax: 		5,
 								monsterMin: 		2,
+								monsterFireChance: 	[1,3],
 								directionChance: 	[1,10],
 								projectileFade: 	1,
 								deathFade: 			1,
@@ -180,8 +181,8 @@
 							constants.chamberCooldown 	= Math.floor(1000 / constants.loopInterval / 5)
 							constants.aCooldown 		= Math.floor(1000 / constants.loopInterval / 4)
 							constants.deathCooldown 	= Math.floor(1000 / constants.loopInterval / 2)
-							constants.bumpDistance 		= Math.floor(constants.cellSize / 4)
-							constants.acceleration 		= Math.floor(constants.cellSize / 16)
+							constants.bumpAcceleration	= Math.floor(constants.cellSize / 8)
+							constants.acceleration 		= Math.floor(constants.cellSize / 32)
 
 							return constants
 						break
@@ -652,7 +653,7 @@
 										type: "monster",
 										subtype: "troll",
 										color: CONSTANTS.colors.orange[2],
-										pathing: "cowardly",
+										pathing: "aggressive",
 										statistics: {
 											moveSpeed: 	Math.floor(quarterCell / 2),
 											rangeSpeed: Math.floor(quarterCell / 2),
@@ -673,7 +674,7 @@
 										type: "monster",
 										subtype: "dendroid",
 										color: CONSTANTS.colors.purple[2],
-										pathing: "cowardly",
+										pathing: "aggressive",
 										statistics: {
 											moveSpeed: 	Math.floor(quarterCell / 4),
 											rangeSpeed: Math.floor(quarterCell / 2),
@@ -694,7 +695,7 @@
 										type: "monster",
 										subtype: "golem",
 										color: CONSTANTS.colors.greengray[2],
-										pathing: "cowardly",
+										pathing: "aggressive",
 										statistics: {
 											moveSpeed: 	Math.floor(quarterCell / 4),
 											rangeSpeed: Math.floor(quarterCell / 2),
