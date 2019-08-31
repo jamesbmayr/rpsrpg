@@ -332,7 +332,7 @@
 
 						// monsters ?
 							if (!(x == 0 && y == 0) && main.rollRandom(CONSTANTS.monsterChance[0], CONSTANTS.monsterChance[1])) {
-								var monsterCount = main.rangeRandom(CONSTANTS.monsterMin, CONSTANTS.monsterMax)
+								var monsterCount = main.rangeRandom(CONSTANTS.monsterCountMin, CONSTANTS.monsterCountMax)
 								options.monsters = []
 
 								for (var m = 0; m < monsterCount; m++) {
@@ -948,17 +948,18 @@
 			}
 		}
 
-	/* createProjectile */
-		module.exports.createProjectile = createProjectile
-		function createProjectile(request, chamber, creature, callback) {
+	/* createRangeAttack */
+		module.exports.createRangeAttack = createRangeAttack
+		function createRangeAttack(request, chamber, creature, callback) {
 			try {
-				// empty projectile
-					var projectile = createItem(request, main.getSchema("projectile"), callback)
+				// empty attack
+					var attack = createItem(request, main.getSchema("attack"), callback)
 
 				// add creature info
-					main.overwriteObject(projectile, {
+					main.overwriteObject(attack, {
 						info: {
-							shooter: {
+							type: "rangeAttack",
+							attacker: {
 								id: creature.id,
 								type: creature.info.type,
 								subtype: creature.info.subtype
@@ -987,7 +988,50 @@
 					})
 
 				// add to items
-					chamber.items[projectile.id] = projectile
+					chamber.items[attack.id] = attack
+			}
+			catch (error) {
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
+			}
+		}
+
+	/* createAreaAttack */
+		module.exports.createAreaAttack = createAreaAttack
+		function createAreaAttack(request, chamber, creature, callback) {
+			try {
+				// empty attack
+					var attack = createItem(request, main.getSchema("attack"), callback)
+
+				// add creature info
+					main.overwriteObject(attack, {
+						info: {
+							type: "areaAttack",
+							attacker: {
+								id: creature.id,
+								type: creature.info.type,
+								subtype: creature.info.subtype
+							},
+							rps: creature.info.rps,
+							subtype: creature.info.subtype,
+							size: {
+								x: creature.info.statistics.areaPower * CONSTANTS.areaAttackRadius,
+								y: creature.info.statistics.areaPower * CONSTANTS.areaAttackRadius
+							},
+							color: creature.info.color,
+							statistics: {
+								power: creature.info.statistics.areaPower
+							}
+						},
+						state: {
+							position: {
+								x: creature.state.position.x,
+								y: creature.state.position.y
+							}
+						}
+					})
+
+				// add to items
+					chamber.items[attack.id] = attack
 			}
 			catch (error) {
 				main.logError(error, arguments.callee.name, [request.session.id], callback)
@@ -1232,7 +1276,7 @@
 						var thingRadius = Math.floor(thing.info.size[direction] / 2)
 						
 						targetCoordinates[direction] = Math.min(chamberRadius - thingRadius, Math.abs(targetCoordinates[direction])) * Math.sign(targetCoordinates[direction])
-						targetCoordinates.collision = true
+						targetCoordinates["collision" + direction.toUpperCase()] = true
 					}
 
 				// return
@@ -1277,25 +1321,25 @@
 				// left
 					if (collisionSide == "left") {
 						targetCoordinates.x = Math.max(targetCoordinates.x, Math.ceil(chamber.info.cellSize * cellX + chamber.info.cellSize / 2) + targetCoordinates.radiusX)
-						targetCoordinates.collision = true
+						targetCoordinates.collisionX = true
 					}
 
 				// right
 					else if (collisionSide == "right") {
 						targetCoordinates.x = Math.min(targetCoordinates.x, Math.ceil(chamber.info.cellSize * cellX - chamber.info.cellSize / 2) - targetCoordinates.radiusX)
-						targetCoordinates.collision = true
+						targetCoordinates.collisionX = true
 					}
 
 				// down
 					if (collisionSide == "down") {
 						targetCoordinates.y = Math.max(targetCoordinates.y, Math.ceil(chamber.info.cellSize * cellY + chamber.info.cellSize / 2) + targetCoordinates.radiusY)
-						targetCoordinates.collision = true
+						targetCoordinates.collisionY = true
 					}
 
 				// up
 					else if (collisionSide == "up") {
 						targetCoordinates.y = Math.min(targetCoordinates.y, Math.ceil(chamber.info.cellSize * cellY - chamber.info.cellSize / 2) - targetCoordinates.radiusY)
-						targetCoordinates.collision = true
+						targetCoordinates.collisionY = true
 					}
 
 				// return
@@ -1337,7 +1381,7 @@
 					}
 
 				// items
-					if (thing.info.type !== "projectile") { // projectiles don't interact with other items
+					if (!thing.info.type.includes("Attack")) { // attacks don't interact with other attacks
 						for (var i in chamber.items) {
 							var collisionSide = getCollisionSide(request, chamber.items[i], targetCoordinates, callback)
 							if (collisionSide) {
@@ -1371,11 +1415,7 @@
 							if (collision.type == "tile") {
 								// healTile
 									if (thing.info.type == "hero" && chamber.items[collision.id].info.subtype == "heal") {
-										if (!thing.state.alive) {
-											thing.state.alive = true
-										}
-
-										thing.state.health = Math.min(thing.state.healthMax, thing.state.health + CONSTANTS.heal)
+										thing.state.healing = true
 									}
 
 								// portalTile
@@ -1399,15 +1439,19 @@
 									else {
 										if (collision.side == "left") {
 											targetCoordinates.x = Math.max(targetCoordinates.x, item.state.position.x + (item.info.size.x / 2) + targetCoordinates.radiusX)
+											targetCoordinates.collisionX = true
 										}
 										else if (collision.side == "right") {
 											targetCoordinates.x = Math.min(targetCoordinates.x, item.state.position.x - (item.info.size.x / 2) - targetCoordinates.radiusX)
+											targetCoordinates.collisionX = true
 										}
 										else if (collision.side == "up") {
 											targetCoordinates.y = Math.min(targetCoordinates.y, item.state.position.y - (item.info.size.y / 2) - targetCoordinates.radiusY)
+											targetCoordinates.collisionY = true
 										}
 										else if (collision.side == "down") {
 											targetCoordinates.y = Math.max(targetCoordinates.y, item.state.position.y + (item.info.size.y / 2) + targetCoordinates.radiusY)
+											targetCoordinates.collisionY = true
 										}
 									}
 							}
@@ -1431,15 +1475,19 @@
 								// stop movement
 									if (collision.side == "left") {
 										targetCoordinates.x = Math.max(targetCoordinates.x, item.state.position.x + (item.info.size.x / 2) + targetCoordinates.radiusX)
+										targetCoordinates.collisionX = true
 									}
 									else if (collision.side == "right") {
 										targetCoordinates.x = Math.min(targetCoordinates.x, item.state.position.x - (item.info.size.x / 2) - targetCoordinates.radiusX)
+										targetCoordinates.collisionX = true
 									}
 									else if (collision.side == "up") {
 										targetCoordinates.y = Math.min(targetCoordinates.y, item.state.position.y - (item.info.size.y / 2) - targetCoordinates.radiusY)
+										targetCoordinates.collisionY = true
 									}
 									else if (collision.side == "down") {
 										targetCoordinates.y = Math.max(targetCoordinates.y, item.state.position.y + (item.info.size.y / 2) + targetCoordinates.radiusY)
+										targetCoordinates.collisionY = true
 									}
 							}
 					}
@@ -1470,22 +1518,31 @@
 								// stop movement
 									if (collision.side == "left") {
 										targetCoordinates.x = Math.max(targetCoordinates.x, recipient.state.position.x + (recipient.info.size.x / 2) + targetCoordinates.radiusX)
+										targetCoordinates.collisionX = true
 									}
 									else if (collision.side == "right") {
 										targetCoordinates.x = Math.min(targetCoordinates.x, recipient.state.position.x - (recipient.info.size.x / 2) - targetCoordinates.radiusX)
+										targetCoordinates.collisionX = true
 									}
 									else if (collision.side == "up") {
 										targetCoordinates.y = Math.min(targetCoordinates.y, recipient.state.position.y - (recipient.info.size.y / 2) - targetCoordinates.radiusY)
+										targetCoordinates.collisionY = true
 									}
 									else if (collision.side == "down") {
 										targetCoordinates.y = Math.max(targetCoordinates.y, recipient.state.position.y + (recipient.info.size.y / 2) + targetCoordinates.radiusY)
+										targetCoordinates.collisionY = true
 									}
 							}
 					}
 
-				// projectiles
-					else if (thing.info.type == "projectile" && (collision.supertype == "hero" || collision.supertype == "creature")) {
-						targetCoordinates = resolveProjectileCollision(request, chamber, thing, targetCoordinates, collision, callback)
+				// rangeAttacks
+					else if (thing.info.type == "rangeAttack" && (collision.supertype == "hero" || collision.supertype == "creature")) {
+						targetCoordinates = resolveAttackCollision(request, chamber, thing, targetCoordinates, collision, callback)
+					}
+
+				// areaAttacks
+					else if (thing.info.type == "areaAttack" && (collision.supertype == "hero" || collision.supertype == "creature")) {
+						targetCoordinates = resolveAttackCollision(request, chamber, thing, targetCoordinates, collision, callback)
 					}
 
 				// return
@@ -1497,36 +1554,37 @@
 			}
 		}
 
-	/* resolveProjectileCollision */
-		module.exports.resolveProjectileCollision = resolveProjectileCollision
-		function resolveProjectileCollision(request, chamber, projectile, targetCoordinates, collision, callback) {
+	/* resolveAttackCollision */
+		module.exports.resolveAttackCollision = resolveAttackCollision
+		function resolveAttackCollision(request, chamber, attack, targetCoordinates, collision, callback) {
 			try {
 				// self
-					if (collision.id == projectile.info.shooter.id) {
+					if (collision.id == attack.info.attacker.id) {
 						return targetCoordinates
 					}
 
 				// creatures
 					else if (collision.supertype == "hero" || collision.supertype == "creature") {
-						// shooter
-							var shooter = chamber[projectile.info.shooter.type == "hero" ? "heroes" : "creatures"][projectile.info.shooter.id]
+						// attacker
+							var attacker = chamber[attack.info.attacker.type == "hero" ? "heroes" : "creatures"][attack.info.attacker.id]
 
 						// recipient
 							var recipient = chamber[collision.supertype == "hero" ? "heroes" : "creatures"][collision.id]
 							if (recipient.state.alive) {
 								// stop moving
-									targetCoordinates.collision = true
+									targetCoordinates.collisionX = true
+									targetCoordinates.collisionY = true
 
 								// damage
 									var alive = resolveDamage(request, chamber, recipient, {
-										power: 	projectile.info.statistics.power,
-										rps: 	projectile.info.rps,
-										type: 	projectile.info.shooter.type
+										power: 	attack.info.statistics.power,
+										rps: 	attack.info.rps,
+										type: 	attack.info.attacker.type
 									}, callback)
 
 								// kills
-									if (!alive && shooter) {
-										shooter.state.kills++
+									if (!alive && attacker) {
+										attacker.state.kills++
 									}
 
 								// bump
@@ -1580,12 +1638,28 @@
 
 						// reduce health
 							creature.state.health = Math.max(0, Math.min(creature.state.healthMax, creature.state.health - damage))
+
+						// dead?
 							if (creature.state.health <= 0) {
 								creature.state.alive = false
 
-								if (creature.info.type !== "hero") {
-									creature.state.cooldowns.death = CONSTANTS.deathCooldown
-								}
+								// creatures shrink
+									if (creature.info.type !== "hero" && !creature.state.cooldowns.death) {
+										creature.state.cooldowns.death = CONSTANTS.deathCooldown
+									}
+
+								// drop items
+									var x = creature.state.position.x
+									var y = creature.state.position.y
+
+									for (var i in creature.items) {
+										var item = main.duplicateObject(creature.items[i])
+											item.state.position.x = x + Math.floor(Math.random() * 2 * CONSTANTS.itemDropRadius) - CONSTANTS.itemDropRadius
+											item.state.position.y = y + Math.floor(Math.random() * 2 * CONSTANTS.itemDropRadius) - CONSTANTS.itemDropRadius
+										chamber.items[i] = item
+
+										delete creature.items[i]
+									}
 							}
 
 						// return alive
@@ -1779,8 +1853,9 @@
 		module.exports.updateHero = updateHero
 		function updateHero(request, chamber, hero, callback) {
 			try {
-				// reset edge
+				// resets
 					hero.state.position.edge = null
+					hero.state.healing = false
 
 				// accelerate
 					if (Math.abs(hero.state.position.vx) > hero.info.statistics.moveSpeed) {
@@ -1809,7 +1884,8 @@
 						radiusY: 	radiusY,
 						x: 			newX,
 						y: 			newY,
-						collision: 	false
+						collisionX: false,
+						collisionY: false
 					}
 
 				// resolve edges
@@ -1825,10 +1901,36 @@
 					hero.state.position.x = targetCoordinates.x
 					hero.state.position.y = targetCoordinates.y
 
-				// create projectiles
-					if (hero.state.alive && hero.state.actions.a && !hero.state.cooldowns.a) {
-						hero.state.cooldowns.a = CONSTANTS.aCooldown
-						createProjectile(request, chamber, hero, callback)
+				// arrest movement?
+					if (targetCoordinates.collisionX) {
+						hero.state.position.vx = 0
+					}
+					if (targetCoordinates.collisionY) {
+						hero.state.position.vy = 0
+					}
+
+				// healing
+					if (hero.state.healing) {
+						if (!hero.state.alive) {
+							hero.state.alive = true
+						}
+
+						hero.state.health = Math.min(hero.state.healthMax, hero.state.health + CONSTANTS.heal)
+					}
+
+				// attacks
+					if (hero.state.alive && !Object.keys(hero.items).length) {
+						// a
+							if (hero.state.actions.a && !hero.state.cooldowns.a) {
+								hero.state.cooldowns.a = CONSTANTS.aCooldown
+								createRangeAttack(request, chamber, hero, callback)
+							}
+
+						// b
+							if (hero.state.actions.b && !hero.state.cooldowns.b) {
+								hero.state.cooldowns.b = CONSTANTS.bCooldown
+								createAreaAttack(request, chamber, hero, callback)
+							}
 					}
 
 				// reduce cooldowns
@@ -1857,8 +1959,9 @@
 
 				// alive
 					else {
-						// reset edge
+						// resets
 							creature.state.position.edge = null
+							creature.state.healing = false
 
 						// get path
 							var cellX = Math.round(Math.abs(creature.state.position.x / CONSTANTS.cellSize)) * Math.sign(creature.state.position.x)
@@ -1920,7 +2023,8 @@
 								radiusY: 	radiusY,
 								x: 			newX,
 								y: 			newY,
-								collision: 	false
+								collisionX:	false,
+								collisionY: false
 							}
 
 						// resolve edges
@@ -1936,10 +2040,36 @@
 							creature.state.position.x = targetCoordinates.x
 							creature.state.position.y = targetCoordinates.y
 
-						// create projectiles
-							if (creature.state.alive && !creature.state.cooldowns.a && main.rollRandom(CONSTANTS.monsterFireChance[0], CONSTANTS.monsterFireChance[1])) {
-								creature.state.cooldowns.a = CONSTANTS.aCooldown
-								createProjectile(request, chamber, creature, callback)
+						// arrest movement?
+							if (targetCoordinates.collisionX) {
+								creature.state.position.vx = 0
+							}
+							if (targetCoordinates.collisionY) {
+								creature.state.position.vy = 0
+							}
+
+						// healing
+							if (creature.state.healing) {
+								if (!creature.state.alive) {
+									creature.state.alive = true
+								}
+
+								creature.state.health = Math.min(creature.state.healthMax, creature.state.health + CONSTANTS.heal)
+							}
+
+						// attacks
+							if (creature.state.alive && !Object.keys(creature.items).length) {
+								// a
+									if (!creature.state.cooldowns.a && main.rollRandom(CONSTANTS.monsterChanceA[0], CONSTANTS.monsterChanceA[1])) {
+										creature.state.cooldowns.a = CONSTANTS.aCooldown
+										createRangeAttack(request, chamber, creature, callback)
+									}
+
+								// b
+									if (!creature.state.cooldowns.b && main.rollRandom(CONSTANTS.monsterChanceB[0], CONSTANTS.monsterChanceB[1])) {
+										creature.state.cooldowns.b = CONSTANTS.bCooldown
+										createAreaAttack(request, chamber, creature, callback)
+									}
 							}
 
 						// reduce cooldowns
@@ -1959,18 +2089,8 @@
 		module.exports.updateItem = updateItem
 		function updateItem(request, chamber, item, callback) {
 			try {
-				// no speed
-					if (!item.info || !item.info.statistics || !item.info.statistics.speed) {
-						return
-					}
-
-				// no active direction
-					else if (!item.state || !item.state.movement || !item.state.movement.direction) {
-						return
-					}
-
-				// projectiles
-					else if (item.info.type == "projectile") {
+				// range attacks
+					if (item.info.type == "rangeAttack") {
 						// no power?
 							if (item.info.statistics.power <= 0) {
 								delete chamber.items[item.id]
@@ -1992,7 +2112,8 @@
 										radiusY: 	radiusY,
 										x: 			newX,
 										y: 			newY,
-										collision: 	false
+										collisionX:	false,
+										collisionY: false
 									}
 
 								// resolve edges
@@ -2009,16 +2130,49 @@
 
 								// resolve collisions
 									targetCoordinates = resolveCollisions(request, chamber, item, targetCoordinates, callback)
-									if (targetCoordinates.collision) {
+									if (targetCoordinates.collisionX || targetCoordinates.collisionY) {
 										delete chamber.items[item.id]
 									}
 
 								// move & shrink item
 									item.state.position.x = targetCoordinates.x
 									item.state.position.y = targetCoordinates.y
-									item.info.statistics.power -= CONSTANTS.projectileFade
-									item.info.size.x -= CONSTANTS.projectileFade
-									item.info.size.y -= CONSTANTS.projectileFade									
+									item.info.statistics.power -= CONSTANTS.rangeAttackFade
+									item.info.size.x -= CONSTANTS.rangeAttackFade
+									item.info.size.y -= CONSTANTS.rangeAttackFade
+							}
+					}
+
+				// area attacks
+					else if (item.info.type == "areaAttack") {
+						// no power?
+							if (item.info.statistics.power <= 0) {
+								delete chamber.items[item.id]
+							}
+
+						// still has power
+							else {
+								// target coordinates
+									var creature = chamber[item.info.attacker.type == "hero" ? "heroes" : "creatures"][item.info.attacker.id]
+									var targetCoordinates = {
+										id: 		item.id,
+										radiusX: 	Math.ceil(item.info.size.x / 2),
+										radiusY: 	Math.ceil(item.info.size.y / 2),
+										x: 			creature.state.position.x,
+										y: 			creature.state.position.y,
+										collisionX:	false,
+										collisionY: false
+									}
+
+								// resolve collisions
+									targetCoordinates = resolveCollisions(request, chamber, item, targetCoordinates, callback)
+
+								// move & shrink item
+									item.info.statistics.power -= CONSTANTS.areaAttackFade
+									item.info.size.x -= (CONSTANTS.areaAttackFade * CONSTANTS.areaAttackRadius)
+									item.info.size.y -= (CONSTANTS.areaAttackFade * CONSTANTS.areaAttackRadius)
+									item.state.position.x = creature.state.position.x
+									item.state.position.y = creature.state.position.y
 							}
 					}
 			}

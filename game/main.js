@@ -221,6 +221,9 @@
 				if (item.info.style == "border") {
 					itemOptions.border = CONSTANTS.borderThickness
 				}
+				if (item.info.opacity) {
+					itemOptions.opacity = item.info.opacity
+				}
 
 			// draw
 				if (item.info.shape == "circle") {

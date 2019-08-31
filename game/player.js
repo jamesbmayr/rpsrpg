@@ -93,7 +93,22 @@
 				for (var c in hero.state.cooldowns) {
 					var button = document.getElementById(c)
 					var size = Math.ceil(button.getBoundingClientRect().width)
-					var fraction = (hero.state.cooldowns[c] / CONSTANTS.aCooldown) * 3 / 4
+					var fraction = (hero.state.cooldowns[c] / CONSTANTS[c + "Cooldown"]) / 3
 					button.style.borderWidth = Math.max(0, Math.min(size, fraction * size)) + "px"
+				}
+
+			// button actives
+				for (var i in INPUTS) {
+					var id = INPUTS[i].id
+					if (CONSTANTS.directions.includes(id)) {
+						if (!hero.state.movement[id]) {
+							INPUTS[i].removeAttribute("active")
+						}
+					}
+					else if (CONSTANTS.actions.includes(id)) {
+						if (!hero.state.actions[id]) {
+							INPUTS[i].removeAttribute("active")
+						}
+					}
 				}
 		}
