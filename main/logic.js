@@ -157,6 +157,7 @@
 									heal: 				1,
 									healthHigh: 		60,
 									healthLow: 			30,
+									rpsMultiplier: 		2,
 
 								// monster AI
 									monsterChanceA: 	[1,3],
@@ -166,6 +167,11 @@
 									rangeAttackFade: 	1,
 									areaAttackFade: 	2,
 									deathFade: 			1,
+
+								// shrine effects
+									rockMultiplier: 	2,
+									paperMultiplier: 	4,
+									scissorsMultiplier: 2,
 
 								// lists
 									rps: 				["rock", "paper", "scissors"],
@@ -195,8 +201,10 @@
 
 							// time derivatives
 								constants.chamberCooldown 	= Math.floor(1000 / constants.loopInterval / 5)
+								constants.shrineCooldown 	= Math.floor(1000 / constants.loopInterval)
 								constants.portalCooldown 	= Math.floor(1000 / constants.loopInterval * 3)
 								constants.deathCooldown 	= Math.floor(1000 / constants.loopInterval / 2)
+								constants.effectCooldown 	= Math.floor(1000 / constants.loopInterval * 10)
 								constants.aCooldown 		= Math.floor(1000 / constants.loopInterval / 4)
 								constants.bCooldown 		= Math.floor(1000 / constants.loopInterval)
 
@@ -610,9 +618,9 @@
 											moveSpeed: 	Math.floor(quarterCell / 2),
 											rangeSpeed: Math.floor(quarterCell / 2),
 											rangePower: Math.floor(CONSTANTS.baseHealth / 8),
-											bumpPower: 	Math.floor(CONSTANTS.baseHealth / 4),
+											bumpPower: 	Math.floor(CONSTANTS.baseHealth / 2),
 											areaPower: 	Math.floor(CONSTANTS.baseHealth / 8),
-											armorPower: Math.floor(CONSTANTS.baseHealth / 16)
+											armorPower: Math.floor(CONSTANTS.baseHealth / 8)
 										}
 									},
 									state: {
@@ -636,7 +644,7 @@
 											rangePower: Math.floor(CONSTANTS.baseHealth / 4),
 											bumpPower: 	Math.floor(CONSTANTS.baseHealth / 16),
 											areaPower: 	Math.floor(CONSTANTS.baseHealth / 8),
-											armorPower: Math.floor(CONSTANTS.baseHealth / 8)
+											armorPower: Math.floor(CONSTANTS.baseHealth / 16)
 										}
 									},
 									state: {
@@ -689,9 +697,9 @@
 										statistics: {
 											moveSpeed: 	Math.floor(quarterCell / 2),
 											rangeSpeed: Math.floor(quarterCell / 2),
-											rangePower: Math.floor(CONSTANTS.baseHealth / 16),
+											rangePower: Math.floor(CONSTANTS.baseHealth / 8),
 											bumpPower: 	Math.floor(CONSTANTS.baseHealth / 8),
-											areaPower: 	Math.floor(CONSTANTS.baseHealth / 8),
+											areaPower: 	Math.floor(CONSTANTS.baseHealth / 16),
 											armorPower: Math.floor(CONSTANTS.baseHealth / 16)
 										}
 									},
@@ -709,7 +717,7 @@
 										pathing: "aggressive",
 										statistics: {
 											moveSpeed: 	Math.floor(quarterCell / 4),
-											rangeSpeed: Math.floor(quarterCell / 2),
+											rangeSpeed: Math.floor(quarterCell / 4),
 											rangePower: Math.floor(CONSTANTS.baseHealth / 16),
 											bumpPower: 	Math.floor(CONSTANTS.baseHealth / 8),
 											areaPower: 	Math.floor(CONSTANTS.baseHealth / 8),
@@ -730,8 +738,8 @@
 										pathing: "aggressive",
 										statistics: {
 											moveSpeed: 	Math.floor(quarterCell / 4),
-											rangeSpeed: Math.floor(quarterCell / 2),
-											rangePower: Math.floor(CONSTANTS.baseHealth / 8),
+											rangeSpeed: Math.floor(quarterCell / 4),
+											rangePower: Math.floor(CONSTANTS.baseHealth / 16),
 											bumpPower: 	Math.floor(CONSTANTS.baseHealth / 4),
 											areaPower: 	Math.floor(CONSTANTS.baseHealth / 16),
 											armorPower: Math.floor(CONSTANTS.baseHealth / 16)
@@ -831,8 +839,8 @@
 									type: "tile",
 									subtype: "heal",
 									size: {
-										x: Math.floor(CONSTANTS.cellSize / 4) * 3,
-										y: Math.floor(CONSTANTS.cellSize / 4) * 3
+										x: Math.floor(CONSTANTS.cellSize / 8) * 7,
+										y: Math.floor(CONSTANTS.cellSize / 8) * 7
 									},
 									color: CONSTANTS.colors.green[1],
 									shape: "square",
@@ -847,17 +855,36 @@
 									type: "tile",
 									subtype: "portal",
 									size: {
-										max: Math.floor(CONSTANTS.cellSize / 4) * 3,
-										x: Math.floor(CONSTANTS.cellSize / 4) * 3,
-										y: Math.floor(CONSTANTS.cellSize / 4) * 3
+										max: Math.floor(CONSTANTS.cellSize / 8) * 7,
+										x: Math.floor(CONSTANTS.cellSize / 8) * 7,
+										y: Math.floor(CONSTANTS.cellSize / 8) * 7
 									},
 									color: CONSTANTS.colors.blue[1],
 									shape: "square",
 									style: "border"
 								},
 								state: {
-									active: true,
+									cooldown: 0,
 									link: null
+								}
+							}
+						break
+
+						case "shrineTile":
+							return {
+								info: {
+									type: "tile",
+									subtype: "shrine",
+									size: {
+										max: Math.floor(CONSTANTS.cellSize / 8) * 7,
+										x: Math.floor(CONSTANTS.cellSize / 8) * 7,
+										y: Math.floor(CONSTANTS.cellSize / 8) * 7
+									},
+									shape: "square",
+									style: "border"
+								},
+								state: {
+									cooldown: 0
 								}
 							}
 						break
@@ -895,8 +922,7 @@
 										x: 	0,
 										y: 	0
 									},
-									nextChamber: null,
-									portalCooldown: 0
+									nextChamber: null
 								},
 								heroes: 	{},
 								chambers: 	{},
@@ -960,7 +986,12 @@
 								alive: 		true,
 								health: 	0,
 								healthMax: 	0,
-								healing: 	false,
+								effects: {
+									heal: 	false,
+									rock: 	false,
+									paper: 	false,
+									scissors: false	
+								},
 								position: {
 									vx: 	0,
 									vy: 	0,

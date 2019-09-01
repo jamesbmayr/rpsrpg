@@ -72,6 +72,10 @@
 			background-color: var(--red-2);
 		}
 
+		#health-inner[effect] {
+			box-shadow: 0px 0px calc(var(--borderRadius) * 4) var(--purple-3) inset;
+		}
+
 /*** controls ***/
 	/* d-pad */
 		#d-pad {
@@ -98,6 +102,10 @@
 
 		#d-pad button[active] {
 			background-color: var(--black-3);
+		}
+
+		#d-pad button[effect] {
+			box-shadow: 0px 0px calc(var(--borderRadius) * 2) var(--greengray-3) inset;
 		}
 
 		#up {
@@ -179,6 +187,10 @@
 
 		#actions button[active] {
 			background-color: var(--black-3);
+		}
+
+		#actions button[effect] {
+			box-shadow: 0px 0px calc(var(--borderRadius) * 2) var(--orange-3) inset;
 		}
 
 		#a {

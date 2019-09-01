@@ -259,8 +259,7 @@
 				// set starting arrays
 					var allChambers = []
 					var orbChambers = []
-					var portalChambers = []
-					var orbTypes = main.sortRandom(CONSTANTS.rps)
+					var specialChambers = []
 				
 				// spiral to fill coordinate arrays
 					while (layer < request.game.data.info.layers) {
@@ -275,9 +274,9 @@
 								orbChambers.push(coords)
 							}
 
-						// eligible for portals?
+						// eligible for specials?
 							else if (layer) {
-								portalChambers.push(coords)
+								specialChambers.push(coords)
 							}
 
 						// get next coords
@@ -289,11 +288,17 @@
 
 				// pick orbChambers
 					orbChambers = main.sortRandom(orbChambers)
-					portalChambers = portalChambers.concat(orbChambers.slice(3))
-					orbChambers = orbChambers.slice(0,3)
+					var orbTypes = main.sortRandom(CONSTANTS.rps)
+					specialChambers = specialChambers.concat(orbChambers.slice(orbTypes.length))
+					orbChambers = orbChambers.slice(0, orbTypes.length)
+
+				// pick shrineChambers
+					specialChambers = main.sortRandom(specialChambers)
+					var shrineTypes = main.sortRandom(CONSTANTS.rps)
+					var shrineChambers = specialChambers.slice(0, shrineTypes.length)
 
 				// pick portalChambers
-					portalChambers = main.sortRandom(portalChambers)
+					var portalChambers = specialChambers.slice(shrineTypes.length)
 					var portalsNeeded = CONSTANTS.portalPairs * 2
 					var portalPairs = {}
 
@@ -325,6 +330,9 @@
 							}
 							else if (orbChambers.includes(allChambers[a])) {
 								options.orb = orbTypes.shift()
+							}
+							else if (shrineChambers.includes(allChambers[a])) {
+								options.shrine = shrineTypes.shift()
 							}
 							else if (portalPairs[allChambers[a]]) {
 								options.portal = portalPairs[allChambers[a]]
@@ -391,6 +399,9 @@
 						}
 						else if (options.orb) {
 							createOrb(request, chamber, options.orb, callback)
+						}
+						else if (options.shrine) {
+							createShrine(request, chamber, options.shrine, callback)
 						}
 						else if (options.portal) {
 							createPortal(request, chamber, options.portal, callback)
@@ -629,74 +640,6 @@
 			}
 		}
 
-	/* createTemple */
-		module.exports.createTemple = createTemple
-		function createTemple(request, chamber, callback) {
-			try {
-				// loop through middle 5x5
-					for (var x = -2; x <= 2; x++) {
-						for (var y = -2; y <= 2; y++) {
-							// wall the corners
-								if (Math.abs(x) == 2 && Math.abs(y) == 2) {
-									chamber.cells[x][y].wall = true
-								}
-
-							// clear the rest and add heal tiles
-								else {
-									chamber.cells[x][y].wall = false
-
-									var healTile = createItem(request, main.getAsset("healTile"), callback)
-									main.overwriteObject(healTile, {
-										state: {
-											position: {
-												x: CONSTANTS.cellSize * x,
-												y: CONSTANTS.cellSize * y
-											}
-										}
-									})
-									chamber.items[healTile.id] = healTile
-								}
-						}
-					}
-
-				// set pedestals
-					var pedestals = main.getAsset("pedestals")
-					for (var p in pedestals) {
-						var pedestal = createItem(request, pedestals[p], callback)
-						chamber.items[pedestal.id] = pedestal
-					}
-			}
-			catch (error) {
-				main.logError(error, arguments.callee.name, [request.session.id], callback)
-			}
-		}
-
-	/* createPortal */
-		module.exports.createPortal = createPortal
-		function createPortal(request, chamber, destination, callback) {
-			try {
-				// remove 3x3 walls
-					chamber.cells[-1][-1].wall = false
-					chamber.cells[ 1][-1].wall = false
-					chamber.cells[-1][ 1].wall = false
-					chamber.cells[ 1][ 1].wall = false
-
-				// create portal
-					var portal = createItem(request, main.getAsset("portalTile"), callback)
-					main.overwriteObject(portal, {
-						state: {
-							link: destination
-						}
-					})
-
-				// add to chamber
-					chamber.items[portal.id] = portal
-			}
-			catch (error) {
-				main.logError(error, arguments.callee.name, [request.session.id], callback)
-			}
-		}
-
 	/* createNeighborConnections */
 		module.exports.createNeighborConnections = createNeighborConnections
 		function createNeighborConnections(request, chamber, nodemap, connectedCells, currentCell, callback) {
@@ -820,6 +763,216 @@
 			}
 		}
 
+/*** creates: tiles ***/
+	/* createTemple */
+		module.exports.createTemple = createTemple
+		function createTemple(request, chamber, callback) {
+			try {
+				// loop through middle 5x5
+					for (var x = -2; x <= 2; x++) {
+						for (var y = -2; y <= 2; y++) {
+							// wall the corners
+								if (Math.abs(x) == 2 && Math.abs(y) == 2) {
+									chamber.cells[x][y].wall = true
+								}
+
+							// clear the rest and add heal tiles
+								else {
+									chamber.cells[x][y].wall = false
+
+									var healTile = createItem(request, main.getAsset("healTile"), callback)
+									main.overwriteObject(healTile, {
+										state: {
+											position: {
+												x: CONSTANTS.cellSize * x,
+												y: CONSTANTS.cellSize * y
+											}
+										}
+									})
+									chamber.items[healTile.id] = healTile
+								}
+						}
+					}
+
+				// set pedestals
+					var pedestals = main.getAsset("pedestals")
+					for (var p in pedestals) {
+						var pedestal = createItem(request, pedestals[p], callback)
+						chamber.items[pedestal.id] = pedestal
+					}
+			}
+			catch (error) {
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
+			}
+		}
+
+	/* createPortal */
+		module.exports.createPortal = createPortal
+		function createPortal(request, chamber, destination, callback) {
+			try {
+				// remove 3x3 walls
+					chamber.cells[-1][-1].wall = false
+					chamber.cells[ 1][-1].wall = false
+					chamber.cells[-1][ 1].wall = false
+					chamber.cells[ 1][ 1].wall = false
+
+				// create portal
+					var portal = createItem(request, main.getAsset("portalTile"), callback)
+					main.overwriteObject(portal, {
+						state: {
+							link: destination
+						}
+					})
+
+				// add to chamber
+					chamber.items[portal.id] = portal
+			}
+			catch (error) {
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
+			}
+		}
+
+	/* createShrine */
+		module.exports.createShrine = createShrine
+		function createShrine(request, chamber, shrineType, callback)  {
+			try {
+				// create shrine
+					var shrine = createItem(request, main.getAsset("shrineTile"), callback)
+					main.overwriteObject(shrine, {
+						info: {
+							rps: shrineType,
+							color: main.getAsset("orbs")[shrineType].info.color
+						}
+					})
+				
+				// add to chamber
+					chamber.items[shrine.id] = shrine
+			}
+			catch (error) {
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
+			}
+		}
+
+/*** creates: items ***/
+	/* createItem */
+		module.exports.createItem = createItem
+		function createItem(request, properties, callback) {
+			try {
+				var item = main.getSchema("item")
+				main.overwriteObject(item, properties)
+				
+				return item
+			}
+			catch (error) {
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
+			}
+		}
+
+	/* createOrb */
+		module.exports.createOrb = createOrb
+		function createOrb(request, chamber, orbType, callback) {
+			try {
+				// add orb to chamber
+					var orb = createItem(request, main.getAsset("orbs")[orbType], callback)
+					chamber.items[orb.id] = orb
+			}
+			catch (error) {
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
+			}
+		}
+
+	/* createRangeAttack */
+		module.exports.createRangeAttack = createRangeAttack
+		function createRangeAttack(request, chamber, creature, callback) {
+			try {
+				// empty attack
+					var attack = createItem(request, main.getSchema("attack"), callback)
+
+				// add creature info
+					var power = creature.info.statistics.rangePower * (creature.state.effects.rock ? CONSTANTS.rockMultiplier : 1)
+					main.overwriteObject(attack, {
+						info: {
+							type: "rangeAttack",
+							attacker: {
+								id: creature.id,
+								type: creature.info.type,
+								subtype: creature.info.subtype
+							},
+							rps: creature.info.rps,
+							subtype: creature.info.subtype,
+							size: {
+								x: power,
+								y: power
+							},
+							color: creature.info.color,
+							statistics: {
+								power: power,
+								speed: creature.info.statistics.rangeSpeed
+							}
+						},
+						state: {
+							position: {
+								x: creature.state.position.x,
+								y: creature.state.position.y
+							},
+							movement: {
+								direction: creature.state.movement.direction
+							}
+						}
+					})
+
+				// add to items
+					chamber.items[attack.id] = attack
+			}
+			catch (error) {
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
+			}
+		}
+
+	/* createAreaAttack */
+		module.exports.createAreaAttack = createAreaAttack
+		function createAreaAttack(request, chamber, creature, callback) {
+			try {
+				// empty attack
+					var attack = createItem(request, main.getSchema("attack"), callback)
+
+				// add creature info
+					var power = creature.info.statistics.areaPower * (creature.state.effects.rock ? CONSTANTS.rockMultiplier : 1)
+					main.overwriteObject(attack, {
+						info: {
+							type: "areaAttack",
+							attacker: {
+								id: creature.id,
+								type: creature.info.type,
+								subtype: creature.info.subtype
+							},
+							rps: creature.info.rps,
+							subtype: creature.info.subtype,
+							size: {
+								x: CONSTANTS.areaAttackRadius * power,
+								y: CONSTANTS.areaAttackRadius * power
+							},
+							color: creature.info.color,
+							statistics: {
+								power: power
+							}
+						},
+						state: {
+							position: {
+								x: creature.state.position.x,
+								y: creature.state.position.y
+							}
+						}
+					})
+
+				// add to items
+					chamber.items[attack.id] = attack
+			}
+			catch (error) {
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
+			}
+		}
+
 /*** creates: creatures ***/
 	/* createCreature */
 		module.exports.createCreature = createCreature
@@ -914,124 +1067,6 @@
 							}
 						})
 					request.game.data.heroes[hero.id] = hero
-			}
-			catch (error) {
-				main.logError(error, arguments.callee.name, [request.session.id], callback)
-			}
-		}
-
-/*** creates: items ***/
-	/* createItem */
-		module.exports.createItem = createItem
-		function createItem(request, properties, callback) {
-			try {
-				var item = main.getSchema("item")
-				main.overwriteObject(item, properties)
-				
-				return item
-			}
-			catch (error) {
-				main.logError(error, arguments.callee.name, [request.session.id], callback)
-			}
-		}
-
-	/* createOrb */
-		module.exports.createOrb = createOrb
-		function createOrb(request, chamber, orbType, callback) {
-			try {
-				// add orb to chamber
-					var orb = createItem(request, main.getAsset("orbs")[orbType], callback)
-					chamber.items[orb.id] = orb
-			}
-			catch (error) {
-				main.logError(error, arguments.callee.name, [request.session.id], callback)
-			}
-		}
-
-	/* createRangeAttack */
-		module.exports.createRangeAttack = createRangeAttack
-		function createRangeAttack(request, chamber, creature, callback) {
-			try {
-				// empty attack
-					var attack = createItem(request, main.getSchema("attack"), callback)
-
-				// add creature info
-					main.overwriteObject(attack, {
-						info: {
-							type: "rangeAttack",
-							attacker: {
-								id: creature.id,
-								type: creature.info.type,
-								subtype: creature.info.subtype
-							},
-							rps: creature.info.rps,
-							subtype: creature.info.subtype,
-							size: {
-								x: creature.info.statistics.rangePower,
-								y: creature.info.statistics.rangePower
-							},
-							color: creature.info.color,
-							statistics: {
-								power: creature.info.statistics.rangePower,
-								speed: creature.info.statistics.rangeSpeed
-							}
-						},
-						state: {
-							position: {
-								x: creature.state.position.x,
-								y: creature.state.position.y
-							},
-							movement: {
-								direction: creature.state.movement.direction
-							}
-						}
-					})
-
-				// add to items
-					chamber.items[attack.id] = attack
-			}
-			catch (error) {
-				main.logError(error, arguments.callee.name, [request.session.id], callback)
-			}
-		}
-
-	/* createAreaAttack */
-		module.exports.createAreaAttack = createAreaAttack
-		function createAreaAttack(request, chamber, creature, callback) {
-			try {
-				// empty attack
-					var attack = createItem(request, main.getSchema("attack"), callback)
-
-				// add creature info
-					main.overwriteObject(attack, {
-						info: {
-							type: "areaAttack",
-							attacker: {
-								id: creature.id,
-								type: creature.info.type,
-								subtype: creature.info.subtype
-							},
-							rps: creature.info.rps,
-							subtype: creature.info.subtype,
-							size: {
-								x: creature.info.statistics.areaPower * CONSTANTS.areaAttackRadius,
-								y: creature.info.statistics.areaPower * CONSTANTS.areaAttackRadius
-							},
-							color: creature.info.color,
-							statistics: {
-								power: creature.info.statistics.areaPower
-							}
-						},
-						state: {
-							position: {
-								x: creature.state.position.x,
-								y: creature.state.position.y
-							}
-						}
-					})
-
-				// add to items
-					chamber.items[attack.id] = attack
 			}
 			catch (error) {
 				main.logError(error, arguments.callee.name, [request.session.id], callback)
@@ -1418,15 +1453,22 @@
 						// tiles
 							if (collision.type == "tile") {
 								// healTile
-									if (thing.info.type == "hero" && chamber.items[collision.id].info.subtype == "heal") {
-										thing.state.healing = true
+									if (thing.info.type == "hero" && item.info.subtype == "heal") {
+										thing.state.effects.heal = true
+									}
+
+								// shrineTile
+									else if (thing.info.type == "hero" && thing.state.alive && item.info.subtype == "shrine") {
+										if (!item.state.cooldown) {
+											thing.state.effects[item.info.rps] = CONSTANTS.effectCooldown
+											updateTiles(request, chamber, "shrine", callback)
+										}
 									}
 
 								// portalTile
-									if (thing.info.type == "hero" && thing.state.alive && chamber.items[collision.id].info.subtype == "portal") {
-										var portal = chamber.items[collision.id]
-										if (portal.state.active) {
-											targetCoordinates = resolveEdge(request, chamber, thing, targetCoordinates, portal.state.link, callback)
+									else if (thing.info.type == "hero" && thing.state.alive && item.info.subtype == "portal") {
+										if (!item.state.cooldown) {
+											targetCoordinates = resolveEdge(request, chamber, thing, targetCoordinates, item.state.link, callback)
 										}
 									}
 							}
@@ -1517,8 +1559,15 @@
 
 								// damage
 									if ((attack.info.type == "rangeAttack" || attack.info.type == "areaAttack") || !Object.keys(attacker.items).length) {
+										if (attack.info.type == "rangeAttack" || attack.info.type == "areaAttack") {
+											var power = attack.info.statistics.power
+										}
+										else {
+											var power = attacker.info.statistics.bumpPower * (attacker.state.effects.rock ? CONSTANTS.rockMultiplier : 1)
+										}
+
 										var alive = resolveDamage(request, chamber, recipient, {
-											power: 	attack.info.statistics.power || attack.info.statistics.bumpPower,
+											power: 	power,
 											rps: 	attack.info.rps,
 											type: 	attacker.info.type
 										}, callback)
@@ -1590,29 +1639,37 @@
 
 				// enemy fire
 					else {
-						// multiplier
-							var multiplier = 1
+						// multipliers
+							var attackMultiplier = 1
+							var armorMultiplier  = 1
 							switch (damage.rps) {
 								case "rock":
-									multiplier = creature.info.rps == "scissors" ? 2 : creature.info.rps == "paper" ? 0.5 : 1
+									attackMultiplier = creature.info.rps == "scissors" ? CONSTANTS.rpsMultiplier : 1
+									armorMultiplier  = creature.info.rps == "paper"    ? CONSTANTS.rpsMultiplier : 1
 								break
 								case "paper":
-									multiplier = creature.info.rps == "rock" ? 2 : creature.info.rps == "scissors" ? 0.5 : 1
+									attackMultiplier = creature.info.rps == "rock"     ? CONSTANTS.rpsMultiplier : 1
+									armorMultiplier  = creature.info.rps == "scissors" ? CONSTANTS.rpsMultiplier : 1
 								break
 								case "scissors":
-									multiplier = creature.info.rps == "paper" ? 2 : creature.info.rps == "rock" ? 0.5 : 1
+									attackMultiplier = creature.info.rps == "paper"    ? CONSTANTS.rpsMultiplier : 1
+									armorMultiplier  = creature.info.rps == "rock"     ? CONSTANTS.rpsMultiplier : 1
 								break
 							}
 
 						// damage
-							var damage = Math.max(0, Math.floor(damage.power * multiplier) - creature.info.statistics.armorPower)
+							var armor = creature.info.statistics.armorPower * (creature.state.effects.paper ? CONSTANTS.paperMultiplier : 1)
+							var finalDamage = Math.max(0, Math.floor((damage.power * attackMultiplier) - (armor * armorMultiplier)))
 
 						// reduce health
-							creature.state.health = Math.max(0, Math.min(creature.state.healthMax, creature.state.health - damage))
+							creature.state.health = Math.max(0, Math.min(creature.state.healthMax, creature.state.health - finalDamage))
 
 						// dead?
 							if (creature.state.health <= 0) {
 								creature.state.alive = false
+								for (var e in creature.state.effects) {
+									creature.state.effects[e] = 0
+								}
 
 								// creatures shrink
 									if (creature.info.type !== "hero" && !creature.state.cooldowns.death) {
@@ -1685,9 +1742,8 @@
 
 							// regular gameplay
 								else {
-									// portals
-										request.game.data.state.portalCooldown = Math.max(0, request.game.data.state.portalCooldown - 1)
-										updatePortals(request, chamber, request.game.data.state.portalCooldown, callback)
+									// tiles
+										updateTiles(request, chamber, null, callback)
 
 									// heroes
 										for (var h in chamber.heroes) {
@@ -1740,9 +1796,8 @@
 
 					// deactivate portals
 						if (!isEdge) {
-							request.game.data.state.portalCooldown = CONSTANTS.portalCooldown
-							updatePortals(request, request.game.data.chambers[oldX][oldY], CONSTANTS.portalCooldown, callback)
-							updatePortals(request, request.game.data.chambers[newX][newY], CONSTANTS.portalCooldown, callback)
+							updateTiles(request, request.game.data.chambers[oldX][oldY], "portal", callback)
+							updateTiles(request, request.game.data.chambers[newX][newY], "portal", callback)
 						}
 
 					// set cooldown
@@ -1769,6 +1824,13 @@
 						for (var c in oldChamber.creatures) {
 							if (!oldChamber.creatures[c].state.alive) {
 								delete oldChamber.creatures[c]
+							}
+						}
+
+					// remove attacks
+						for (var i in oldChamber.items) {
+							if (oldChamber.items[i].info.type == "rangeAttack" || oldChamber.items[i].info.type == "areaAttack") {
+								delete oldChamber.items[i]
 							}
 						}
 					
@@ -1802,16 +1864,49 @@
 			}
 		}
 
-	/* updatePortals */
-		module.exports.updatePortals = updatePortals
-		function updatePortals(request, chamber, cooldown, callback) {
+	/* updateTiles */
+		module.exports.updateTiles = updateTiles
+		function updateTiles(request, chamber, deactivateType, callback) {
 			try {
-				// loop through items to find portals
+				// loop through items to find tiles
 					for (var i in chamber.items) {
 						var item = chamber.items[i]
-						if (item.info.type == "tile" && item.info.subtype == "portal") {
-							item.state.active = cooldown ? false : true
-							item.info.size.x = item.info.size.y = item.info.size.max * ((CONSTANTS.portalCooldown - cooldown) / CONSTANTS.portalCooldown)
+						
+						if (item.info.type == "tile" && (item.info.subtype == "portal" || item.info.subtype == "shrine")) {
+							// get max cooldown
+								var cooldownMax = CONSTANTS[item.info.subtype + "Cooldown"]
+
+							// deactivate? set cooldown to max
+								if (deactivateType) {
+									if (item.info.subtype == deactivateType) {
+										item.state.cooldown = cooldownMax
+										item.info.size.x = item.info.size.y = 0
+									}
+								}
+
+							// or else reduce cooldown
+								else {
+									item.state.cooldown = Math.max(0, item.state.cooldown - 1)
+									item.info.size.x = item.info.size.y = item.info.size.max * ((cooldownMax - item.state.cooldown) / cooldownMax)
+
+									// reduce cooldown for destination's portal too
+										if (item.info.subtype == "portal") {
+											var coords = item.state.link.split(",")
+											var cellX = Number(coords[0])
+											var cellY = Number(coords[1])
+											var destinationChamber = request.game.data.chambers[cellX][cellY]
+
+											var portalKey = Object.keys(destinationChamber.items).find(function(i) {
+												return (destinationChamber.items[i].info.type == "tile" && destinationChamber.items[i].info.subtype == "portal")
+											}) || null
+
+											if (portalKey) {
+												var portal = destinationChamber.items[portalKey]
+													portal.state.cooldown = Math.max(0, portal.state.cooldown - 1)
+													portal.info.size.x = portal.info.size.y = portal.info.size.max * ((cooldownMax - portal.state.cooldown) / cooldownMax)
+											}
+										}
+								}
 						}
 					}
 			}
@@ -1826,21 +1921,21 @@
 			try {
 				// resets
 					hero.state.position.edge = null
-					hero.state.healing = false
 
 				// accelerate
-					if (Math.abs(hero.state.position.vx) > hero.info.statistics.moveSpeed) {
+					var maxSpeed = hero.info.statistics.moveSpeed * (hero.state.effects.scissors ? CONSTANTS.scissorsMultiplier : 1)
+					if (Math.abs(hero.state.position.vx) > maxSpeed) {
 						hero.state.position.vx = (Math.abs(hero.state.position.vx) - CONSTANTS.acceleration) * Math.sign(hero.state.position.vx)
 					}
 					else {
-						hero.state.position.vx = Math.max(-hero.info.statistics.moveSpeed, Math.min(hero.info.statistics.moveSpeed, hero.state.position.vx + (hero.state.movement.left ? -CONSTANTS.acceleration : hero.state.movement.right ? CONSTANTS.acceleration : -CONSTANTS.acceleration * Math.sign(hero.state.position.vx))))
+						hero.state.position.vx = Math.max(-maxSpeed, Math.min(maxSpeed, hero.state.position.vx + (hero.state.movement.left ? -CONSTANTS.acceleration : hero.state.movement.right ? CONSTANTS.acceleration : -CONSTANTS.acceleration * Math.sign(hero.state.position.vx))))
 					}
 
-					if (Math.abs(hero.state.position.vy) > hero.info.statistics.moveSpeed) {
+					if (Math.abs(hero.state.position.vy) > maxSpeed) {
 						hero.state.position.vy = (Math.abs(hero.state.position.vy) - CONSTANTS.acceleration) * Math.sign(hero.state.position.vy)
 					}
 					else {
-						hero.state.position.vy = Math.max(-hero.info.statistics.moveSpeed, Math.min(hero.info.statistics.moveSpeed, hero.state.position.vy + (hero.state.movement.down ? -CONSTANTS.acceleration : hero.state.movement.up    ? CONSTANTS.acceleration : -CONSTANTS.acceleration * Math.sign(hero.state.position.vy))))
+						hero.state.position.vy = Math.max(-maxSpeed, Math.min(maxSpeed, hero.state.position.vy + (hero.state.movement.down ? -CONSTANTS.acceleration : hero.state.movement.up    ? CONSTANTS.acceleration : -CONSTANTS.acceleration * Math.sign(hero.state.position.vy))))
 					}
 
 				// get target coordinates
@@ -1881,7 +1976,7 @@
 					}
 
 				// healing
-					if (hero.state.healing) {
+					if (hero.state.effects.heal) {
 						if (!hero.state.alive) {
 							hero.state.alive = true
 						}
@@ -1910,6 +2005,10 @@
 							hero.state.cooldowns[c] = Math.max(0, hero.state.cooldowns[c] - 1)
 						}
 					}
+
+					for (var e in hero.state.effects) {
+						hero.state.effects[e] = Math.max(0, hero.state.effects[e] - 1)
+					}
 			}
 			catch (error) {
 				main.logError(error, arguments.callee.name, [request.session.id], callback)
@@ -1932,7 +2031,6 @@
 					else {
 						// resets
 							creature.state.position.edge = null
-							creature.state.healing = false
 
 						// get path
 							var cellX = Math.round(Math.abs(creature.state.position.x / CONSTANTS.cellSize)) * Math.sign(creature.state.position.x)
@@ -1968,18 +2066,19 @@
 							}
 
 						// accelerate
-							if (Math.abs(creature.state.position.vx) > creature.info.statistics.moveSpeed) {
+							var maxSpeed = creature.info.statistics.moveSpeed * (creature.state.effects.scissors ? CONSTANTS.scissorsMultiplier : 1)
+							if (Math.abs(creature.state.position.vx) > maxSpeed) {
 								creature.state.position.vx = (Math.abs(creature.state.position.vx) - CONSTANTS.acceleration) * Math.sign(creature.state.position.vx)
 							}
 							else {
-								creature.state.position.vx = Math.max(-creature.info.statistics.moveSpeed, Math.min(creature.info.statistics.moveSpeed, creature.state.position.vx + (creature.state.movement.left ? -CONSTANTS.acceleration : creature.state.movement.right ? CONSTANTS.acceleration : -CONSTANTS.acceleration * Math.sign(creature.state.position.vx))))
+								creature.state.position.vx = Math.max(-maxSpeed, Math.min(maxSpeed, creature.state.position.vx + (creature.state.movement.left ? -CONSTANTS.acceleration : creature.state.movement.right ? CONSTANTS.acceleration : -CONSTANTS.acceleration * Math.sign(creature.state.position.vx))))
 							}
 
-							if (Math.abs(creature.state.position.vy) > creature.info.statistics.moveSpeed) {
+							if (Math.abs(creature.state.position.vy) > maxSpeed) {
 								creature.state.position.vy = (Math.abs(creature.state.position.vy) - CONSTANTS.acceleration) * Math.sign(creature.state.position.vy)
 							}
 							else {
-								creature.state.position.vy = Math.max(-creature.info.statistics.moveSpeed, Math.min(creature.info.statistics.moveSpeed, creature.state.position.vy + (creature.state.movement.down ? -CONSTANTS.acceleration : creature.state.movement.up    ? CONSTANTS.acceleration : -CONSTANTS.acceleration * Math.sign(creature.state.position.vy))))
+								creature.state.position.vy = Math.max(-maxSpeed, Math.min(maxSpeed, creature.state.position.vy + (creature.state.movement.down ? -CONSTANTS.acceleration : creature.state.movement.up    ? CONSTANTS.acceleration : -CONSTANTS.acceleration * Math.sign(creature.state.position.vy))))
 							}
 
 						// get actual target coordinates
@@ -2020,7 +2119,7 @@
 							}
 
 						// healing
-							if (creature.state.healing) {
+							if (creature.state.effects.heal) {
 								if (!creature.state.alive) {
 									creature.state.alive = true
 								}
@@ -2048,6 +2147,10 @@
 								if (creature.state.cooldowns[c]) {
 									creature.state.cooldowns[c] = Math.max(0, creature.state.cooldowns[c] - 1)
 								}
+							}
+
+							for (var e in creature.state.effects) {
+								creature.state.effects[e] = Math.max(0, creature.state.effects[e] - 1)
 							}
 					}
 			}
@@ -2108,33 +2211,36 @@
 								// move & shrink item
 									item.state.position.x = targetCoordinates.x
 									item.state.position.y = targetCoordinates.y
-									item.info.statistics.power -= CONSTANTS.rangeAttackFade
-									item.info.size.x -= CONSTANTS.rangeAttackFade
-									item.info.size.y -= CONSTANTS.rangeAttackFade
+									item.info.statistics.power = Math.max(0, item.info.statistics.power - CONSTANTS.rangeAttackFade)
+									item.info.size.x = Math.max(0, item.info.size.x - CONSTANTS.rangeAttackFade)
+									item.info.size.y = Math.max(0, item.info.size.y - CONSTANTS.rangeAttackFade)
 							}
 					}
 
 				// area attacks
 					else if (item.info.type == "areaAttack") {
+						// attacker
+							var attacker = chamber[item.info.attacker.type == "hero" ? "heroes" : "creatures"][item.info.attacker.id]
+
 						// no power?
 							if (item.info.statistics.power <= 0) {
+								delete chamber.items[item.id]
+							}
+
+						// no attacker?
+							else if (!attacker || !attacker.state.alive) {
 								delete chamber.items[item.id]
 							}
 
 						// still has power
 							else {
 								// target coordinates
-									var creature = chamber[item.info.attacker.type == "hero" ? "heroes" : "creatures"][item.info.attacker.id]
-									if (!creature) {
-										delete chamber.items[item.id]
-									}
-
 									var targetCoordinates = {
 										id: 		item.id,
 										radiusX: 	Math.ceil(item.info.size.x / 2),
 										radiusY: 	Math.ceil(item.info.size.y / 2),
-										x: 			creature.state.position.x,
-										y: 			creature.state.position.y,
+										x: 			attacker.state.position.x,
+										y: 			attacker.state.position.y,
 										collisionX:	false,
 										collisionY: false
 									}
@@ -2143,11 +2249,11 @@
 									targetCoordinates = resolveCollisions(request, chamber, item, targetCoordinates, callback)
 
 								// move & shrink item
-									item.info.statistics.power -= CONSTANTS.areaAttackFade
-									item.info.size.x -= (CONSTANTS.areaAttackFade * CONSTANTS.areaAttackRadius)
-									item.info.size.y -= (CONSTANTS.areaAttackFade * CONSTANTS.areaAttackRadius)
-									item.state.position.x = creature.state.position.x
-									item.state.position.y = creature.state.position.y
+									item.state.position.x = attacker.state.position.x
+									item.state.position.y = attacker.state.position.y
+									item.info.statistics.power = Math.max(0, item.info.statistics.power - CONSTANTS.areaAttackFade)
+									item.info.size.x = Math.max(0, item.info.size.x - (CONSTANTS.areaAttackFade * CONSTANTS.areaAttackRadius))
+									item.info.size.y = Math.max(0, item.info.size.y - (CONSTANTS.areaAttackFade * CONSTANTS.areaAttackRadius))
 							}
 					}
 			}

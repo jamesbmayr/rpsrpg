@@ -1,114 +1,182 @@
 /*** globals ***/
 	/* elements */
-		var INPUTS = Array.from(document.querySelectorAll(".input"))
+		var INPUTS = {
+			up: 	document.querySelector("#up"),
+			down: 	document.querySelector("#down"),
+			left: 	document.querySelector("#left"),
+			right: 	document.querySelector("#right"),
+			start: 	document.querySelector("#start"),
+			a: 		document.querySelector("#a"),
+			b: 		document.querySelector("#b")
+		}
 		var HEALTHBAR = document.querySelector("#health-inner")
-		var POINTSBAR = document.querySelector("#points-inner")
 
 /*** websocket ***/
 	/* socket */
 		var socket = null
 		createSocket()
 		function createSocket() {
-			socket = new WebSocket(location.href.replace("http","ws"))
-			socket.onopen = function() { socket.send(null) }
-			socket.onerror = function(error) {}
-			socket.onclose = function() {
-				socket = null
-				window.location = "../../../../"
-			}
-
-			socket.onmessage = function(message) {
-				try {
-					var post = JSON.parse(message.data)
-					if (post && (typeof post == "object")) {
-						receivePost(post)
-					}
+			try {
+				socket = new WebSocket(location.href.replace("http","ws"))
+				socket.onopen = function() { socket.send(null) }
+				socket.onerror = function(error) {}
+				socket.onclose = function() {
+					socket = null
+					window.location = "../../../../"
 				}
-				catch (error) {}
-			}
+
+				socket.onmessage = function(message) {
+					try {
+						var post = JSON.parse(message.data)
+						if (post && (typeof post == "object")) {
+							receivePost(post)
+						}
+					} catch (error) {}
+				}
+			} catch (error) {}
 		}
 
 	/* checkLoop */
 		var checkLoop = setInterval(function() {
-			if (!socket) {
-				try {
-					createSocket()
+			try {
+				if (!socket) {
+					try {
+						createSocket()
+					}
+					catch (error) {}
 				}
-				catch (error) {}
-			}
-			else {
-				clearInterval(checkLoop)
-			}
+				else {
+					clearInterval(checkLoop)
+				}
+			} catch (error) {}
 		}, 5000)
 
 /*** inputs ***/
 	/* pressInput */
-		INPUTS.forEach(function(input) { input.addEventListener(on.mousedown, pressInput) })
+		for (var i in INPUTS) { INPUTS[i].addEventListener(on.mousedown, pressInput) }
 		function pressInput(event) {
-			event.target.setAttribute("active", true)
-			socket.send(JSON.stringify({
-				action: 	"pressInput",
-				input: 		event.target.value
-			}))
+			try {
+				event.target.setAttribute("active", true)
+				socket.send(JSON.stringify({
+					action: 	"pressInput",
+					input: 		event.target.value
+				}))
+			} catch (error) {}
 		}
 
 	/* releaseInput */
-		INPUTS.forEach(function(input) { input.addEventListener(on.mouseup, releaseInput) })
+		for (var i in INPUTS) { INPUTS[i].addEventListener(on.mouseup, releaseInput) }
 		function releaseInput(event) {
-			event.target.removeAttribute("active")
-			socket.send(JSON.stringify({
-				action: 	"releaseInput",
-				input: 		event.target.value
-			}))
+			try {
+				event.target.removeAttribute("active")
+				socket.send(JSON.stringify({
+					action: 	"releaseInput",
+					input: 		event.target.value
+				}))
+			} catch (error) {}
 		}
 
 /*** receives ***/
 	/* receivePost */
 		function receivePost(data) {
-			// redirect
-				if (data.location) {
-					window.location = data.location
-				}
+			try {
+				// redirect
+					if (data.location) {
+						window.location = data.location
+					}
 
-			// message
-				if (data.message) {
-					displayMessage(data.message)
-				}
+				// message
+					if (data.message) {
+						displayMessage(data.message)
+					}
 
-			// info
-				if (data.data && data.data.id == window.id) {
-					displayInfo(data.data)
-				}
+				// info
+					if (data.data && data.data.id == window.id) {
+						displayInfo(data.data)
+					}
+			} catch (error) {}
 		}
 
 /*** display ***/
 	/* displayInfo */
 		function displayInfo(hero) {
-			// healthbar
-				var healthPercentage = Math.round(hero.state.health / hero.state.healthMax * 100)
-				HEALTHBAR.style.width = Math.min(100, Math.max(0, healthPercentage)) + "%"
-				HEALTHBAR.setAttribute("color", healthPercentage > CONSTANTS.healthHigh ? "high" : healthPercentage > CONSTANTS.healthLow ? "medium" : "low")
+			try {
+				// healthbar
+					displayHealthbar(hero)
 
-			// button sizes
-				for (var c in hero.state.cooldowns) {
-					var button = document.getElementById(c)
-					var size = Math.ceil(button.getBoundingClientRect().width)
-					var fraction = (hero.state.cooldowns[c] / CONSTANTS[c + "Cooldown"]) / 3
-					button.style.borderWidth = Math.max(0, Math.min(size, fraction * size)) + "px"
-				}
+				// dpad & actions
+					displayButtons(hero)
+			} catch (error) {}
+		}
 
-			// button actives
-				for (var i in INPUTS) {
-					var id = INPUTS[i].id
-					if (CONSTANTS.directions.includes(id)) {
-						if (!hero.state.movement[id]) {
-							INPUTS[i].removeAttribute("active")
+	/* displayHealthBar */
+		function displayHealthbar(hero) {
+			try {
+				// width
+					var healthPercentage = Math.round(hero.state.health / hero.state.healthMax * 100)
+					HEALTHBAR.style.width = Math.min(100, Math.max(0, healthPercentage)) + "%"
+
+				// color
+					HEALTHBAR.setAttribute("color", healthPercentage > CONSTANTS.healthHigh ? "high" : healthPercentage > CONSTANTS.healthLow ? "medium" : "low")
+
+				// paper effects
+					if (hero.state.effects.paper) {
+						HEALTHBAR.setAttribute("effect", true)
+					}
+					else {
+						HEALTHBAR.removeAttribute("effect")
+					}
+			} catch (error) {}
+		}
+
+	/* displayButtons */
+		function displayButtons(hero) {
+			try {
+				// action button sizes / border
+					for (var c in hero.state.cooldowns) {
+						var button = document.getElementById(c)
+						var size = Math.ceil(button.getBoundingClientRect().width)
+						var fraction = (hero.state.cooldowns[c] / CONSTANTS[c + "Cooldown"]) / 3
+						button.style.borderWidth = Math.max(0, Math.min(size, fraction * size)) + "px"
+					}
+
+				// deactivate dpad / actions
+					for (var i in INPUTS) {
+						var id = INPUTS[i].id
+						if (CONSTANTS.directions.includes(id)) {
+							if (!hero.state.movement[id]) {
+								INPUTS[i].removeAttribute("active")
+							}
+						}
+						else if (CONSTANTS.actions.includes(id)) {
+							if (!hero.state.actions[id]) {
+								INPUTS[i].removeAttribute("active")
+							}
 						}
 					}
-					else if (CONSTANTS.actions.includes(id)) {
-						if (!hero.state.actions[id]) {
-							INPUTS[i].removeAttribute("active")
-						}
+
+				// rock effects
+					if (hero.state.effects.rock) {
+						INPUTS.a.setAttribute("effect", true)
+						INPUTS.b.setAttribute("effect", true)
 					}
-				}
+					else {
+						INPUTS.a.removeAttribute("effect")
+						INPUTS.b.removeAttribute("effect")
+					}
+
+				// scissors effects
+					if (hero.state.effects.scissors) {
+						INPUTS.up.setAttribute(   "effect", true)
+						INPUTS.down.setAttribute( "effect", true)
+						INPUTS.left.setAttribute( "effect", true)
+						INPUTS.right.setAttribute("effect", true)
+					}
+					else {
+						INPUTS.up.removeAttribute(   "effect")
+						INPUTS.down.removeAttribute( "effect")
+						INPUTS.left.removeAttribute( "effect")
+						INPUTS.right.removeAttribute("effect")
+					}
+			} catch (error) {}
 		}
