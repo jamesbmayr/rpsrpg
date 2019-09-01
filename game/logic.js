@@ -1123,21 +1123,11 @@
 						return false
 					}
 
-				// wall?
-					if (thing.id == "wall") {
-						var radiusX = Math.ceil(CONSTANTS.cellSize / 2)
-						var radiusY = radiusX
-						var positionX = thing.x * CONSTANTS.cellSize
-						var positionY = thing.y * CONSTANTS.cellSize
-					}
-
-				// radii
-					else {
-						var radiusX = Math.ceil(thing.info.size.x / 2)
-						var radiusY = Math.ceil(thing.info.size.y / 2)
-						var positionX = thing.state.position.x
-						var positionY = thing.state.position.y
-					}
+				// radii / position
+					var radiusX = Math.ceil(thing.info.size.x / 2)
+					var radiusY = Math.ceil(thing.info.size.y / 2)
+					var positionX = thing.state.position.x
+					var positionY = thing.state.position.y
 
 				// sides
 					var thingUp    = positionY + radiusY
@@ -1216,13 +1206,15 @@
 			try {
 				// is edge? (or portal)
 					var isEdge = CONSTANTS.directions.includes(destination)
-					var cancelSide = null
+					var collision = {
+						side: null
+					}
 
 				// other things are stuck in this chamber
 					if (thing.info.type !== "hero") {
 						// other things stop at edge
 							if (isEdge) {
-								cancelSide = destination
+								collision.side = destination
 							}
 					}
 
@@ -1244,7 +1236,7 @@
 									if (isEdge) {
 										var nextChamberX = Number(chamber.info.x) + (destination == "left" ? -1 : destination == "right" ? 1 : 0)
 										var nextChamberY = Number(chamber.info.y) + (destination == "down" ? -1 : destination == "up"    ? 1 : 0)
-										cancelSide = destination
+										collision.side = destination
 									}
 
 								// get nextChamber for portals
@@ -1265,18 +1257,33 @@
 
 						// disagree? stop at edges
 							else if (isEdge) {
-								cancelSide = destination
+								collision.side = destination
 							}
 					}
 
-				// cancel side ?
-					if (cancelSide) {
-						var chamberRadius = Math.floor(chamber.info.cellSize * chamber.info.chamberSize / 2)
-						var direction = cancelSide == "left" || cancelSide == "right" ? "x" : "y"
-						var thingRadius = Math.floor(thing.info.size[direction] / 2)
+				// collision side ?
+					if (collision.side) {
+						// chamber radius
+							var chamberRadius = Math.ceil(chamber.info.cellSize * chamber.info.chamberSize / 2)
+
+						// pseudoWall
+							var pseudoWall = {
+								info: {
+									size: {
+										x: (destination == "up"    || destination == "down") ? chamberRadius : 0,
+										y: (destination == "right" || destination == "left") ? chamberRadius : 0
+									}
+								},
+								state: {
+									position: {
+										x: (destination == "left" ? -chamberRadius : chamberRadius),
+										y: (destination == "down" ? -chamberRadius : chamberRadius)
+									}
+								}
+							}
 						
-						targetCoordinates[direction] = Math.min(chamberRadius - thingRadius, Math.abs(targetCoordinates[direction])) * Math.sign(targetCoordinates[direction])
-						targetCoordinates["collision" + direction.toUpperCase()] = true
+						// stop
+							targetCoordinates = resolveStop(request, targetCoordinates, collision, pseudoWall, callback)
 					}
 
 				// return
@@ -1315,32 +1322,29 @@
 		module.exports.resolveWall = resolveWall
 		function resolveWall(request, chamber, thing, targetCoordinates, cellX, cellY, callback) {
 			try {
-				// collision side
-					var collisionSide = getCollisionSide(request, {id: "wall", x: cellX, y: cellY}, targetCoordinates, callback)
-
-				// left
-					if (collisionSide == "left") {
-						targetCoordinates.x = Math.max(targetCoordinates.x, Math.ceil(chamber.info.cellSize * cellX + chamber.info.cellSize / 2) + targetCoordinates.radiusX)
-						targetCoordinates.collisionX = true
+				// wall
+					var wall = {
+						info: {
+							size: {
+								x: chamber.info.cellSize,
+								y: chamber.info.cellSize
+							}
+						},
+						state: {
+							position: {
+								x: chamber.info.cellSize * cellX,
+								y: chamber.info.cellSize * cellY
+							}
+						}
 					}
 
-				// right
-					else if (collisionSide == "right") {
-						targetCoordinates.x = Math.min(targetCoordinates.x, Math.ceil(chamber.info.cellSize * cellX - chamber.info.cellSize / 2) - targetCoordinates.radiusX)
-						targetCoordinates.collisionX = true
+				// side
+					var collision = {
+						side: getCollisionSide(request, wall, targetCoordinates, callback)
 					}
 
-				// down
-					if (collisionSide == "down") {
-						targetCoordinates.y = Math.max(targetCoordinates.y, Math.ceil(chamber.info.cellSize * cellY + chamber.info.cellSize / 2) + targetCoordinates.radiusY)
-						targetCoordinates.collisionY = true
-					}
-
-				// up
-					else if (collisionSide == "up") {
-						targetCoordinates.y = Math.min(targetCoordinates.y, Math.ceil(chamber.info.cellSize * cellY - chamber.info.cellSize / 2) - targetCoordinates.radiusY)
-						targetCoordinates.collisionY = true
-					}
+				// coordinates
+					targetCoordinates = resolveStop(request, targetCoordinates, collision, wall, callback)
 
 				// return
 					return targetCoordinates
@@ -1437,22 +1441,7 @@
 
 								// stop movement
 									else {
-										if (collision.side == "left") {
-											targetCoordinates.x = Math.max(targetCoordinates.x, item.state.position.x + (item.info.size.x / 2) + targetCoordinates.radiusX)
-											targetCoordinates.collisionX = true
-										}
-										else if (collision.side == "right") {
-											targetCoordinates.x = Math.min(targetCoordinates.x, item.state.position.x - (item.info.size.x / 2) - targetCoordinates.radiusX)
-											targetCoordinates.collisionX = true
-										}
-										else if (collision.side == "up") {
-											targetCoordinates.y = Math.min(targetCoordinates.y, item.state.position.y - (item.info.size.y / 2) - targetCoordinates.radiusY)
-											targetCoordinates.collisionY = true
-										}
-										else if (collision.side == "down") {
-											targetCoordinates.y = Math.max(targetCoordinates.y, item.state.position.y + (item.info.size.y / 2) + targetCoordinates.radiusY)
-											targetCoordinates.collisionY = true
-										}
+										targetCoordinates = resolveStop(request, targetCoordinates, collision, item, callback)
 									}
 							}
 
@@ -1473,66 +1462,13 @@
 									}
 
 								// stop movement
-									if (collision.side == "left") {
-										targetCoordinates.x = Math.max(targetCoordinates.x, item.state.position.x + (item.info.size.x / 2) + targetCoordinates.radiusX)
-										targetCoordinates.collisionX = true
-									}
-									else if (collision.side == "right") {
-										targetCoordinates.x = Math.min(targetCoordinates.x, item.state.position.x - (item.info.size.x / 2) - targetCoordinates.radiusX)
-										targetCoordinates.collisionX = true
-									}
-									else if (collision.side == "up") {
-										targetCoordinates.y = Math.min(targetCoordinates.y, item.state.position.y - (item.info.size.y / 2) - targetCoordinates.radiusY)
-										targetCoordinates.collisionY = true
-									}
-									else if (collision.side == "down") {
-										targetCoordinates.y = Math.max(targetCoordinates.y, item.state.position.y + (item.info.size.y / 2) + targetCoordinates.radiusY)
-										targetCoordinates.collisionY = true
-									}
+									targetCoordinates = resolveStop(request, targetCoordinates, collision, item, callback)
 							}
 					}
 
-				// heroes & creatures (bumping)
+				// bumpAttacks (other heroes / creatures)
 					else if (["hero", "monster", "creature"].includes(thing.info.type) && thing.state.alive && (collision.supertype == "hero" || collision.supertype == "creature")) {
-						// get recipient
-							var recipient = chamber[collision.supertype == "hero" ? "heroes" : "creatures"][collision.id]
-							if (recipient.state.alive) {
-								// damage them
-									var alive = resolveDamage(request, chamber, recipient, {
-										power: 	thing.info.statistics.bumpPower,
-										rps: 	thing.info.rps,
-										type: 	thing.info.type
-									}, callback)
-
-								// kill ?
-									if (!alive) {
-										thing.state.kills++
-									}
-								
-								// bump
-									else {
-										recipient.state.position.vx = recipient.state.position.vx + collision.side == "right" ? CONSTANTS.bumpAcceleration : collision.side == "left" ? -CONSTANTS.bumpAcceleration : 0
-										recipient.state.position.vy = recipient.state.position.vy + collision.side == "up"    ? CONSTANTS.bumpAcceleration : collision.side == "down" ? -CONSTANTS.bumpAcceleration : 0
-									}
-
-								// stop movement
-									if (collision.side == "left") {
-										targetCoordinates.x = Math.max(targetCoordinates.x, recipient.state.position.x + (recipient.info.size.x / 2) + targetCoordinates.radiusX)
-										targetCoordinates.collisionX = true
-									}
-									else if (collision.side == "right") {
-										targetCoordinates.x = Math.min(targetCoordinates.x, recipient.state.position.x - (recipient.info.size.x / 2) - targetCoordinates.radiusX)
-										targetCoordinates.collisionX = true
-									}
-									else if (collision.side == "up") {
-										targetCoordinates.y = Math.min(targetCoordinates.y, recipient.state.position.y - (recipient.info.size.y / 2) - targetCoordinates.radiusY)
-										targetCoordinates.collisionY = true
-									}
-									else if (collision.side == "down") {
-										targetCoordinates.y = Math.max(targetCoordinates.y, recipient.state.position.y + (recipient.info.size.y / 2) + targetCoordinates.radiusY)
-										targetCoordinates.collisionY = true
-									}
-							}
+						targetCoordinates = resolveAttackCollision(request, chamber, thing, targetCoordinates, collision, callback)
 					}
 
 				// rangeAttacks
@@ -1558,45 +1494,80 @@
 		module.exports.resolveAttackCollision = resolveAttackCollision
 		function resolveAttackCollision(request, chamber, attack, targetCoordinates, collision, callback) {
 			try {
-				// self
-					if (collision.id == attack.info.attacker.id) {
+				// self (for rangeAttack / areaAttack)
+					if (attack.info.attacker && collision.id == attack.info.attacker.id) {
 						return targetCoordinates
 					}
 
-				// creatures
+				// other creatures
 					else if (collision.supertype == "hero" || collision.supertype == "creature") {
 						// attacker
-							var attacker = chamber[attack.info.attacker.type == "hero" ? "heroes" : "creatures"][attack.info.attacker.id]
+							if (attack.info.type == "rangeAttack" || attack.info.type == "areaAttack") {
+								var attacker = chamber[attack.info.attacker.type == "hero" ? "heroes" : "creatures"][attack.info.attacker.id]
+							}
+							else {
+								var attacker = attack
+							}
 
 						// recipient
 							var recipient = chamber[collision.supertype == "hero" ? "heroes" : "creatures"][collision.id]
 							if (recipient.state.alive) {
 								// stop moving
-									targetCoordinates.collisionX = true
-									targetCoordinates.collisionY = true
+									targetCoordinates = resolveStop(request, targetCoordinates, collision, recipient, callback)
 
 								// damage
-									var alive = resolveDamage(request, chamber, recipient, {
-										power: 	attack.info.statistics.power,
-										rps: 	attack.info.rps,
-										type: 	attack.info.attacker.type
-									}, callback)
+									if ((attack.info.type == "rangeAttack" || attack.info.type == "areaAttack") || !Object.keys(attacker.items).length) {
+										var alive = resolveDamage(request, chamber, recipient, {
+											power: 	attack.info.statistics.power || attack.info.statistics.bumpPower,
+											rps: 	attack.info.rps,
+											type: 	attacker.info.type
+										}, callback)
 
-								// kills
-									if (!alive && attacker) {
-										attacker.state.kills++
-									}
+										if (!alive) {
+											attacker.state.kills++
+										}
+									}									
 
 								// bump
-									else {
+									if (recipient.state.alive) {
 										recipient.state.position.vx = recipient.state.position.vx + (collision.side == "right" ? CONSTANTS.bumpAcceleration : collision.side == "left" ? -CONSTANTS.bumpAcceleration : 0)
 										recipient.state.position.vy = recipient.state.position.vy + (collision.side == "up"    ? CONSTANTS.bumpAcceleration : collision.side == "down" ? -CONSTANTS.bumpAcceleration : 0)
 									}
-							}							
+							}
+
+						// return
+							return targetCoordinates							
+					}
+			}
+			catch (error) {
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
+			}
+		}
+
+	/* resolveStop */
+		module.exports.resolveStop = resolveStop
+		function resolveStop(request, targetCoordinates, collision, obstacle, callback) {
+			try {
+				// directions
+					if (collision.side == "left") {
+						targetCoordinates.x = Math.max(targetCoordinates.x, obstacle.state.position.x + (obstacle.info.size.x / 2) + targetCoordinates.radiusX)
+						targetCoordinates.collisionX = true
+					}
+					else if (collision.side == "right") {
+						targetCoordinates.x = Math.min(targetCoordinates.x, obstacle.state.position.x - (obstacle.info.size.x / 2) - targetCoordinates.radiusX)
+						targetCoordinates.collisionX = true
+					}
+					else if (collision.side == "up") {
+						targetCoordinates.y = Math.min(targetCoordinates.y, obstacle.state.position.y - (obstacle.info.size.y / 2) - targetCoordinates.radiusY)
+						targetCoordinates.collisionY = true
+					}
+					else if (collision.side == "down") {
+						targetCoordinates.y = Math.max(targetCoordinates.y, obstacle.state.position.y + (obstacle.info.size.y / 2) + targetCoordinates.radiusY)
+						targetCoordinates.collisionY = true
 					}
 
+				// return
 					return targetCoordinates
-
 			}
 			catch (error) {
 				main.logError(error, arguments.callee.name, [request.session.id], callback)
@@ -2154,6 +2125,10 @@
 							else {
 								// target coordinates
 									var creature = chamber[item.info.attacker.type == "hero" ? "heroes" : "creatures"][item.info.attacker.id]
+									if (!creature) {
+										delete chamber.items[item.id]
+									}
+
 									var targetCoordinates = {
 										id: 		item.id,
 										radiusX: 	Math.ceil(item.info.size.x / 2),

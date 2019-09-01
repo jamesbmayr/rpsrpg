@@ -148,8 +148,8 @@
 									chamberSize: 		9,
 									cellSize: 			128,
 									portalPairs: 		2,
-									monsterCountMax:	1,
 									monsterCountMin:	1,
+									monsterCountMax:	3,
 									monsterChance: 		[3,4],
 
 								// health

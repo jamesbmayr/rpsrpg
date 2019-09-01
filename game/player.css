@@ -114,6 +114,10 @@
 			border-radius: 0px;
 		}
 
+		#center button[active] {
+			background-color: var(--black-2);
+		}
+
 		#right {
 			border-radius: 0px var(--borderRadius) var(--borderRadius) 0px;
 		}
