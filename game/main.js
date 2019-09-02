@@ -239,6 +239,29 @@
 			} catch (error) {}
 		}
 
+	/* drawCreature */
+		function drawCreature(creature) {
+			try {
+				// variables
+					var creatureColor = creature.info.color
+					var creatureRadius = Math.ceil(((creature.info.size.x + creature.info.size.y) / 2) / 2)
+					if (creature.state.cooldowns.death !== undefined) {
+						creatureRadius = Math.ceil(creatureRadius * creature.state.cooldowns.death / CONSTANTS.deathCooldown)
+					}
+
+				// coordinates
+					var x1 = creature.state.position.x                  + Math.ceil(CANVAS.width  / 2)
+					var y1 = creature.state.position.y + creatureRadius + Math.ceil(CANVAS.height / 2)
+					var x2 = creature.state.position.x + creatureRadius + Math.ceil(CANVAS.width  / 2)
+					var y2 = creature.state.position.y - creatureRadius + Math.ceil(CANVAS.height / 2)
+					var x3 = creature.state.position.x - creatureRadius + Math.ceil(CANVAS.width  / 2)
+					var y3 = creature.state.position.y - creatureRadius + Math.ceil(CANVAS.height / 2)
+
+				// draw
+					drawTriangle(CANVAS, CONTEXT, x1, y1, x2, y2, x3, y3, {color: creature.info.color})
+			} catch (error) {}
+		}
+
 	/* drawItem */
 		function drawItem(item) {
 			try {
@@ -270,28 +293,5 @@
 						}
 						drawRectangle(CANVAS, CONTEXT, itemX - itemRadius, itemY - itemRadius, itemRadius * 2, itemRadius * 2, itemOptions)
 					}
-			} catch (error) {}
-		}
-
-	/* drawCreature */
-		function drawCreature(creature) {
-			try {
-				// variables
-					var creatureColor = creature.info.color
-					var creatureRadius = Math.ceil(((creature.info.size.x + creature.info.size.y) / 2) / 2)
-					if (creature.state.cooldowns.death !== undefined) {
-						creatureRadius = Math.ceil(creatureRadius * creature.state.cooldowns.death / CONSTANTS.deathCooldown)
-					}
-
-				// coordinates
-					var x1 = creature.state.position.x                  + Math.ceil(CANVAS.width  / 2)
-					var y1 = creature.state.position.y + creatureRadius + Math.ceil(CANVAS.height / 2)
-					var x2 = creature.state.position.x + creatureRadius + Math.ceil(CANVAS.width  / 2)
-					var y2 = creature.state.position.y - creatureRadius + Math.ceil(CANVAS.height / 2)
-					var x3 = creature.state.position.x - creatureRadius + Math.ceil(CANVAS.width  / 2)
-					var y3 = creature.state.position.y - creatureRadius + Math.ceil(CANVAS.height / 2)
-
-				// draw
-					drawTriangle(CANVAS, CONTEXT, x1, y1, x2, y2, x3, y3, {color: creature.info.color})
 			} catch (error) {}
 		}

@@ -1,3 +1,9 @@
+/*** helpers ***/
+	/* isNumLet */
+		function isNumLet(string) {
+			return (/^[a-z0-9A-Z_\s]+$/).test(string)
+		}
+
 /*** actions ***/
 	/* createGame */
 		document.getElementById("createGame").addEventListener(on.click, createGame)

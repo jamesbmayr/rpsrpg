@@ -20,6 +20,7 @@
 				context.translate(-x, -y)
 		}
 
+/*** draw: geometry ***/
 	/* drawLine */
 		function drawLine(canvas, context, x1, y1, x2, y2, options) {
 			// parameters
@@ -165,6 +166,7 @@
 				}
 		}
 
+/*** draw: assets ***/
 	/* drawText */
 		function drawText(canvas, context, x, y, text, options) {
 			// variables
@@ -202,4 +204,3 @@
 
 			return gradient
 		}
-

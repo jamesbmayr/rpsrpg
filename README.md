@@ -1,10 +1,12 @@
 # RPS RPG
 
-Three fantasy heroes team up to fight through a randomly generated dungeon of orb-stealing monsters.
+Three fantasy heroes team up to fight through a randomly generated dungeon of orb-hoarding monsters.
 
 ---
 <pre>
-
+ {}      [=]       8<
+Rock    Paper   Scissors
+Role   Playing    Game
 </pre>
 ---
 
@@ -13,8 +15,16 @@ Every game has a unique 4-letter id. Go to the homepage on a computer to start a
 Join a game on a computer or mobile device by entering the 4-letter id.
 
 ## Gameplay
+Each player selects a hero:
+* *barbarian*: swing a club, toss rocks, and set off bombs
+* *wizard*: swing a staff, shoot lightning, and create a wall of water
+* *ranger*: swing a sword, throw knives, and deploy spikes
 
-
+Traverse the randomly generated dungeon, guarded by armies of monsters, to find and return the three magic orbs.
+Along the adventure, you'll also encounter:
+* *portals*: teleport between chambers
+* *shrines*: temporary rage, protection, and speed
+* *healing*: quickly recover health
 
 ## Code
 The app is powered by nodeJS and websockets, written in 100% raw javascript. 
@@ -28,11 +38,11 @@ rpsrpg
 |   |- websocket
 |
 |- main
-|   |- logic.js (logError, logStatus, logMessage, logTime; getEnvironment, getAsset, getSchema; isNumLet, isBot; renderHTML, sanitizeString, duplicateObject; generateRandom, chooseRandom, sortRandom; determineSession)
+|   |- logic.js (logError, logStatus, logMessage, logTime; getEnvironment, getAsset, getSchema; isNumLet, isBot; renderHTML, sanitizeString, duplicateObject, duplicateArray, overwriteObject, getDistance; generateRandom, rangeRandom, rollRandom, chooseRandom, sortRandom; determineSession)
 |   |- \_404.html
 |   |- stylesheet.css
-|   |- script.js (sanitizeString; isEmail, isNumLet; chooseRandom; sendPost; displayMessage)
-|   |- draw.js (clearData, randomizeData; clearCanvas, rotateCanvas; drawLine, drawCircle, drawTriangle, drawRectangle, drawShape, drawText, drawGradient)
+|   |- script.js (sendPost; displayMessage)
+|   |- draw.js (clearCanvas, rotateCanvas; drawLine, drawCircle, drawTriangle, drawRectangle, drawShape; drawText, drawGradient)
 |   |- images
 |      |- banner.png
 |      |- icon.png
@@ -43,19 +53,19 @@ rpsrpg
 |   |- logic.js (createGame, createPlayer; joinGame)
 |   |- index.html
 |   |- stylesheet.css
-|   |- script.js (createGame, joinGame)
+|   |- script.js (isNumLet; createGame, joinGame)
 |
 |- about
 |   |- index.html
 |   |- stylesheet.css
-|   |- script.js (submitFeedback)
+|   |- script.js (isEmail, sanitizeString; submitFeedback)
 |
 |- game
-    |- logic.js (addPlayer, removePlayer; pressInput, releaseInput; updateGame)
+    |- logic.js (addPlayer, removePlayer; pressInput, releaseInput; triggerMove, untriggerMove, triggerAction, untriggerAction, triggerPause; createMap, createChamber, createCells, createWalls, createDoors, createNeighborConnections, createConnectionPaths; createTemple, createPortal, createShrine; createItem, createOrb, createRangeAttack, createAreaAttack; createCreature, createMonsters, createHero; getNextCoords, getCells, getCollisionSide; resolveEdges, resolveEdge, resolveWalls, resolveWall, resolveCollisions, resolveCollision, resolveAttackCollision, resolveStop, resolveDamage; updateTime, updateNextChamber, updateChamber, updateTiles, updateHero, updateCreature, updateItem)
     |- main.html
     |- main.css
-    |- main.js (createSocket, checkLoop; receivePost; drawGame)
+    |- main.js (createSocket, checkLoop; receivePost; drawPaused, drawChamber, drawOverlay, drawMinimap, drawWalls, drawHero, drawCreature, drawItem)
     |- player.html
     |- player.css
-    |- player.js (createSocket, checkLoop; pressInput, releaseInput; receivePost; drawGame)
+    |- player.js (createSocket, checkLoop; pressInput, releaseInput; receivePost; displayInfo, displayHealthBar, displayButtons)
 </pre>

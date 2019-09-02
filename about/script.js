@@ -1,3 +1,14 @@
+/*** helpers ***/
+	/* isEmail */
+		function isEmail(string) {
+			return (/[a-z0-9!#$%&\'*+\/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+\/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/).test(string)
+		}
+
+	/* sanitizeString */
+		function sanitizeString(string) {
+			return (string.length ? string.replace(/[^a-zA-Z0-9_\s\!\@\#\$\%\^\&\*\(\)\+\=\-\[\]\\\{\}\|\;\'\:\"\,\.\/\<\>\?]/gi, "") : "")
+		}
+
 /*** actions ***/
 	/* submitFeedback */
 		document.getElementById("feedback-submit").addEventListener(on.click, submitFeedback)
