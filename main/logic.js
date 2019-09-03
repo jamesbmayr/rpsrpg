@@ -487,16 +487,15 @@
 
 										// some items
 											else {
-												// loop through to find best item (orb > pedestal > tile)
+												// loop through to find best item (orb > pedestal > shrine > portal)
 													var cellX = null
 													var cellY = null
 													var itemType = null
+													var preferences = ["orb", "pedestal", "shrine", "portal", "heal"]
 													for (var i in chamber.items) {
 														var item = chamber.items[i]
 
-														if ((item.info.type == "orb")
-														 || (!["orb"].includes(itemType) && item.info.type == "pedestal")
-														 || (!["orb", "pedestal"].includes(itemType) && item.info.type == "tile")) {
+														if (preferences.includes(item.info.type) && (preferences.indexOf(item.info.type) < preferences.indexOf(itemType))) {
 															itemType = item.info.type
 															var targetX = item.state.position.x
 															var targetY = item.state.position.y
@@ -761,9 +760,8 @@
 								"rock": {
 									info: {
 										rps: "rock",
-										name: "rock orb",
 										type: "orb",
-										subtype: "rock orb",
+										subtype: "rock",
 										size: {
 											x: orbSize,
 											y: orbSize
@@ -776,9 +774,8 @@
 								"paper": {
 									info: {
 										rps: "paper",
-										name: "paper orb",
 										type: "orb",
-										subtype: "paper orb",
+										subtype: "paper",
 										size: {
 											x: orbSize,
 											y: orbSize
@@ -791,9 +788,8 @@
 								"scissors": {
 									info: {
 										rps: "scissors",
-										name: "scissors orb",
 										type: "orb",
-										subtype: "scissors orb",
+										subtype: "scissors",
 										size: {
 											x: orbSize,
 											y: orbSize
@@ -833,10 +829,10 @@
 							return pedestals
 						break
 
-						case "healTile":
+						case "heal":
 							return {
 								info: {
-									type: "tile",
+									type: "heal",
 									subtype: "heal",
 									size: {
 										x: Math.floor(CONSTANTS.cellSize / 8) * 7,
@@ -849,10 +845,10 @@
 							}
 						break
 
-						case "portalTile":
+						case "portal":
 							return {
 								info: {
-									type: "tile",
+									type: "portal",
 									subtype: "portal",
 									size: {
 										max: Math.floor(CONSTANTS.cellSize / 8) * 7,
@@ -870,11 +866,10 @@
 							}
 						break
 
-						case "shrineTile":
+						case "shrine":
 							return {
 								info: {
-									type: "tile",
-									subtype: "shrine",
+									type: "shrine",
 									size: {
 										max: Math.floor(CONSTANTS.cellSize / 8) * 7,
 										x: Math.floor(CONSTANTS.cellSize / 8) * 7,
@@ -1014,6 +1009,7 @@
 									a: 		0,
 									b: 		0
 								},
+								image: 		null,
 								kills: 		0,
 								points: 	0
 							},

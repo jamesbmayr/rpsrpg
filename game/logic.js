@@ -776,12 +776,12 @@
 									chamber.cells[x][y].wall = true
 								}
 
-							// clear the rest and add heal tiles
+							// clear the rest and add heals
 								else {
 									chamber.cells[x][y].wall = false
 
-									var healTile = createItem(request, main.getAsset("healTile"), callback)
-									main.overwriteObject(healTile, {
+									var heal = createItem(request, main.getAsset("heal"), callback)
+									main.overwriteObject(heal, {
 										state: {
 											position: {
 												x: CONSTANTS.cellSize * x,
@@ -789,7 +789,7 @@
 											}
 										}
 									})
-									chamber.items[healTile.id] = healTile
+									chamber.items[heal.id] = heal
 								}
 						}
 					}
@@ -817,7 +817,7 @@
 					chamber.cells[ 1][ 1].wall = false
 
 				// create portal
-					var portal = createItem(request, main.getAsset("portalTile"), callback)
+					var portal = createItem(request, main.getAsset("portal"), callback)
 					main.overwriteObject(portal, {
 						state: {
 							link: destination
@@ -837,10 +837,10 @@
 		function createShrine(request, chamber, shrineType, callback)  {
 			try {
 				// create shrine
-					var shrine = createItem(request, main.getAsset("shrineTile"), callback)
+					var shrine = createItem(request, main.getAsset("shrine"), callback)
 					main.overwriteObject(shrine, {
 						info: {
-							rps: shrineType,
+							subtype: shrineType,
 							color: main.getAsset("orbs")[shrineType].info.color
 						}
 					})
@@ -1450,35 +1450,33 @@
 					if (collision.supertype == "item" && chamber.items[collision.id]) {
 						var item = chamber.items[collision.id]
 						
-						// tiles
-							if (collision.type == "tile") {
-								// healTile
-									if (thing.info.type == "hero" && item.info.subtype == "heal") {
-										thing.state.effects.heal = true
-									}
+						// heal
+							if (item.info.type == "heal" && thing.info.type == "hero") {
+								thing.state.effects.heal = true
+							}
 
-								// shrineTile
-									else if (thing.info.type == "hero" && thing.state.alive && item.info.subtype == "shrine") {
-										if (!item.state.cooldown) {
-											thing.state.effects[item.info.rps] = CONSTANTS.effectCooldown
-											updateTiles(request, chamber, "shrine", callback)
-										}
-									}
+						// shrine
+							else if (item.info.type == "shrine" && thing.info.type == "hero" && thing.state.alive) {
+								if (!item.state.cooldown) {
+									thing.state.effects[item.info.subtype] = CONSTANTS.effectCooldown
+									item.state.cooldown = CONSTANTS.shrineCooldown
+									item.info.size.x = item.info.size.y = 0
+								}
+							}
 
-								// portalTile
-									else if (thing.info.type == "hero" && thing.state.alive && item.info.subtype == "portal") {
-										if (!item.state.cooldown) {
-											targetCoordinates = resolveEdge(request, chamber, thing, targetCoordinates, item.state.link, callback)
-										}
-									}
+						// portal
+							else if (item.info.type == "portal" && thing.info.type == "hero" && thing.state.alive) {
+								if (!item.state.cooldown) {
+									targetCoordinates = resolveEdge(request, chamber, thing, targetCoordinates, item.state.link, callback)
+								}
 							}
 
 						// orbs
-							else if (["hero", "monster", "creature"].includes(thing.info.type) && thing.state.alive && collision.type == "orb") {
+							else if (item.info.type == "orb" && ["hero", "monster", "creature"].includes(thing.info.type) && thing.state.alive) {
 								// collect orb
-									if (thing.info.type == "hero" && thing.info.rps == chamber.items[collision.id].info.rps) {
-										thing.items[collision.id] = main.duplicateObject(chamber.items[collision.id])
-										delete chamber.items[collision.id]
+									if (thing.info.type == "hero" && thing.info.rps == chamber.items[item.id].info.rps) {
+										thing.items[item.id] = main.duplicateObject(chamber.items[item.id])
+										delete chamber.items[item.id]
 									}
 
 								// stop movement
@@ -1488,17 +1486,17 @@
 							}
 
 						// pedestal
-							else if (["hero", "monster", "creature"].includes(thing.info.type) && thing.state.alive && collision.type == "pedestal") {
+							else if (item.info.type == "pedestal" && ["hero", "monster", "creature"].includes(thing.info.type) && thing.state.alive) {
 								// deposit orb
-									if (thing.info.type == "hero" && thing.info.rps == chamber.items[collision.id].info.rps) {
+									if (thing.info.type == "hero" && thing.info.rps == chamber.items[item.id].info.rps) {
 										var itemKeys = Object.keys(thing.items)
 										var orbKey = itemKeys.find(function(id) {
 											return thing.items[id].info.type == "orb"
 										})
 
 										if (orbKey) {
-											chamber.items[collision.id].state.active = true
-											chamber.items[collision.id].info.style = "filled"
+											chamber.items[item.id].state.active = true
+											chamber.items[item.id].info.style = "filled"
 											delete thing.items[orbKey]
 										}
 									}
@@ -1742,9 +1740,6 @@
 
 							// regular gameplay
 								else {
-									// tiles
-										updateTiles(request, chamber, null, callback)
-
 									// heroes
 										for (var h in chamber.heroes) {
 											var hero = chamber.heroes[h]
@@ -1796,8 +1791,23 @@
 
 					// deactivate portals
 						if (!isEdge) {
-							updateTiles(request, request.game.data.chambers[oldX][oldY], "portal", callback)
-							updateTiles(request, request.game.data.chambers[newX][newY], "portal", callback)
+							// from
+								var fromKeys = Object.keys(request.game.data.chambers[oldX][oldY].items)
+								var fromKey = fromKeys.find(function(i) {
+									return (request.game.data.chambers[oldX][oldY].items[i].info.type == "portal")
+								})
+								var fromPortal = request.game.data.chambers[oldX][oldY].items[fromKey]
+									fromPortal.state.cooldown = CONSTANTS.portalCooldown
+									fromPortal.info.size.x = fromPortal.info.size.y = 0
+
+							// to
+								var toKeys = Object.keys(request.game.data.chambers[newX][newY].items)
+								var toKey = toKeys.find(function(i) {
+									return (request.game.data.chambers[newX][newY].items[i].info.type == "portal")
+								})
+								var toPortal = request.game.data.chambers[newX][newY].items[toKey]
+									toPortal.state.cooldown = CONSTANTS.portalCooldown
+									toPortal.info.size.x = toPortal.info.size.y = 0
 						}
 
 					// set cooldown
@@ -1858,57 +1868,6 @@
 						request.game.data.chambers[newX][newY].state.cooldown = CONSTANTS.chamberCooldown
 						request.game.data.chambers[oldX][oldY].state.fadeout  = false
 				}
-			}
-			catch (error) {
-				main.logError(error, arguments.callee.name, [request.session.id], callback)
-			}
-		}
-
-	/* updateTiles */
-		module.exports.updateTiles = updateTiles
-		function updateTiles(request, chamber, deactivateType, callback) {
-			try {
-				// loop through items to find tiles
-					for (var i in chamber.items) {
-						var item = chamber.items[i]
-						
-						if (item.info.type == "tile" && (item.info.subtype == "portal" || item.info.subtype == "shrine")) {
-							// get max cooldown
-								var cooldownMax = CONSTANTS[item.info.subtype + "Cooldown"]
-
-							// deactivate? set cooldown to max
-								if (deactivateType) {
-									if (item.info.subtype == deactivateType) {
-										item.state.cooldown = cooldownMax
-										item.info.size.x = item.info.size.y = 0
-									}
-								}
-
-							// or else reduce cooldown
-								else {
-									item.state.cooldown = Math.max(0, item.state.cooldown - 1)
-									item.info.size.x = item.info.size.y = item.info.size.max * ((cooldownMax - item.state.cooldown) / cooldownMax)
-
-									// reduce cooldown for destination's portal too
-										if (item.info.subtype == "portal") {
-											var coords = item.state.link.split(",")
-											var cellX = Number(coords[0])
-											var cellY = Number(coords[1])
-											var destinationChamber = request.game.data.chambers[cellX][cellY]
-
-											var portalKey = Object.keys(destinationChamber.items).find(function(i) {
-												return (destinationChamber.items[i].info.type == "tile" && destinationChamber.items[i].info.subtype == "portal")
-											}) || null
-
-											if (portalKey) {
-												var portal = destinationChamber.items[portalKey]
-													portal.state.cooldown = Math.max(0, portal.state.cooldown - 1)
-													portal.info.size.x = portal.info.size.y = portal.info.size.max * ((cooldownMax - portal.state.cooldown) / cooldownMax)
-											}
-										}
-								}
-						}
-					}
 			}
 			catch (error) {
 				main.logError(error, arguments.callee.name, [request.session.id], callback)
@@ -2009,6 +1968,9 @@
 					for (var e in hero.state.effects) {
 						hero.state.effects[e] = Math.max(0, hero.state.effects[e] - 1)
 					}
+
+				// image
+					updateImage(request, hero, targetCoordinates, callback)
 			}
 			catch (error) {
 				main.logError(error, arguments.callee.name, [request.session.id], callback)
@@ -2152,6 +2114,9 @@
 							for (var e in creature.state.effects) {
 								creature.state.effects[e] = Math.max(0, creature.state.effects[e] - 1)
 							}
+
+						// image
+							updateImage(request, creature, targetCoordinates, callback)
 					}
 			}
 			catch (error) {
@@ -2163,6 +2128,17 @@
 		module.exports.updateItem = updateItem
 		function updateItem(request, chamber, item, callback) {
 			try {
+				// targetCoordinates
+					var targetCoordinates = {
+						id: 		item.id,
+						radiusX: 	Math.ceil(item.info.size.x / 2),
+						radiusY: 	Math.ceil(item.info.size.y / 2), 
+						x: 			item.state.position.x,
+						y: 			item.state.position.y,
+						collisionX: false,
+						collisionY: false
+					}
+
 				// range attacks
 					if (item.info.type == "rangeAttack") {
 						// no power?
@@ -2173,22 +2149,13 @@
 						// still has power
 							else {
 								// target coordinates
-									var speed = item.info.statistics.speed
-									var direction = item.state.movement.direction
-									var newX = item.state.position.x + (direction == "left" ? -speed : direction == "right" ? speed : 0)
-									var newY = item.state.position.y + (direction == "down" ? -speed : direction == "up"    ? speed : 0)
-									var radiusX = Math.ceil(item.info.size.x / 2)
-									var radiusY = Math.ceil(item.info.size.y / 2)
+									var speed 		= item.info.statistics.speed
+									var direction 	= item.state.movement.direction
+									var newX 		= item.state.position.x + (direction == "left" ? -speed : direction == "right" ? speed : 0)
+									var newY 		= item.state.position.y + (direction == "down" ? -speed : direction == "up"    ? speed : 0)
 
-									var targetCoordinates = {
-										id: 		item.id,
-										radiusX: 	radiusX,
-										radiusY: 	radiusY,
-										x: 			newX,
-										y: 			newY,
-										collisionX:	false,
-										collisionY: false
-									}
+									targetCoordinates.x = newX
+									targetCoordinates.y = newY
 
 								// resolve edges
 									targetCoordinates = resolveEdges(request, chamber, item, targetCoordinates, callback)
@@ -2235,15 +2202,8 @@
 						// still has power
 							else {
 								// target coordinates
-									var targetCoordinates = {
-										id: 		item.id,
-										radiusX: 	Math.ceil(item.info.size.x / 2),
-										radiusY: 	Math.ceil(item.info.size.y / 2),
-										x: 			attacker.state.position.x,
-										y: 			attacker.state.position.y,
-										collisionX:	false,
-										collisionY: false
-									}
+									targetCoordinates.x = attacker.state.position.x
+									targetCoordinates.y = attacker.state.position.y
 
 								// resolve collisions
 									targetCoordinates = resolveCollisions(request, chamber, item, targetCoordinates, callback)
@@ -2255,6 +2215,68 @@
 									item.info.size.x = Math.max(0, item.info.size.x - (CONSTANTS.areaAttackFade * CONSTANTS.areaAttackRadius))
 									item.info.size.y = Math.max(0, item.info.size.y - (CONSTANTS.areaAttackFade * CONSTANTS.areaAttackRadius))
 							}
+					}
+
+				// shrine / portal
+					else if (item.info.type == "shrine" || item.info.type == "portal") {
+						// get max cooldown
+							var cooldownMax = CONSTANTS[item.info.type + "Cooldown"]
+
+						// reduce cooldown
+							item.state.cooldown = Math.max(0, item.state.cooldown - 1)
+							item.info.size.x = item.info.size.y = item.info.size.max * ((cooldownMax - item.state.cooldown) / cooldownMax)
+
+						// reduce cooldown for destination's portal too
+							if (item.info.type == "portal") {
+								var coords = item.state.link.split(",")
+								var cellX = Number(coords[0])
+								var cellY = Number(coords[1])
+								var destinationChamber = request.game.data.chambers[cellX][cellY]
+
+								var portalKey = Object.keys(destinationChamber.items).find(function(i) {
+									return (destinationChamber.items[i].info.type == "portal")
+								}) || null
+
+								if (portalKey) {
+									var portal = destinationChamber.items[portalKey]
+										portal.state.cooldown = Math.max(0, portal.state.cooldown - 1)
+										portal.info.size.x = portal.info.size.y = portal.info.size.max * ((cooldownMax - portal.state.cooldown) / cooldownMax)
+								}
+							}
+					}
+
+				// image
+					updateImage(request, item, targetCoordinates, callback)
+			}
+			catch (error) {
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
+			}
+		}
+
+	/* updateImage */
+		module.exports.updateImage = updateImage
+		function updateImage(request, thing, targetCoordinates, callback) {
+			try {
+				// heroes && creatures
+					if (thing.info.type == "hero" || thing.info.type == "creature" || thing.info.type == "monster") {
+						var imageName = []
+							imageName.push(thing.info.type)
+							imageName.push(thing.info.subtype)
+							imageName.push(thing.state.movement ? thing.state.movement.direction : "all")
+							imageName.push(thing.state.movement && thing.state.movement[thing.state.movement.direction] ? "moving" : "standing")
+							imageName.push(thing.state.actions.a ? "rangeattack" : thing.state.actions.b ? "areaattack" : (targetCoordinates.collisionX || targetCoordinates.collisionY) ? "collision" : "inactive")
+						thing.state.image = imageName.join("_") + ".png"
+					}
+
+				// items
+					else {
+						var imageName = []
+							imageName.push(thing.info.type)
+							imageName.push(thing.info.subtype)
+							imageName.push(thing.state.movement ? thing.state.movement.direction : "all")
+							imageName.push((thing.state.movement && thing.state.movement[thing.state.movement.direction]) ? "moving" : "standing")
+							imageName.push((thing.state.active || !thing.state.cooldown) ? "active" : "inactive")
+						thing.state.image = imageName.join("_" + ".png")
 					}
 			}
 			catch (error) {
