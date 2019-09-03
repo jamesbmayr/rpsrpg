@@ -131,6 +131,20 @@
 										catch (error) {_404(error)}
 									break
 
+								// sprites
+									case (/[.]png$/).test(request.url):
+										try {
+											response.writeHead(200, {"Content-Type": "image/png"})
+											fs.readFile("./main/sprites/" + request.path[request.path.length - 1], function (error, file) {
+												if (error) {_404(error)}
+												else {
+													response.end(file, "binary")
+												}
+											})
+										}
+										catch (error) {_404(error)}
+									break
+
 								// stylesheet
 									case (/\/(stylesheet|main|player)[.]css$/).test(request.url):
 										try {

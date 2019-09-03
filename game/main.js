@@ -4,6 +4,20 @@
 		var CONTEXT = CANVAS.getContext("2d")
 		var CHAMBERID = null
 
+	/* preloadImages */
+		var IMAGES = []
+		preloadImages()
+		function preloadImages() {
+			try {
+				for (var i in SPRITES) {
+					var img = document.createElement("img")
+						img.id = SPRITES[i]
+						img.src = SPRITES[i] + ".png"
+					IMAGES[SPRITES[i]] = img
+				}
+			} catch (error) {}
+		}
+
 /*** websocket ***/
 	/* socket */
 		var socket = null
@@ -224,7 +238,12 @@
 					var heroOpacity = hero.state.alive ? 1 : CONSTANTS.deadOpacity
 
 				// draw
-					drawCircle(CANVAS, CONTEXT, heroX, heroY, heroRadius, {color: heroColor, opacity: heroOpacity})
+					if (IMAGES[hero.state.image]) {
+						drawImage(CANVAS, CONTEXT, heroX, heroY, heroRadius, heroRadius, {image: IMAGES[hero.state.image], color: heroColor, opacity: heroOpacity})
+					}
+					else {
+						drawCircle(CANVAS, CONTEXT, heroX, heroY, heroRadius, {color: heroColor, opacity: heroOpacity})
+					}
 
 				// orb ?
 					for (var i in hero.items) {

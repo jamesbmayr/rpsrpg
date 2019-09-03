@@ -2264,8 +2264,8 @@
 							imageName.push(thing.info.subtype)
 							imageName.push(thing.state.movement ? thing.state.movement.direction : "all")
 							imageName.push(thing.state.movement && thing.state.movement[thing.state.movement.direction] ? "moving" : "standing")
-							imageName.push(thing.state.actions.a ? "rangeattack" : thing.state.actions.b ? "areaattack" : (targetCoordinates.collisionX || targetCoordinates.collisionY) ? "collision" : "inactive")
-						thing.state.image = imageName.join("_") + ".png"
+							imageName.push(thing.state.actions.a ? "rangeattack" : thing.state.actions.b ? "areaattack" : (targetCoordinates.collisionX || targetCoordinates.collisionY) ? "collision" : Object.keys(thing.items).length ? "holding" : "inactive")
+						thing.state.image = imageName.join("_")
 					}
 
 				// items
@@ -2276,7 +2276,7 @@
 							imageName.push(thing.state.movement ? thing.state.movement.direction : "all")
 							imageName.push((thing.state.movement && thing.state.movement[thing.state.movement.direction]) ? "moving" : "standing")
 							imageName.push((thing.state.active || !thing.state.cooldown) ? "active" : "inactive")
-						thing.state.image = imageName.join("_" + ".png")
+						thing.state.image = imageName.join("_")
 					}
 			}
 			catch (error) {

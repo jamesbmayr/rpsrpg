@@ -127,8 +127,15 @@
 						case "js variables":
 							return ('/*** superglobals ***/\n' +
 									'	var CONSTANTS = ' + JSON.stringify(CONSTANTS) + '\n' +
+									'	var SPRITES = ' + JSON.stringify(getAsset("sprites")) + '\n' +
 									'')
 						break
+
+					// sprites
+						case "sprites":
+							return ["hero_barbarian_up_moving_inactive", "hero_ranger_up_moving_inactive", "hero_wizard_up_moving_inactive"]
+						break
+
 
 					// game parameters
 						case "constants":

@@ -64,7 +64,7 @@ rpsrpg
     |- logic.js (addPlayer, removePlayer; pressInput, releaseInput; triggerMove, untriggerMove, triggerAction, untriggerAction, triggerPause; createMap, createChamber, createCells, createWalls, createDoors, createNeighborConnections, createConnectionPaths; createTemple, createPortal, createShrine; createItem, createOrb, createRangeAttack, createAreaAttack; createCreature, createMonsters, createHero; getNextCoords, getCells, getCollisionSide; resolveEdges, resolveEdge, resolveWalls, resolveWall, resolveCollisions, resolveCollision, resolveAttackCollision, resolveStop, resolveDamage; updateTime, updateNextChamber, updateChamber, updateHero, updateCreature, updateItem, updateImage)
     |- main.html
     |- main.css
-    |- main.js (createSocket, checkLoop; receivePost; drawPaused, drawChamber, drawOverlay, drawMinimap, drawWalls, drawHero, drawCreature, drawItem)
+    |- main.js (preloadImages; createSocket, checkLoop; receivePost; drawPaused, drawChamber, drawOverlay, drawMinimap, drawWalls, drawHero, drawCreature, drawItem)
     |- player.html
     |- player.css
     |- player.js (createSocket, checkLoop; pressInput, releaseInput; receivePost; displayInfo, displayHealthBar, displayButtons)
