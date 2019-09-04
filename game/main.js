@@ -239,7 +239,7 @@
 
 				// draw
 					if (IMAGES[hero.state.image]) {
-						drawImage(CANVAS, CONTEXT, heroX, heroY, heroRadius, heroRadius, {image: IMAGES[hero.state.image], color: heroColor, opacity: heroOpacity})
+						drawImage(CANVAS, CONTEXT, heroX, heroY, hero.info.size.x, hero.info.size.y, {image: IMAGES[hero.state.image], color: heroColor, opacity: heroOpacity})
 					}
 					else {
 						drawCircle(CANVAS, CONTEXT, heroX, heroY, heroRadius, {color: heroColor, opacity: heroOpacity})
@@ -277,7 +277,12 @@
 					var y3 = creature.state.position.y - creatureRadius + Math.ceil(CANVAS.height / 2)
 
 				// draw
-					drawTriangle(CANVAS, CONTEXT, x1, y1, x2, y2, x3, y3, {color: creature.info.color})
+					if (IMAGES[creature.state.image]) {
+						drawImage(CANVAS, CONTEXT, creature.state.position.x + Math.ceil(CANVAS.width  / 2), creature.state.position.y + Math.ceil(CANVAS.height / 2), creature.info.size.x, creature.info.size.y, {image: IMAGES[hero.state.image], color: creature.info.color})
+					}
+					else {
+						drawTriangle(CANVAS, CONTEXT, x1, y1, x2, y2, x3, y3, {color: creature.info.color})
+					}
 			} catch (error) {}
 		}
 
@@ -300,17 +305,22 @@
 					}
 
 				// draw
-					if (item.info.shape == "circle") {
-						drawCircle(CANVAS, CONTEXT, itemX, itemY, itemRadius, itemOptions)
+					if (IMAGES[item.state.image]) {
+						drawImage(CANVAS, CONTEXT, item.state.position.x + Math.ceil(CANVAS.width  / 2), item.state.position.y + Math.ceil(CANVAS.height / 2)+ Math.ceil(CANVAS.height / 2), item.info.size.x, item.info.size.y, {image: IMAGES[item.state.image], color: item.info.color})
 					}
-					else if (item.info.shape == "square") {
-						itemOptions.radii = {
-							topLeft: 		CONSTANTS.borderRadius,
-							topRight: 		CONSTANTS.borderRadius,
-							bottomRight: 	CONSTANTS.borderRadius,
-							bottomLeft: 	CONSTANTS.borderRadius
+					else {
+						if (item.info.shape == "circle") {
+							drawCircle(CANVAS, CONTEXT, itemX, itemY, itemRadius, itemOptions)
 						}
-						drawRectangle(CANVAS, CONTEXT, itemX - itemRadius, itemY - itemRadius, itemRadius * 2, itemRadius * 2, itemOptions)
+						else if (item.info.shape == "square") {
+							itemOptions.radii = {
+								topLeft: 		CONSTANTS.borderRadius,
+								topRight: 		CONSTANTS.borderRadius,
+								bottomRight: 	CONSTANTS.borderRadius,
+								bottomLeft: 	CONSTANTS.borderRadius
+							}
+							drawRectangle(CANVAS, CONTEXT, itemX - itemRadius, itemY - itemRadius, itemRadius * 2, itemRadius * 2, itemOptions)
+						}
 					}
 			} catch (error) {}
 		}

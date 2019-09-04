@@ -136,7 +136,6 @@
 							return ["hero_barbarian_up_moving_inactive", "hero_ranger_up_moving_inactive", "hero_wizard_up_moving_inactive"]
 						break
 
-
 					// game parameters
 						case "constants":
 							var constants = {

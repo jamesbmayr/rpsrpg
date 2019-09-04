@@ -810,17 +810,26 @@
 		module.exports.createPortal = createPortal
 		function createPortal(request, chamber, destination, callback) {
 			try {
-				// remove 3x3 walls
-					chamber.cells[-1][-1].wall = false
-					chamber.cells[ 1][-1].wall = false
-					chamber.cells[-1][ 1].wall = false
-					chamber.cells[ 1][ 1].wall = false
+				// clear 3x3 area
+					var quarterChamber = Math.floor(CONSTANTS.chamberSize / 4)
+					var portalX = main.rangeRandom(-quarterChamber, quarterChamber)
+					var portalY = main.rangeRandom(-quarterChamber, quarterChamber)
+
+					for (var x = portalX - 1; x <= portalX + 1; x++) {
+						for (var y = portalY - 1; y <= portalY + 1; y++) {
+							chamber.cells[x][y].wall = false
+						}
+					}
 
 				// create portal
 					var portal = createItem(request, main.getAsset("portal"), callback)
 					main.overwriteObject(portal, {
 						state: {
-							link: destination
+							link: destination,
+							position: {
+								x: portalX * CONSTANTS.cellSize,
+								y: portalY * CONSTANTS.cellSize,
+							}
 						}
 					})
 
@@ -836,12 +845,29 @@
 		module.exports.createShrine = createShrine
 		function createShrine(request, chamber, shrineType, callback)  {
 			try {
+				// clear 3x3 area
+					var quarterChamber = Math.floor(CONSTANTS.chamberSize / 4)
+					var shrineX = main.rangeRandom(-quarterChamber, quarterChamber)
+					var shrineY = main.rangeRandom(-quarterChamber, quarterChamber)
+
+					for (var x = shrineX - 1; x <= shrineX + 1; x++) {
+						for (var y = shrineY - 1; y <= shrineY + 1; y++) {
+							chamber.cells[x][y].wall = false
+						}
+					}
+
 				// create shrine
 					var shrine = createItem(request, main.getAsset("shrine"), callback)
 					main.overwriteObject(shrine, {
 						info: {
 							subtype: shrineType,
 							color: main.getAsset("orbs")[shrineType].info.color
+						},
+						state: {
+							position: {
+								x: shrineX * CONSTANTS.cellSize,
+								y: shrineY * CONSTANTS.cellSize,
+							}
 						}
 					})
 				
@@ -872,8 +898,29 @@
 		module.exports.createOrb = createOrb
 		function createOrb(request, chamber, orbType, callback) {
 			try {
-				// add orb to chamber
+				// clear 3x3 area
+					var quarterChamber = Math.floor(CONSTANTS.chamberSize / 4)
+					var orbX = main.rangeRandom(-quarterChamber, quarterChamber)
+					var orbY = main.rangeRandom(-quarterChamber, quarterChamber)
+
+					for (var x = orbX - 1; x <= orbX + 1; x++) {
+						for (var y = orbY - 1; y <= orbY + 1; y++) {
+							chamber.cells[x][y].wall = false
+						}
+					}
+
+				// create orb
 					var orb = createItem(request, main.getAsset("orbs")[orbType], callback)
+					main.overwriteObject(orb, {
+						state: {
+							position: {
+								x: orbX * CONSTANTS.cellSize,
+								y: orbY * CONSTANTS.cellSize
+							}
+						}
+					})
+
+				// add to chamber
 					chamber.items[orb.id] = orb
 			}
 			catch (error) {
@@ -1845,9 +1892,10 @@
 						}
 					
 					// get new
+						var isEdge = request.game.data.state.nextChamber.isEdge
 						var newX = Number(request.game.data.state.nextChamber.x)
 						var newY = Number(request.game.data.state.nextChamber.y)
-						var isEdge = 	  request.game.data.state.nextChamber.isEdge
+						var newChamber = request.game.data.chambers[newX][newY]
 					
 					// set new
 						request.game.data.state.chamber.x = newX
@@ -1856,12 +1904,37 @@
 					// unset next
 						request.game.data.state.nextChamber = null
 
-					// flip hero positions
+					// edge? flip hero positions
 						if (isEdge) {
 							var direction = (newX !== oldX) ? "x" : "y"
 							for (var h in request.game.data.heroes) {
 								request.game.data.heroes[h].state.position[direction] *= -1
 							}
+						}
+
+					// portal? set new hero positions
+						else {
+							// old portal
+								var oldKey = Object.keys(oldChamber.items).find(function (i) {
+									return oldChamber.items[i].info.type == "portal"
+								})
+								var oldPortal = oldChamber.items[oldKey]
+
+							// new portal
+								var newKey = Object.keys(newChamber.items).find(function (i) {
+									return newChamber.items[i].info.type == "portal"
+								})
+								var newPortal = newChamber.items[newKey]
+
+							// get deltas
+								var portalDeltaX = oldPortal.state.position.x - newPortal.state.position.x
+								var portalDeltaY = oldPortal.state.position.y - newPortal.state.position.y
+
+							// shift x and y by portalDeltaX and portalDeltaY
+								for (var h in request.game.data.heroes) {
+									request.game.data.heroes[h].state.position.x -= portalDeltaX
+									request.game.data.heroes[h].state.position.y -= portalDeltaY
+								}
 						}
 
 					// set cooldown
