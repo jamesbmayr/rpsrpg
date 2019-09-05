@@ -4,9 +4,10 @@
 
 /*** maps ***/
 	var CONSTANTS 	= main.getAsset("constants")
+	var MONSTERS 	= main.getAsset("monsters")
+	var HEROES 		= main.getAsset("heroes")
 	var WALLMAKERS 	= main.getAsset("wallMakers")
 	var PATHINGAI 	= main.getAsset("pathingAI")
-	var MONSTERS 	= main.getAsset("monsters")
 
 /*** players ***/
 	/* addPlayer */
@@ -19,17 +20,19 @@
 				else {
 					// add player
 						if (request.game.players[request.session.id]) {
-							request.game.players[request.session.id].connected  = true
-							request.game.players[request.session.id].connection = request.connection
-							callback([request.session.id], {success: true, data: request.game.data.heroes[request.session.id]})
+							var player = request.game.players[request.session.id]
+							player.connected  = true
+							player.connection = request.connection
+							callback([request.session.id], {success: true, hero: request.game.data.heroes[player.hero]})
 						}
 
 					// add observer
 						else {
-							request.game.observers[request.session.id] = main.getSchema("player")
-							request.game.observers[request.session.id].id = request.session.id
-							request.game.observers[request.session.id].connected  = true
-							request.game.observers[request.session.id].connection = request.connection
+							var observer 		= main.getSchema("player")
+							observer.id 		= request.session.id
+							observer.connected  = true
+							observer.connection = request.connection
+							request.game.observers[request.session.id] = observer
 						}
 				}
 			}
@@ -93,18 +96,26 @@
 					callback([request.session.id], {success: false, message: "Game already ended."})
 				}
 				else {
-					switch (true) {
-						case (CONSTANTS.directions.includes(request.post.input)):
-							triggerMove(request, callback)
-						break
+					var player = request.game.players[request.session.id]
+					var hero   = player ? request.game.data.heroes[player.hero] : null
 
-						case (CONSTANTS.actions.includes(request.post.input)):
-							triggerAction(request, callback)
-						break
+					if (!hero) {
+						callback([request.session.id], {success: false, message: "Hero not found."})
+					}
+					else {
+						switch (true) {
+							case (CONSTANTS.directions.includes(request.post.input)):
+								triggerMove(request, hero, callback)
+							break
 
-						case (request.post.input == "start"):
-							triggerPause(request, callback)
-						break
+							case (CONSTANTS.actions.includes(request.post.input)):
+								triggerAction(request, hero, callback)
+							break
+
+							case (request.post.input == "start"):
+								triggerPause(request, hero, callback)
+							break
+						}
 					}
 				}
 			}
@@ -124,14 +135,22 @@
 					callback([request.session.id], {success: false, message: "Game already ended."})
 				}
 				else {
-					switch (true) {
-						case (CONSTANTS.directions.includes(request.post.input)):
-							untriggerMove(request, callback)
-						break
+					var player = request.game.players[request.session.id]
+					var hero   = player ? request.game.data.heroes[player.hero] : null
 
-						case (CONSTANTS.actions.includes(request.post.input)):
-							untriggerAction(request, callback)
-						break
+					if (!hero) {
+						callback([request.session.id], {success: false, message: "Hero not found."})
+					}
+					else {
+						switch (true) {
+							case (CONSTANTS.directions.includes(request.post.input)):
+								untriggerMove(request, hero, callback)
+							break
+
+							case (CONSTANTS.actions.includes(request.post.input)):
+								untriggerAction(request, hero, callback)
+							break
+						}
 					}
 				}
 			}
@@ -143,29 +162,30 @@
 /*** triggers ***/
 	/* triggerMove */
 		module.exports.triggerMove = triggerMove
-		function triggerMove(request, callback) {
+		function triggerMove(request, hero, callback) {
 			try {
-				var hero = request.game.data.heroes[request.session.id]
+				// change direction
 					hero.state.movement.direction = request.post.input
 
-				switch (request.post.input) {
-					case "up":
-						hero.state.movement.up    = true
-						hero.state.movement.down  = false
-					break
-					case "left":
-						hero.state.movement.left  = true
-						hero.state.movement.right = false
-					break
-					case "right":
-						hero.state.movement.right = true
-						hero.state.movement.left  = false
-					break
-					case "down":
-						hero.state.movement.down  = true
-						hero.state.movement.up    = false
-					break
-				}
+				// set movements
+					switch (request.post.input) {
+						case "up":
+							hero.state.movement.up    = true
+							hero.state.movement.down  = false
+						break
+						case "left":
+							hero.state.movement.left  = true
+							hero.state.movement.right = false
+						break
+						case "right":
+							hero.state.movement.right = true
+							hero.state.movement.left  = false
+						break
+						case "down":
+							hero.state.movement.down  = true
+							hero.state.movement.up    = false
+						break
+					}
 			}
 			catch (error) {
 				main.logError(error, arguments.callee.name, [request.session.id], callback)
@@ -174,24 +194,23 @@
 		
 	/* untriggerMove */
 		module.exports.untriggerMove = untriggerMove
-		function untriggerMove(request, callback) {
+		function untriggerMove(request, hero, callback) {
 			try {
-				var hero = request.game.data.heroes[request.session.id]
-
-				switch (request.post.input) {
-					case "up":
-						hero.state.movement.up    = false
-					break
-					case "left":
-						hero.state.movement.left  = false
-					break
-					case "right":
-						hero.state.movement.right = false
-					break
-					case "down":
-						hero.state.movement.down  = false
-					break
-				}
+				// unset movements
+					switch (request.post.input) {
+						case "up":
+							hero.state.movement.up    = false
+						break
+						case "left":
+							hero.state.movement.left  = false
+						break
+						case "right":
+							hero.state.movement.right = false
+						break
+						case "down":
+							hero.state.movement.down  = false
+						break
+					}
 			}
 			catch (error) {
 				main.logError(error, arguments.callee.name, [request.session.id], callback)
@@ -200,20 +219,21 @@
 
 	/* triggerAction */
 		module.exports.triggerAction = triggerAction
-		function triggerAction(request, callback) {
+		function triggerAction(request, hero, callback) {
 			try {
-				var hero = request.game.data.heroes[request.session.id]
+				// unset all actions
 					hero.state.actions.a = false
 					hero.state.actions.b = false
 
-				switch (request.post.input) {
-					case "a":
-						hero.state.actions.a = true
-					break
-					case "b":
-						hero.state.actions.b = true
-					break
-				}
+				// set action
+					switch (request.post.input) {
+						case "a":
+							hero.state.actions.a = true
+						break
+						case "b":
+							hero.state.actions.b = true
+						break
+					}
 			}
 			catch (error) {
 				main.logError(error, arguments.callee.name, [request.session.id], callback)
@@ -222,9 +242,9 @@
 
 	/* untriggerAction */
 		module.exports.untriggerAction = untriggerAction
-		function untriggerAction(request, callback) {
+		function untriggerAction(request, hero, callback) {
 			try {
-				var hero = request.game.data.heroes[request.session.id]
+				// unset actions
 					hero.state.actions.a = false
 					hero.state.actions.b = false
 			}
@@ -235,9 +255,10 @@
 
 	/* triggerPause */
 		module.exports.triggerPause = triggerPause
-		function triggerPause(request, callback) {
+		function triggerPause(request, hero, callback) {
 			try {
-				request.game.data.state.paused = !request.game.data.state.paused
+				// change pause
+					request.game.data.state.paused = !request.game.data.state.paused
 			}
 			catch (error) {
 				main.logError(error, arguments.callee.name, [request.session.id], callback)
@@ -249,6 +270,9 @@
 		module.exports.createMap = createMap
 		function createMap(request, callback) {
 			try {
+				// create heroes
+					createHeroes(request, callback)
+
 				// set starting values
 					var layer = 0
 					var x = 0
@@ -1141,35 +1165,15 @@
 			}
 		}
 
-	/* createHero */
-		module.exports.createHero = createHero
-		function createHero(request, callback) {
+	/* createHeroes */
+		module.exports.createHeroes = createHeroes
+		function createHeroes(request, callback) {
 			try {
-				// get all heroes
-					var heroes = main.getAsset("heroes")
-
-				// get remaining heroes
-					var remainingTypes = Object.keys(heroes)
-					for (var h in request.game.data.heroes) {
-						remainingTypes = remainingTypes.filter(function (r) {
-							return r !== request.game.data.heroes[h].info.subtype
-						})
+				// create each hero & add to game
+					for (var h in HEROES) {
+						var hero = createCreature(request, HEROES[h], callback)
+						request.game.data.heroes[hero.id] = hero
 					}
-
-					if (!remainingTypes.length) {
-						callback([request.session.id], {success: false, message: "No unavailable heroes."})
-						return
-					}
-
-				// create hero & add to game
-					var hero = createCreature(request, heroes[main.chooseRandom(remainingTypes)], callback)
-						main.overwriteObject(hero, {
-							id: request.session.id,
-							info: {
-								name: request.game.players[request.session.id].name
-							}
-						})
-					request.game.data.heroes[hero.id] = hero
 			}
 			catch (error) {
 				main.logError(error, arguments.callee.name, [request.session.id], callback)
@@ -1832,7 +1836,7 @@
 		function updateTime(request, callback) {
 			try {
 				if (!request.game.data.state.start) {
-					callback(Object.keys(request.game.observers), {success: true, data: null})
+					callback(Object.keys(request.game.observers), {success: true, chamber: null})
 				}
 				else {
 					// chamber
@@ -1840,12 +1844,12 @@
 
 					// paused
 						if (request.game.data.state.paused) {
-							callback(Object.keys(request.game.observers), {success: true, paused: true, data: chamber})	
+							callback(Object.keys(request.game.observers), {success: true, paused: true, chamber: chamber})	
 						}
 
 					// game over
 						else if (request.game.data.state.end) {
-							callback(Object.keys(request.game.observers), {success: true, end: true, data: chamber})	
+							callback(Object.keys(request.game.observers), {success: true, end: true, chamber: chamber})	
 						}
 
 					// play
@@ -1889,10 +1893,10 @@
 								}
 
 							// send data
-								callback(Object.keys(request.game.observers), {success: true, data: chamber})
+								callback(Object.keys(request.game.observers), {success: true, chamber: chamber})
 
 								for (var p in request.game.players) {
-									callback([p], {success: true, data: request.game.data.heroes[p]})
+									callback([p], {success: true, hero: request.game.data.heroes[request.game.players[p].hero]})
 								}
 						}
 				}

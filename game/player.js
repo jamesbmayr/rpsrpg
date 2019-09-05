@@ -91,8 +91,8 @@
 					}
 
 				// info
-					if (data.data && data.data.id == window.id) {
-						displayInfo(data.data)
+					if (data.hero) {
+						displayInfo(data.hero)
 					}
 			} catch (error) {}
 		}

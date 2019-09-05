@@ -43,17 +43,27 @@
 				else if (!request.game.players[request.session.id] && (Object.keys(request.game.players).length >= 3)) {
 					callback({success: false, message: "game is at capacity"})
 				}
-				// else if (!request.game.players[request.session.id] && request.game.data.state.start) {
-				// 	callback({success: false, message: "game already started"})
-				// }
 				else if (request.game.players[request.session.id]) {
 					callback({success: true, message: "rejoining game", location: "../../game/" + request.game.id})
 				}
 				else {
-					var player = createPlayer(request)
-					request.game.players[request.session.id] = player
-					game.createHero(request, callback)
-					callback({success: true, message: "game joined", location: "../../game/" + request.game.id})
+					// get remaining heroes
+						var remainingHeroes = Object.keys(request.game.data.heroes)
+						for (var p in request.game.players) {
+							remainingHeroes.splice(remainingHeroes.indexOf(request.game.players[p].hero), 1)
+						}
+
+					// none remaining?
+						if (!remainingHeroes.length) {
+							callback({success: false, message: "no remaining heroes"})
+						}
+
+					// choose randomly from remaining
+						else {
+							request.game.players[request.session.id] = createPlayer(request)
+							request.game.players[request.session.id].hero = main.chooseRandom(remainingHeroes)
+							callback({success: true, message: "game joined", location: "../../game/" + request.game.id})
+						}
 				}
 			}
 			catch (error) {

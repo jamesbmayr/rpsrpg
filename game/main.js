@@ -73,8 +73,8 @@
 					}
 
 				// info
-					if (data.data) {
-						drawChamber(data.data)
+					if (data.chamber) {
+						drawChamber(data.chamber)
 					}
 
 				// paused
