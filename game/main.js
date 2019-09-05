@@ -134,8 +134,8 @@
 					}
 
 				// overlay
-					if (chamber.state.cooldown) {
-						drawOverlay(chamber.state.cooldown, chamber.state.fadeout)
+					if (chamber.state.cooldowns.fade) {
+						drawOverlay(chamber.state.cooldowns.fade, chamber.state.fadeout)
 					}
 			} catch (error) {}
 		}
@@ -264,9 +264,6 @@
 				// variables
 					var creatureColor = creature.info.color
 					var creatureRadius = Math.ceil(((creature.info.size.x + creature.info.size.y) / 2) / 2)
-					if (creature.state.cooldowns.death !== undefined) {
-						creatureRadius = Math.ceil(creatureRadius * creature.state.cooldowns.death / CONSTANTS.deathCooldown)
-					}
 
 				// coordinates
 					var x1 = creature.state.position.x                  + Math.ceil(CANVAS.width  / 2)
@@ -311,6 +308,16 @@
 					else {
 						if (item.info.shape == "circle") {
 							drawCircle(CANVAS, CONTEXT, itemX, itemY, itemRadius, itemOptions)
+						}
+						else if (item.info.shape == "triangle") {
+							var x1 = item.state.position.x              + Math.ceil(CANVAS.width  / 2)
+							var y1 = item.state.position.y + itemRadius + Math.ceil(CANVAS.height / 2)
+							var x2 = item.state.position.x + itemRadius + Math.ceil(CANVAS.width  / 2)
+							var y2 = item.state.position.y - itemRadius + Math.ceil(CANVAS.height / 2)
+							var x3 = item.state.position.x - itemRadius + Math.ceil(CANVAS.width  / 2)
+							var y3 = item.state.position.y - itemRadius + Math.ceil(CANVAS.height / 2)
+
+							drawTriangle(CANVAS, CONTEXT, x1, y1, x2, y2, x3, y3, itemOptions)
 						}
 						else if (item.info.shape == "square") {
 							itemOptions.radii = {

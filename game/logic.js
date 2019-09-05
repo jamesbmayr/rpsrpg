@@ -3,9 +3,10 @@
 	module.exports = {}
 
 /*** maps ***/
-	var CONSTANTS 		= main.getAsset("constants")
-	var WALLMAKERS 		= main.getAsset("wallMakers")
-	var PATHINGAI 		= main.getAsset("pathingAI")
+	var CONSTANTS 	= main.getAsset("constants")
+	var WALLMAKERS 	= main.getAsset("wallMakers")
+	var PATHINGAI 	= main.getAsset("pathingAI")
+	var MONSTERS 	= main.getAsset("monsters")
 
 /*** players ***/
 	/* addPlayer */
@@ -248,9 +249,6 @@
 		module.exports.createMap = createMap
 		function createMap(request, callback) {
 			try {
-				// assets
-					var monsters = main.getAsset("monsters")
-
 				// set starting values
 					var layer = 0
 					var x = 0
@@ -298,7 +296,7 @@
 					var shrineChambers = specialChambers.slice(0, shrineTypes.length)
 
 				// pick portalChambers
-					var portalChambers = specialChambers.slice(shrineTypes.length)
+					var portalChambers = specialChambers.slice(shrineTypes.length, shrineTypes.length + CONSTANTS.portalPairs * 2)
 					var portalsNeeded = CONSTANTS.portalPairs * 2
 					var portalPairs = {}
 
@@ -314,6 +312,10 @@
 							portalsPlaced += 2
 						}
 					}
+
+				// pick spawnChambers
+					var spawnTypes = main.sortRandom(CONSTANTS.rps)
+					var spawnChambers = specialChambers.slice(shrineTypes.length + CONSTANTS.portalPairs * 2)
 
 				// loop through spiral to make chambers
 					var chambers = request.game.data.chambers
@@ -337,6 +339,9 @@
 							else if (portalPairs[allChambers[a]]) {
 								options.portal = portalPairs[allChambers[a]]
 							}
+							else if (spawnChambers.includes(allChambers[a]) && main.rollRandom(CONSTANTS.spawnChance[0], CONSTANTS.spawnChance[1])) {
+								options.spawn = main.chooseRandom(spawnTypes)
+							}
 
 						// monsters ?
 							if (!(x == 0 && y == 0) && main.rollRandom(CONSTANTS.monsterChance[0], CONSTANTS.monsterChance[1])) {
@@ -344,8 +349,8 @@
 								options.monsters = []
 
 								for (var m = 0; m < monsterCount; m++) {
-									var monsterType = main.chooseRandom(Object.keys(monsters))
-									options.monsters.push(main.duplicateObject(monsters[monsterType]))
+									var monsterType = main.chooseRandom(Object.keys(MONSTERS))
+									options.monsters.push(main.duplicateObject(MONSTERS[monsterType]))
 								}
 							}
 
@@ -405,6 +410,9 @@
 						}
 						else if (options.portal) {
 							createPortal(request, chamber, options.portal, callback)
+						}
+						else if (options.spawn) {
+							createSpawn(request, chamber, options.spawn, callback)
 						}
 
 						if (options.monsters) {
@@ -558,7 +566,7 @@
 							}
 
 						// left (check left's right)
-							if (neighborLeft && neighborLeft.cells[neighborLeftMaxX] && neighborLeft.cells[neighborLeftMaxX][0] && !neighborLeft.cells[0][neighborLeftMaxX].wall) {
+							if (neighborLeft && neighborLeft.cells[neighborLeftMaxX] && neighborLeft.cells[neighborLeftMaxX][0] && !neighborLeft.cells[neighborLeftMaxX][0].wall) {
 								doors.push("left")
 							}
 
@@ -873,6 +881,54 @@
 				
 				// add to chamber
 					chamber.items[shrine.id] = shrine
+			}
+			catch (error) {
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
+			}
+		}
+
+	/* createSpawn */
+		module.exports.createSpawn = createSpawn
+		function createSpawn(request, chamber, spawnType, callback) {
+			try {
+				// clear 3x3 area
+					var quarterChamber = Math.floor(CONSTANTS.chamberSize / 4)
+					var spawnX = main.rangeRandom(-quarterChamber, quarterChamber)
+					var spawnY = main.rangeRandom(-quarterChamber, quarterChamber)
+
+					for (var x = spawnX - 1; x <= spawnX + 1; x++) {
+						for (var y = spawnY - 1; y <= spawnY + 1; y++) {
+							chamber.cells[x][y].wall = false
+						}
+					}
+
+				// get monsterTypes
+					var monsterTypes = []
+					for (var m in MONSTERS) {
+						if (MONSTERS[m].info.rps == spawnType) {
+							monsterTypes.push(m)
+						}
+					}
+
+				// create spawn
+					var spawn = createItem(request, main.getAsset("spawn"), callback)
+					main.overwriteObject(spawn, {
+						info: {
+							rps: spawnType,
+							subtype: spawnType,
+							color: main.getAsset("orbs")[spawnType].info.color,
+							monsterTypes: monsterTypes
+						},
+						state: {
+							position: {
+								x: spawnX * CONSTANTS.cellSize,
+								y: spawnY * CONSTANTS.cellSize,
+							}
+						}
+					})
+				
+				// add to chamber
+					chamber.items[spawn.id] = spawn
 			}
 			catch (error) {
 				main.logError(error, arguments.callee.name, [request.session.id], callback)
@@ -1467,8 +1523,8 @@
 					}
 
 				// items
-					if (!thing.info.type.includes("Attack")) { // attacks don't interact with other attacks
-						for (var i in chamber.items) {
+					for (var i in chamber.items) {
+						if (chamber.items[i].info.type !== "rangeAttack" && chamber.items[i].info.type !== "areaAttack") { // attacks don't interact with other attacks
 							var collisionSide = getCollisionSide(request, chamber.items[i], targetCoordinates, callback)
 							if (collisionSide) {
 								targetCoordinates = resolveCollision(request, chamber, thing, targetCoordinates, {
@@ -1504,16 +1560,16 @@
 
 						// shrine
 							else if (item.info.type == "shrine" && thing.info.type == "hero" && thing.state.alive) {
-								if (!item.state.cooldown) {
+								if (!item.state.cooldowns.activate) {
 									thing.state.effects[item.info.subtype] = CONSTANTS.effectCooldown
-									item.state.cooldown = CONSTANTS.shrineCooldown
+									item.state.cooldowns.activate = CONSTANTS.shrineCooldown
 									item.info.size.x = item.info.size.y = 0
 								}
 							}
 
 						// portal
 							else if (item.info.type == "portal" && thing.info.type == "hero" && thing.state.alive) {
-								if (!item.state.cooldown) {
+								if (!item.state.cooldowns.activate) {
 									targetCoordinates = resolveEdge(request, chamber, thing, targetCoordinates, item.state.link, callback)
 								}
 							}
@@ -1554,17 +1610,17 @@
 					}
 
 				// bumpAttacks (other heroes / creatures)
-					else if (["hero", "monster", "creature"].includes(thing.info.type) && thing.state.alive && (collision.supertype == "hero" || collision.supertype == "creature")) {
+					if (["hero", "monster", "creature"].includes(thing.info.type) && thing.state.alive && (collision.supertype == "hero" || collision.supertype == "creature" || collision.type == "spawn")) {
 						targetCoordinates = resolveAttackCollision(request, chamber, thing, targetCoordinates, collision, callback)
 					}
 
 				// rangeAttacks
-					else if (thing.info.type == "rangeAttack" && (collision.supertype == "hero" || collision.supertype == "creature")) {
+					else if (thing.info.type == "rangeAttack" && (collision.supertype == "hero" || collision.supertype == "creature" || collision.type == "spawn")) {
 						targetCoordinates = resolveAttackCollision(request, chamber, thing, targetCoordinates, collision, callback)
 					}
 
 				// areaAttacks
-					else if (thing.info.type == "areaAttack" && (collision.supertype == "hero" || collision.supertype == "creature")) {
+					else if (thing.info.type == "areaAttack" && (collision.supertype == "hero" || collision.supertype == "creature" || collision.type == "spawn")) {
 						targetCoordinates = resolveAttackCollision(request, chamber, thing, targetCoordinates, collision, callback)
 					}
 
@@ -1586,8 +1642,8 @@
 						return targetCoordinates
 					}
 
-				// other creatures
-					else if (collision.supertype == "hero" || collision.supertype == "creature") {
+				// others
+					else {
 						// attacker
 							if (attack.info.type == "rangeAttack" || attack.info.type == "areaAttack") {
 								var attacker = chamber[attack.info.attacker.type == "hero" ? "heroes" : "creatures"][attack.info.attacker.id]
@@ -1597,8 +1653,23 @@
 							}
 
 						// recipient
-							var recipient = chamber[collision.supertype == "hero" ? "heroes" : "creatures"][collision.id]
-							if (recipient.state.alive) {
+							if (collision.supertype == "hero") {
+								var recipient = chamber.heroes[collision.id]
+							}
+							else if (collision.supertype == "creature") {
+								var recipient = chamber.creatures[collision.id]
+							}
+							else if (collision.supertype == "item" && collision.type == "spawn") {
+								var recipient = chamber.items[collision.id]
+							}
+
+						// already dead?
+							if (!recipient || !recipient.state.alive) {
+								return targetCoordinates
+							}
+
+						// recipient still alive
+							else {
 								// stop moving
 									targetCoordinates = resolveStop(request, targetCoordinates, collision, recipient, callback)
 
@@ -1623,7 +1694,7 @@
 									}									
 
 								// bump
-									if (recipient.state.alive) {
+									if (recipient.state.alive && (collision.supertype == "hero" || collision.supertype == "creature")) {
 										recipient.state.position.vx = recipient.state.position.vx + (collision.side == "right" ? CONSTANTS.bumpAcceleration : collision.side == "left" ? -CONSTANTS.bumpAcceleration : 0)
 										recipient.state.position.vy = recipient.state.position.vy + (collision.side == "up"    ? CONSTANTS.bumpAcceleration : collision.side == "down" ? -CONSTANTS.bumpAcceleration : 0)
 									}
@@ -1670,16 +1741,21 @@
 
 	/* resolveDamage */
 		module.exports.resolveDamage = resolveDamage
-		function resolveDamage(request, chamber, creature, damage, callback) {
+		function resolveDamage(request, chamber, recipient, damage, callback) {
 			try {
 				// friendly fire?
-					if (creature.info.type == damage.type) {
-						return creature.state.alive
+					if (recipient.info.type == damage.type) {
+						return recipient.state.alive
+					}
+
+				// creature vs. spawn
+					else if (recipient.info.type == "spawn" && damage.type !== "hero") {
+						return recipient.state.alive
 					}
 
 				// already dead?
-					else if (!creature.state.alive) {
-						return creature.state.alive
+					else if (!recipient.state.alive) {
+						return recipient.state.alive
 					}
 
 				// enemy fire
@@ -1689,54 +1765,60 @@
 							var armorMultiplier  = 1
 							switch (damage.rps) {
 								case "rock":
-									attackMultiplier = creature.info.rps == "scissors" ? CONSTANTS.rpsMultiplier : 1
-									armorMultiplier  = creature.info.rps == "paper"    ? CONSTANTS.rpsMultiplier : 1
+									attackMultiplier = recipient.info.rps == "scissors" ? CONSTANTS.rpsMultiplier : 1
+									armorMultiplier  = recipient.info.rps == "paper"    ? CONSTANTS.rpsMultiplier : 1
 								break
 								case "paper":
-									attackMultiplier = creature.info.rps == "rock"     ? CONSTANTS.rpsMultiplier : 1
-									armorMultiplier  = creature.info.rps == "scissors" ? CONSTANTS.rpsMultiplier : 1
+									attackMultiplier = recipient.info.rps == "rock"     ? CONSTANTS.rpsMultiplier : 1
+									armorMultiplier  = recipient.info.rps == "scissors" ? CONSTANTS.rpsMultiplier : 1
 								break
 								case "scissors":
-									attackMultiplier = creature.info.rps == "paper"    ? CONSTANTS.rpsMultiplier : 1
-									armorMultiplier  = creature.info.rps == "rock"     ? CONSTANTS.rpsMultiplier : 1
+									attackMultiplier = recipient.info.rps == "paper"    ? CONSTANTS.rpsMultiplier : 1
+									armorMultiplier  = recipient.info.rps == "rock"     ? CONSTANTS.rpsMultiplier : 1
 								break
 							}
 
 						// damage
-							var armor = creature.info.statistics.armorPower * (creature.state.effects.paper ? CONSTANTS.paperMultiplier : 1)
+							var armor = recipient.info.statistics.armorPower * (recipient.state.effects && recipient.state.effects.paper ? CONSTANTS.paperMultiplier : 1)
 							var finalDamage = Math.max(0, Math.floor((damage.power * attackMultiplier) - (armor * armorMultiplier)))
 
 						// reduce health
-							creature.state.health = Math.max(0, Math.min(creature.state.healthMax, creature.state.health - finalDamage))
+							recipient.state.health = Math.max(0, Math.min(recipient.state.healthMax, recipient.state.health - finalDamage))
 
 						// dead?
-							if (creature.state.health <= 0) {
-								creature.state.alive = false
-								for (var e in creature.state.effects) {
-									creature.state.effects[e] = 0
-								}
+							if (recipient.state.health <= 0) {
+								recipient.state.alive = false
 
-								// creatures shrink
-									if (creature.info.type !== "hero" && !creature.state.cooldowns.death) {
-										creature.state.cooldowns.death = CONSTANTS.deathCooldown
+								// effects
+									if (recipient.state.effects) {
+										for (var e in recipient.state.effects) {
+											recipient.state.effects[e] = 0
+										}
+									}
+
+								// recipients shrink
+									if (recipient.info.type !== "hero" && !recipient.state.cooldowns.death) {
+										recipient.state.cooldowns.death = CONSTANTS.deathCooldown
 									}
 
 								// drop items
-									var x = creature.state.position.x
-									var y = creature.state.position.y
+									if (recipient.state.items) {
+										var x = recipient.state.position.x
+										var y = recipient.state.position.y
 
-									for (var i in creature.items) {
-										var item = main.duplicateObject(creature.items[i])
-											item.state.position.x = x + Math.floor(Math.random() * 2 * CONSTANTS.itemDropRadius) - CONSTANTS.itemDropRadius
-											item.state.position.y = y + Math.floor(Math.random() * 2 * CONSTANTS.itemDropRadius) - CONSTANTS.itemDropRadius
-										chamber.items[i] = item
+										for (var i in recipient.items) {
+											var item = main.duplicateObject(recipient.items[i])
+												item.state.position.x = x + Math.floor(Math.random() * 2 * CONSTANTS.itemDropRadius) - CONSTANTS.itemDropRadius
+												item.state.position.y = y + Math.floor(Math.random() * 2 * CONSTANTS.itemDropRadius) - CONSTANTS.itemDropRadius
+											chamber.items[i] = item
 
-										delete creature.items[i]
+											delete recipient.items[i]
+										}
 									}
 							}
 
 						// return alive
-							return creature.state.alive
+							return recipient.state.alive
 					}
 			}
 			catch (error) {
@@ -1773,16 +1855,16 @@
 
 							// chamber switch
 								if (request.game.data.state.nextChamber) {
-									if (chamber.state.cooldown) {
-										chamber.state.cooldown = Math.max(0, chamber.state.cooldown - 1)
+									if (chamber.state.cooldowns.fade) {
+										chamber.state.cooldowns.fade = Math.max(0, chamber.state.cooldowns.fade - 1)
 									}
 									else {
 										updateChamber(request, callback)
 										var chamber = request.game.data.chambers[request.game.data.state.chamber.x][request.game.data.state.chamber.y]
 									}
 								}
-								else if (chamber.state.cooldown) {
-									chamber.state.cooldown = Math.max(0, chamber.state.cooldown - 1)
+								else if (chamber.state.cooldowns.fade) {
+									chamber.state.cooldowns.fade = Math.max(0, chamber.state.cooldowns.fade - 1)
 								}
 
 							// regular gameplay
@@ -1844,7 +1926,7 @@
 									return (request.game.data.chambers[oldX][oldY].items[i].info.type == "portal")
 								})
 								var fromPortal = request.game.data.chambers[oldX][oldY].items[fromKey]
-									fromPortal.state.cooldown = CONSTANTS.portalCooldown
+									fromPortal.state.cooldowns.activate = CONSTANTS.portalCooldown
 									fromPortal.info.size.x = fromPortal.info.size.y = 0
 
 							// to
@@ -1853,12 +1935,12 @@
 									return (request.game.data.chambers[newX][newY].items[i].info.type == "portal")
 								})
 								var toPortal = request.game.data.chambers[newX][newY].items[toKey]
-									toPortal.state.cooldown = CONSTANTS.portalCooldown
+									toPortal.state.cooldowns.activate = CONSTANTS.portalCooldown
 									toPortal.info.size.x = toPortal.info.size.y = 0
 						}
 
 					// set cooldown
-						request.game.data.chambers[oldX][oldY].state.cooldown = CONSTANTS.chamberCooldown
+						request.game.data.chambers[oldX][oldY].state.cooldowns.activate = CONSTANTS.chamberCooldown
 						request.game.data.chambers[oldX][oldY].state.fadeout  = true
 				}
 			}
@@ -1938,7 +2020,7 @@
 						}
 
 					// set cooldown
-						request.game.data.chambers[newX][newY].state.cooldown = CONSTANTS.chamberCooldown
+						request.game.data.chambers[newX][newY].state.cooldowns.activate = CONSTANTS.chamberCooldown
 						request.game.data.chambers[oldX][oldY].state.fadeout  = false
 				}
 			}
@@ -2056,10 +2138,17 @@
 			try {
 				// dead ?
 					if (!creature.state.alive) {
-						creature.state.cooldowns.death = Math.max(0, creature.state.cooldowns.death - CONSTANTS.deathFade)
-						if (!creature.state.cooldowns.death) {
-							delete chamber.creatures[creature.id]
-						}
+						// reduce cooldown
+							creature.state.cooldowns.death = Math.max(0, creature.state.cooldowns.death - CONSTANTS.deathFade)
+
+						// reduce size
+							creature.info.size.x = Math.max(0, creature.info.size.x * creature.state.cooldowns.death / CONSTANTS.deathCooldown)
+							creature.info.size.y = Math.max(0, creature.info.size.y * creature.state.cooldowns.death / CONSTANTS.deathCooldown)
+
+						// 0 cooldown?
+							if (!creature.state.cooldowns.death) {
+								delete chamber.creatures[creature.id]
+							}
 					}
 
 				// alive
@@ -2074,30 +2163,47 @@
 								if (cellY == -0) { cellY = 0 }
 							var path = PATHINGAI[creature.info.pathing](chamber, creature, cellX + "," + cellY, request.game.data.nodemaps[chamber.id])
 
-						// get direction of next cell
+						// get movement
 							var nextCoords = path.split(" > ")[1] || path.split(" > ")[0]
 							var nextCellCenterX = Number(nextCoords.split(",")[0]) * CONSTANTS.cellSize
 							var nextCellCenterY = Number(nextCoords.split(",")[1]) * CONSTANTS.cellSize
+							var deltaX = nextCellCenterX - creature.state.position.x
+							var deltaY = nextCellCenterY - creature.state.position.y
 
-							if (nextCellCenterY > creature.state.position.y) {
+							if (deltaY > 0) {
 								creature.state.movement.up    = true
 								creature.state.movement.down  = false
-								creature.state.movement.direction = "up"
 							}
-							else if (nextCellCenterY < creature.state.position.y) {
+							else if (deltaY < 0) {
 								creature.state.movement.down  = true
 								creature.state.movement.up    = false
-								creature.state.movement.direction = "down"
 							}
-							if (nextCellCenterX > creature.state.position.x) {
+
+							if (deltaX > 0) {
 								creature.state.movement.right = true
 								creature.state.movement.left  = false
-								creature.state.movement.direction = "right"
 							}
-							else if (nextCellCenterX < creature.state.position.x) {
+							else if (deltaX < 0) {
 								creature.state.movement.left  = true
 								creature.state.movement.right = false
-								creature.state.movement.direction = "left"
+							}
+
+						// get direction
+							if (Math.abs(deltaX) > Math.abs(deltaY)) {
+								if (deltaX > 0) {
+									creature.state.movement.direction = "right"
+								}
+								else {
+									creature.state.movement.direction = "left"
+								}
+							}
+							else {
+								if (deltaY > 0) {
+									creature.state.movement.direction = "up"
+								}
+								else {
+									creature.state.movement.direction = "down"
+								}
 							}
 
 						// accelerate
@@ -2291,30 +2397,70 @@
 					}
 
 				// shrine / portal
-					else if (item.info.type == "shrine" || item.info.type == "portal") {
+					else if (item.info.type == "shrine" || item.info.type == "portal" || item.info.type == "spawn") {
 						// get max cooldown
 							var cooldownMax = CONSTANTS[item.info.type + "Cooldown"]
 
 						// reduce cooldown
-							item.state.cooldown = Math.max(0, item.state.cooldown - 1)
-							item.info.size.x = item.info.size.y = item.info.size.max * ((cooldownMax - item.state.cooldown) / cooldownMax)
+							item.state.cooldowns.activate = Math.max(0, item.state.cooldowns.activate - 1)
+							item.info.size.x = item.info.size.y = item.info.size.max * ((cooldownMax - item.state.cooldowns.activate) / cooldownMax)
 
-						// reduce cooldown for destination's portal too
+						// portal
 							if (item.info.type == "portal") {
-								var coords = item.state.link.split(",")
-								var cellX = Number(coords[0])
-								var cellY = Number(coords[1])
-								var destinationChamber = request.game.data.chambers[cellX][cellY]
+								// get destination chamber
+									var coords = item.state.link.split(",")
+									var cellX = Number(coords[0])
+									var cellY = Number(coords[1])
+									var destinationChamber = request.game.data.chambers[cellX][cellY]
 
-								var portalKey = Object.keys(destinationChamber.items).find(function(i) {
-									return (destinationChamber.items[i].info.type == "portal")
-								}) || null
+								// get destination chamber's portal
+									var portalKey = Object.keys(destinationChamber.items).find(function(i) {
+										return (destinationChamber.items[i].info.type == "portal")
+									}) || null
 
-								if (portalKey) {
-									var portal = destinationChamber.items[portalKey]
-										portal.state.cooldown = Math.max(0, portal.state.cooldown - 1)
-										portal.info.size.x = portal.info.size.y = portal.info.size.max * ((cooldownMax - portal.state.cooldown) / cooldownMax)
-								}
+									if (portalKey) {
+										// reduce cooldown for destination's portal too
+											var portal = destinationChamber.items[portalKey]
+												portal.state.cooldowns.activate = Math.max(0, portal.state.cooldowns.activate - 1)
+												portal.info.size.x = portal.info.size.y = portal.info.size.max * ((cooldownMax - portal.state.cooldowns.activate) / cooldownMax)
+									}
+							}
+
+						// spawn
+							if (item.info.type == "spawn") {
+								// dead?
+									if (!item.state.alive) {
+										// reduce cooldown
+											item.state.cooldowns.death = Math.max(0, item.state.cooldowns.death - CONSTANTS.deathFade)
+
+										// reduce size
+											item.info.size.x = Math.max(0, item.info.size.x * item.state.cooldowns.death / CONSTANTS.deathCooldown)
+											item.info.size.y = Math.max(0, item.info.size.y * item.state.cooldowns.death / CONSTANTS.deathCooldown)
+
+										// 0 cooldown?
+											if (!item.state.cooldowns.death) {
+												delete chamber.items[item.id]
+											}
+									}
+
+								// ready to spawn monster
+									else if (!item.state.cooldowns.activate && Object.keys(chamber.creatures).length < CONSTANTS.monsterCountMax) {
+										// deactivate
+											item.state.cooldowns.activate = CONSTANTS.spawnCooldown
+											item.info.size.x = item.info.size.y = 0
+
+										// create creature
+											var monster = createCreature(request, main.duplicateObject(MONSTERS[main.chooseRandom(item.info.monsterTypes)]), callback)
+											main.overwriteObject(monster, {
+												state: {
+													position: {
+														x: item.state.position.x + Math.floor(Math.random() * 2 * CONSTANTS.itemDropRadius) - CONSTANTS.itemDropRadius,
+														y: item.state.position.y + Math.floor(Math.random() * 2 * CONSTANTS.itemDropRadius) - CONSTANTS.itemDropRadius
+													}
+												}
+											})
+											chamber.creatures[monster.id] = monster
+									}
 							}
 					}
 
@@ -2348,7 +2494,7 @@
 							imageName.push(thing.info.subtype)
 							imageName.push(thing.state.movement ? thing.state.movement.direction : "all")
 							imageName.push((thing.state.movement && thing.state.movement[thing.state.movement.direction]) ? "moving" : "standing")
-							imageName.push((thing.state.active || !thing.state.cooldown) ? "active" : "inactive")
+							imageName.push((thing.state.active || !thing.state.cooldowns || !thing.state.cooldowns.activate) ? "active" : "inactive")
 						thing.state.image = imageName.join("_")
 					}
 			}

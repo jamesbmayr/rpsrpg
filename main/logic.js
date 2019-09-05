@@ -145,24 +145,27 @@
 									borderThickness: 	8,
 									pauseOpacity: 		0.5,
 									deadOpacity: 		0.5,
+									healthHigh: 		60,
+									healthLow: 			30,
 
 								// game loop
 									loopInterval: 		50,
 
 								// game creation
-									layers: 			3,
+									layers: 			4,
 									chamberSize: 		9,
 									cellSize: 			128,
 									portalPairs: 		2,
 									monsterCountMin:	1,
-									monsterCountMax:	3,
+									monsterCountMax:	4,
 									monsterChance: 		[3,4],
+									spawnChance: 		[1,2],
 
 								// health
+									baseHealthPercent: 	1,
 									baseHealth: 		128,
+									spawnHealth: 		256,
 									heal: 				1,
-									healthHigh: 		60,
-									healthLow: 			30,
 									rpsMultiplier: 		2,
 
 								// monster AI
@@ -206,13 +209,15 @@
 							}
 
 							// time derivatives
-								constants.chamberCooldown 	= Math.floor(1000 / constants.loopInterval / 5)
-								constants.shrineCooldown 	= Math.floor(1000 / constants.loopInterval)
-								constants.portalCooldown 	= Math.floor(1000 / constants.loopInterval * 3)
-								constants.deathCooldown 	= Math.floor(1000 / constants.loopInterval / 2)
-								constants.effectCooldown 	= Math.floor(1000 / constants.loopInterval * 10)
-								constants.aCooldown 		= Math.floor(1000 / constants.loopInterval / 4)
-								constants.bCooldown 		= Math.floor(1000 / constants.loopInterval)
+								var second = (1000 / constants.loopInterval)
+								constants.chamberCooldown 	= Math.floor(second / 5)
+								constants.shrineCooldown 	= Math.floor(second * 2)
+								constants.spawnCooldown 	= Math.floor(second * 4)
+								constants.portalCooldown 	= Math.floor(second * 3)
+								constants.deathCooldown 	= Math.floor(second / 2)
+								constants.effectCooldown 	= Math.floor(second * 10)
+								constants.aCooldown 		= Math.floor(second / 4)
+								constants.bCooldown 		= Math.floor(second)
 
 							// distance derivatives
 								constants.acceleration 		= Math.floor(constants.cellSize / 32)
@@ -629,7 +634,7 @@
 										}
 									},
 									state: {
-										health: CONSTANTS.baseHealth / 4,
+										health: CONSTANTS.baseHealth * CONSTANTS.baseHealthPercent,
 										healthMax: CONSTANTS.baseHealth,
 										position: {
 											x: -3 * quarterCell,
@@ -653,7 +658,7 @@
 										}
 									},
 									state: {
-										health: CONSTANTS.baseHealth / 4,
+										health: CONSTANTS.baseHealth * CONSTANTS.baseHealthPercent,
 										healthMax: CONSTANTS.baseHealth,
 										position: {
 											x: -1 * quarterCell,
@@ -677,7 +682,7 @@
 										}
 									},
 									state: {
-										health: CONSTANTS.baseHealth / 4,
+										health: CONSTANTS.baseHealth * CONSTANTS.baseHealthPercent,
 										healthMax: CONSTANTS.baseHealth,
 										position: {
 											x:  3 * quarterCell,
@@ -709,7 +714,7 @@
 										}
 									},
 									state: {
-										health: CONSTANTS.baseHealth / 4,
+										health: CONSTANTS.baseHealth * CONSTANTS.baseHealthPercent / 4,
 										healthMax: CONSTANTS.baseHealth / 4
 									}
 								},
@@ -730,7 +735,7 @@
 										}
 									},
 									state: {
-										health: CONSTANTS.baseHealth / 4,
+										health: CONSTANTS.baseHealth * CONSTANTS.baseHealthPercent / 4,
 										healthMax: CONSTANTS.baseHealth / 4
 									}
 								},
@@ -751,7 +756,7 @@
 										}
 									},
 									state: {
-										health: CONSTANTS.baseHealth / 4,
+										health: CONSTANTS.baseHealth * CONSTANTS.baseHealthPercent / 4,
 										healthMax: CONSTANTS.baseHealth / 4										
 									}
 								}
@@ -835,6 +840,7 @@
 							return pedestals
 						break
 
+					// tiles
 						case "heal":
 							return {
 								info: {
@@ -866,7 +872,9 @@
 									style: "border"
 								},
 								state: {
-									cooldown: 0,
+									cooldowns: {
+										activate: 0
+									},
 									link: null
 								}
 							}
@@ -885,7 +893,36 @@
 									style: "border"
 								},
 								state: {
-									cooldown: 0
+									cooldowns: {
+										activate: 0
+									}
+								}
+							}
+						break
+
+						case "spawn":
+							return {
+								info: {
+									type: "spawn",
+									size: {
+										max: Math.floor(CONSTANTS.cellSize / 8) * 7,
+										x: Math.floor(CONSTANTS.cellSize / 8) * 7,
+										y: Math.floor(CONSTANTS.cellSize / 8) * 7
+									},
+									shape: "triangle",
+									style: "border",
+									statistics: {
+										armorPower: 0
+									},
+									monsterTypes: []
+								},
+								state: {
+									cooldowns: {
+										activate: 0
+									},
+									alive: true,
+									health: CONSTANTS.spawnHealth * CONSTANTS.baseHealthPercent,
+									healthMax: CONSTANTS.spawnHealth
 								}
 							}
 						break
@@ -952,7 +989,9 @@
 								cellSize: CONSTANTS.cellSize
 							},
 							state: {
-								cooldown: 0,
+								cooldowns: {
+									fade: 0
+								},
 								fadeout:  false
 							},
 							cells:          {},
