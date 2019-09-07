@@ -34,6 +34,48 @@
 			border: 8px solid var(--black-3);
 		}
 
+/*** selection ***/
+	#selection-outer {
+		width: 100%;
+		height: 100%;
+		background-color: var(--black-4);
+		position: absolute;
+		top: 0px;
+		left: 0px;
+		text-align: center;
+	}
+
+	#selection-inner {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translateX(-50%) translateY(-50%);
+		height: auto;
+		width: 100%;
+	}
+
+	#selection-inner button {
+		border-radius: var(--borderRadius);
+		height: 25vw;
+		max-height: 25vh;
+		width: 25vw;
+		max-width: 25vh;
+		outline: none;
+		border: 0px;
+		user-select: none;
+		transition: 0.1s;
+		overflow: hidden;
+		background-size: contain;
+		background-position: center center;
+		background-repeat: no-repeat;
+		margin: 5vw;
+		display: inline-block;
+	}
+
+	#selection-inner button:hover {
+		box-shadow: 0px 0px var(--borderRadius) var(--white-4);
+	}
+
 /*** info ***/
 	#info {
 		position: absolute;

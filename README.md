@@ -61,11 +61,11 @@ rpsrpg
 |   |- script.js (isEmail, sanitizeString; submitFeedback)
 |
 |- game
-    |- logic.js (addPlayer, removePlayer; pressInput, releaseInput; triggerMove, untriggerMove, triggerAction, untriggerAction, triggerPause; createMap, createChamber, createCells, createWalls, createDoors, createNeighborConnections, createConnectionPaths; createTemple, createPortal, createShrine, createSpawn; createItem, createOrb, createRangeAttack, createAreaAttack; createCreature, createMonsters, createHero; getNextCoords, getCells, getCollisionSide; resolveEdges, resolveEdge, resolveWalls, resolveWall, resolveCollisions, resolveCollision, resolveAttackCollision, resolveStop, resolveDamage; updateTime, updateNextChamber, updateChamber, updateHero, updateCreature, updateItem, updateImage)
+    |- logic.js (addPlayer, removePlayer; selectHero, pressInput, releaseInput; triggerMove, untriggerMove, triggerAction, untriggerAction, triggerPause; createMap, createChamber, createCells, createWalls, createDoors, createNeighborConnections, createConnectionPaths; createTemple, createPortal, createShrine, createSpawn; createItem, createOrb, createRangeAttack, createAreaAttack; createCreature, createMonsters, createHero; getNextCoords, getCells, getCollisionSide; resolveEdges, resolveEdge, resolveWalls, resolveWall, resolveCollisions, resolveCollision, resolveAttackCollision, resolveStop, resolveDamage; updateTime, updateNextChamber, updateChamber, updateCreature, updateItem, updateMovement, updateActions, updateAcceleration, updateImage)
     |- main.html
     |- main.css
     |- main.js (preloadImages; createSocket, checkLoop; receivePost; drawPaused, drawChamber, drawOverlay, drawMinimap, drawWalls, drawHero, drawCreature, drawItem)
     |- player.html
     |- player.css
-    |- player.js (createSocket, checkLoop; pressInput, releaseInput; receivePost; displayInfo, displayHealthBar, displayButtons)
+    |- player.js (createSocket, checkLoop; selectHero, pressInput, releaseInput; receivePost; displaySelection, displayInfo, displayHealthBar, displayButtons)
 </pre>

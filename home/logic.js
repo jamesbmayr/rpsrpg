@@ -61,7 +61,6 @@
 					// choose randomly from remaining
 						else {
 							request.game.players[request.session.id] = createPlayer(request)
-							request.game.players[request.session.id].hero = main.chooseRandom(remainingHeroes)
 							callback({success: true, message: "game joined", location: "../../game/" + request.game.id})
 						}
 				}

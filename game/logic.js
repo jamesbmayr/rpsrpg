@@ -18,12 +18,19 @@
 					callback([request.session.id], {success: false, message: "Game not found."})
 				}
 				else {
-					// add player
+					// add existing player
 						if (request.game.players[request.session.id]) {
 							var player = request.game.players[request.session.id]
 							player.connected  = true
 							player.connection = request.connection
-							callback([request.session.id], {success: true, hero: request.game.data.heroes[player.hero]})
+
+							if (request.game.data.heroes[player.hero]) {
+								request.game.data.heroes[player.hero].player = request.session.id
+								callback([request.session.id], {success: true, hero: request.game.data.heroes[player.hero]})
+							}
+							else {
+								callback([request.session.id], {success: true, heroOptions: getHeroOptions(request, callback)})
+							}
 						}
 
 					// add observer
@@ -47,6 +54,26 @@
 			try {
 				main.logStatus("[CLOSED]: " + request.path.join("/") + " @ " + (request.ip || "?"))
 				if (request.game) {
+					// disable connection
+						if (request.game.players[request.session.id]) {
+							var player = request.game.players[request.session.id]
+							player.connected = false
+
+							if (player.hero) {
+								request.game.data.heroes[player.hero].player = null
+								player.hero = null
+
+								var otherPlayers = Object.keys(request.game.players).filter(function(p) {
+									return !request.game.players[p].hero
+								}) || []
+
+								callback(otherPlayers, {success: true, heroOptions: getHeroOptions(request, callback)})
+							}
+						}
+						else if (request.game.observers[request.session.id]) {
+							request.game.observers[request.session.id].connected = false
+						}
+
 					// remove player or observer
 						if (request.game.data.state.end || !request.game.data.state.start) {
 							if (request.game.players[request.session.id]) {
@@ -55,19 +82,10 @@
 							else if (request.game.observers[request.session.id]) {
 								delete request.game.observers[request.session.id]
 							}
-							callback([request.session.id], {success: true, location: "../../../../"})
 						}
 
-					// disable connection
-						else {
-							if (request.game.players[request.session.id]) {
-								request.game.players[request.session.id].connected = false
-							}
-							else if (request.game.observers[request.session.id]) {
-								request.game.observers[request.session.id].connected = false
-							}
-							callback([request.session.id], {success: true, location: "../../../../"})
-						}
+					// callback
+						callback([request.session.id], {success: true, location: "../../../../"})
 
 					// delete game ?
 						var remaining = Object.keys(request.game.players).filter(function (p) {
@@ -85,6 +103,66 @@
 		}
 
 /*** submits ***/
+	/* selectHero */
+		module.exports.selectHero = selectHero
+		function selectHero(request, callback) {
+			try {
+				if (!request.game.data.state.start) {
+					callback([request.session.id], {success: false, message: "Game has not started."})
+				}
+				else if (request.game.data.state.end) {
+					callback([request.session.id], {success: false, message: "Game already ended."})
+				}
+				else {
+					// get player
+						var player = request.game.players[request.session.id]
+
+						if (!player) {
+							callback([request.session.id], {success: false, message: "Player not found."})
+						}
+						else if (player.hero) {
+							callback([request.session.id], {success: false, message: "Hero already selected."})
+						}
+						else if (!request.post.input || !Object.keys(HEROES).includes(request.post.input)) {
+							callback([request.session.id], {success: false, message: "Invalid hero selection."})
+						}
+						else {
+							// get hero
+								var heroKey = Object.keys(request.game.data.heroes).find(function(h) {
+									return request.game.data.heroes[h] && (request.game.data.heroes[h].info.subtype == request.post.input) && !request.game.data.heroes[h].player
+								})
+								if (!heroKey) {
+									callback([request.session.id], {success: false, message: "Hero unavailable."})
+								}
+								else {
+									// connect hero <> player
+										var hero = request.game.data.heroes[heroKey]
+											hero.player = request.session.id
+											hero.state.movement.down 	= false
+											hero.state.movement.left 	= false
+											hero.state.movement.up 		= false
+											hero.state.movement.right 	= false
+											hero.state.actions.a 		= false
+											hero.state.actions.b 		= false
+										player.hero = hero.id
+
+										callback([request.session.id], {success: true, hero: hero})
+
+									// inform players without heroes about updated selection
+										var otherPlayers = Object.keys(request.game.players).filter(function(p) {
+											return !request.game.players[p].hero
+										}) || []
+
+										callback(otherPlayers, {success: true, heroOptions: getHeroOptions(request, callback)})
+								}
+						}
+				}
+			}
+			catch (error) {
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
+			}
+		}
+
 	/* pressInput */
 		module.exports.pressInput = pressInput
 		function pressInput(request, callback) {
@@ -1181,6 +1259,28 @@
 		}
 
 /*** gets ***/
+	/* getHeroOptions */
+		module.exports.getHeroOptions = getHeroOptions
+		function getHeroOptions(request, callback) {
+			try {
+				// keys of heroes without players
+					var heroOptionKeys = Object.keys(request.game.data.heroes).filter(function(h) {
+						return !request.game.data.heroes[h].player
+					}) || []
+
+				// heroes without players
+					var heroOptions = heroOptionKeys.map(function(k) {
+						return request.game.data.heroes[k]
+					}) || []
+
+				// return
+					return heroOptions
+			}
+			catch (error) {
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
+			}
+		}
+
 	/* getNextCoords */
 		module.exports.getNextCoords = getNextCoords
 		function getNextCoords(request, allChambers, x, y, layer, callback) {
@@ -1307,23 +1407,39 @@
 		function resolveEdges(request, chamber, thing, targetCoordinates, callback) {
 			try {
 				// get edges
-					var chamberUp    =  chamber.info.chamberSize * CONSTANTS.cellSize / 2
-					var chamberLeft  = -chamber.info.chamberSize * CONSTANTS.cellSize / 2
-					var chamberRight =  chamber.info.chamberSize * CONSTANTS.cellSize / 2
-					var chamberDown  = -chamber.info.chamberSize * CONSTANTS.cellSize / 2
+					var quarterCell	 = Math.ceil(CONSTANTS.cellSize / 4)
+					var chamberUp    =  chamber.info.chamberSize * quarterCell * 2
+					var chamberLeft  = -chamber.info.chamberSize * quarterCell * 2
+					var chamberRight =  chamber.info.chamberSize * quarterCell * 2
+					var chamberDown  = -chamber.info.chamberSize * quarterCell * 2
+					var collision 	 = {
+						side: null
+					}
 
 				// test each size
-					if (targetCoordinates.y + targetCoordinates.radiusY > chamberUp) {
+					if (targetCoordinates.y + targetCoordinates.radiusY > chamberUp - quarterCell) {
 						var edge = "up"
+						if (targetCoordinates.y + targetCoordinates.radiusY > chamberUp) {
+							collision.side = "up"
+						}
 					}
-					else if (targetCoordinates.x - targetCoordinates.radiusX < chamberLeft) {
+					else if (targetCoordinates.x - targetCoordinates.radiusX < chamberLeft + quarterCell) {
 						var edge = "left"
+						if (targetCoordinates.x - targetCoordinates.radiusX < chamberLeft) {
+							collision.side = "left"
+						}
 					}
-					else if (targetCoordinates.x + targetCoordinates.radiusX > chamberRight) {
+					else if (targetCoordinates.x + targetCoordinates.radiusX > chamberRight - quarterCell) {
 						var edge = "right"
+						if (targetCoordinates.x + targetCoordinates.radiusX > chamberRight) {
+							collision.side = "right"
+						}
 					}
-					else if (targetCoordinates.y - targetCoordinates.radiusY < chamberDown) {
+					else if (targetCoordinates.y - targetCoordinates.radiusY < chamberDown + quarterCell) {
 						var edge = "down"
+						if (targetCoordinates.y - targetCoordinates.radiusY < chamberDown) {
+							collision.side = "down"
+						}
 					}
 					else {
 						var edge = null
@@ -1334,7 +1450,7 @@
 						return targetCoordinates
 					}
 					else {
-						return resolveEdge(request, chamber, thing, targetCoordinates, edge, callback)
+						return resolveEdge(request, chamber, thing, targetCoordinates, collision, edge, callback)
 					}
 			}
 			catch (error) {
@@ -1344,24 +1460,13 @@
 
 	/* resolveEdge */
 		module.exports.resolveEdge = resolveEdge
-		function resolveEdge(request, chamber, thing, targetCoordinates, destination, callback) {
+		function resolveEdge(request, chamber, thing, targetCoordinates, collision, destination, callback) {
 			try {
 				// is edge? (or portal)
 					var isEdge = CONSTANTS.directions.includes(destination)
-					var collision = {
-						side: null
-					}
-
-				// other things are stuck in this chamber
-					if (thing.info.type !== "hero") {
-						// other things stop at edge
-							if (isEdge) {
-								collision.side = destination
-							}
-					}
 
 				// heroes
-					else {
+					if (thing.info.type == "hero") {
 						// save edge (or portal)
 							thing.state.position.edge = destination
 
@@ -1378,7 +1483,6 @@
 									if (isEdge) {
 										var nextChamberX = Number(chamber.info.x) + (destination == "left" ? -1 : destination == "right" ? 1 : 0)
 										var nextChamberY = Number(chamber.info.y) + (destination == "down" ? -1 : destination == "up"    ? 1 : 0)
-										collision.side = destination
 									}
 
 								// get nextChamber for portals
@@ -1396,15 +1500,10 @@
 										request.game.data.heroes[h].state.position.edge = null
 									}
 							}
-
-						// disagree? stop at edges
-							else if (isEdge) {
-								collision.side = destination
-							}
 					}
 
 				// collision side ?
-					if (collision.side) {
+					if (collision && collision.side) {
 						// chamber radius
 							var chamberRadius = Math.ceil(chamber.info.cellSize * chamber.info.chamberSize / 2)
 
@@ -1572,9 +1671,9 @@
 							}
 
 						// portal
-							else if (item.info.type == "portal" && thing.info.type == "hero" && thing.state.alive) {
+							else if (item.info.type == "portal" && thing.info.type == "hero") {
 								if (!item.state.cooldowns.activate) {
-									targetCoordinates = resolveEdge(request, chamber, thing, targetCoordinates, item.state.link, callback)
+									targetCoordinates = resolveEdge(request, chamber, thing, targetCoordinates, null, item.state.link, callback)
 								}
 							}
 
@@ -1876,7 +1975,7 @@
 									// heroes
 										for (var h in chamber.heroes) {
 											var hero = chamber.heroes[h]
-											updateHero(request, chamber, hero, callback)
+											updateCreature(request, chamber, hero, callback)
 										}
 
 									// creatures
@@ -1896,7 +1995,9 @@
 								callback(Object.keys(request.game.observers), {success: true, chamber: chamber})
 
 								for (var p in request.game.players) {
-									callback([p], {success: true, hero: request.game.data.heroes[request.game.players[p].hero]})
+									if (request.game.players[p].hero) {
+										callback([p], {success: true, hero: request.game.data.heroes[request.game.players[p].hero]})
+									}
 								}
 						}
 				}
@@ -2033,115 +2134,12 @@
 			}
 		}
 
-	/* updateHero */
-		module.exports.updateHero = updateHero
-		function updateHero(request, chamber, hero, callback) {
-			try {
-				// resets
-					hero.state.position.edge = null
-
-				// accelerate
-					var maxSpeed = hero.info.statistics.moveSpeed * (hero.state.effects.scissors ? CONSTANTS.scissorsMultiplier : 1)
-					if (Math.abs(hero.state.position.vx) > maxSpeed) {
-						hero.state.position.vx = (Math.abs(hero.state.position.vx) - CONSTANTS.acceleration) * Math.sign(hero.state.position.vx)
-					}
-					else {
-						hero.state.position.vx = Math.max(-maxSpeed, Math.min(maxSpeed, hero.state.position.vx + (hero.state.movement.left ? -CONSTANTS.acceleration : hero.state.movement.right ? CONSTANTS.acceleration : -CONSTANTS.acceleration * Math.sign(hero.state.position.vx))))
-					}
-
-					if (Math.abs(hero.state.position.vy) > maxSpeed) {
-						hero.state.position.vy = (Math.abs(hero.state.position.vy) - CONSTANTS.acceleration) * Math.sign(hero.state.position.vy)
-					}
-					else {
-						hero.state.position.vy = Math.max(-maxSpeed, Math.min(maxSpeed, hero.state.position.vy + (hero.state.movement.down ? -CONSTANTS.acceleration : hero.state.movement.up    ? CONSTANTS.acceleration : -CONSTANTS.acceleration * Math.sign(hero.state.position.vy))))
-					}
-
-				// get target coordinates
-					var newX = hero.state.position.x + hero.state.position.vx
-					var newY = hero.state.position.y + hero.state.position.vy
-					var radiusX = Math.ceil(hero.info.size.x / 2)
-					var radiusY = Math.ceil(hero.info.size.y / 2)
-
-					var targetCoordinates = {
-						id: 		hero.id,
-						radiusX: 	radiusX,
-						radiusY: 	radiusY,
-						x: 			newX,
-						y: 			newY,
-						collisionX: false,
-						collisionY: false
-					}
-
-				// resolve edges
-					targetCoordinates = resolveEdges(request, chamber, hero, targetCoordinates, callback)
-
-				// resolve walls
-					targetCoordinates = resolveWalls(request, chamber, hero, targetCoordinates, callback)
-
-				// resolve collisions
-					targetCoordinates = resolveCollisions(request, chamber, hero, targetCoordinates, callback)
-
-				// move hero
-					hero.state.position.x = targetCoordinates.x
-					hero.state.position.y = targetCoordinates.y
-
-				// arrest movement?
-					if (targetCoordinates.collisionX) {
-						hero.state.position.vx = 0
-					}
-					if (targetCoordinates.collisionY) {
-						hero.state.position.vy = 0
-					}
-
-				// healing
-					if (hero.state.effects.heal) {
-						if (!hero.state.alive) {
-							hero.state.alive = true
-						}
-
-						hero.state.health = Math.min(hero.state.healthMax, hero.state.health + CONSTANTS.heal)
-					}
-
-				// attacks
-					if (hero.state.alive && !Object.keys(hero.items).length) {
-						// a
-							if (hero.state.actions.a && !hero.state.cooldowns.a) {
-								hero.state.cooldowns.a = CONSTANTS.aCooldown
-								createRangeAttack(request, chamber, hero, callback)
-							}
-
-						// b
-							if (hero.state.actions.b && !hero.state.cooldowns.b) {
-								hero.state.cooldowns.b = CONSTANTS.bCooldown
-								createAreaAttack(request, chamber, hero, callback)
-							}
-					}
-
-				// reduce cooldowns
-					for (var c in hero.state.cooldowns) {
-						if (hero.state.cooldowns[c]) {
-							hero.state.cooldowns[c] = Math.max(0, hero.state.cooldowns[c] - 1)
-						}
-					}
-
-					for (var e in hero.state.effects) {
-						hero.state.effects[e] = Math.max(0, hero.state.effects[e] - 1)
-					}
-
-				// image
-					updateImage(request, hero, targetCoordinates, callback)
-			}
-			catch (error) {
-				main.logError(error, arguments.callee.name, [request.session.id], callback)
-			}
-		}
-
 	/* updateCreature */
 		module.exports.updateCreature = updateCreature
 		function updateCreature(request, chamber, creature, callback) {
 			try {
-				// dead ?
-					if (!creature.state.alive) {
+				// dead creature (not hero)
+					if (creature.info.type !== "hero" && !creature.state.alive) {
 						// reduce cooldown
 							creature.state.cooldowns.death = Math.max(0, creature.state.cooldowns.death - CONSTANTS.deathFade)
 
@@ -2149,7 +2147,7 @@
 							creature.info.size.x = Math.max(0, creature.info.size.x * creature.state.cooldowns.death / CONSTANTS.deathCooldown)
 							creature.info.size.y = Math.max(0, creature.info.size.y * creature.state.cooldowns.death / CONSTANTS.deathCooldown)
 
-						// 0 cooldown?
+						// 0 cooldown? --> delete
 							if (!creature.state.cooldowns.death) {
 								delete chamber.creatures[creature.id]
 							}
@@ -2160,84 +2158,32 @@
 						// resets
 							creature.state.position.edge = null
 
-						// get path
-							var cellX = Math.round(Math.abs(creature.state.position.x / CONSTANTS.cellSize)) * Math.sign(creature.state.position.x)
-								if (cellX == -0) { cellX = 0 }
-							var cellY = Math.round(Math.abs(creature.state.position.y / CONSTANTS.cellSize)) * Math.sign(creature.state.position.y)
-								if (cellY == -0) { cellY = 0 }
-							var path = PATHINGAI[creature.info.pathing](chamber, creature, cellX + "," + cellY, request.game.data.nodemaps[chamber.id])
+						// no player? --> AI
+							if (!creature.player) {
+								// get path
+									var cellX = Math.round(Math.abs(creature.state.position.x / CONSTANTS.cellSize)) * Math.sign(creature.state.position.x)
+										if (cellX == -0) { cellX = 0 }
+									var cellY = Math.round(Math.abs(creature.state.position.y / CONSTANTS.cellSize)) * Math.sign(creature.state.position.y)
+										if (cellY == -0) { cellY = 0 }
+									var path = PATHINGAI[creature.info.pathing](chamber, creature, cellX + "," + cellY, request.game.data.nodemaps[chamber.id])
 
-						// get movement
-							var nextCoords = path.split(" > ")[1] || path.split(" > ")[0]
-							var nextCellCenterX = Number(nextCoords.split(",")[0]) * CONSTANTS.cellSize
-							var nextCellCenterY = Number(nextCoords.split(",")[1]) * CONSTANTS.cellSize
-							var deltaX = nextCellCenterX - creature.state.position.x
-							var deltaY = nextCellCenterY - creature.state.position.y
+								// get movement & direction
+									updateMovement(request, creature, path, callback)
 
-							if (deltaY > 0) {
-								creature.state.movement.up    = true
-								creature.state.movement.down  = false
-							}
-							else if (deltaY < 0) {
-								creature.state.movement.down  = true
-								creature.state.movement.up    = false
-							}
-
-							if (deltaX > 0) {
-								creature.state.movement.right = true
-								creature.state.movement.left  = false
-							}
-							else if (deltaX < 0) {
-								creature.state.movement.left  = true
-								creature.state.movement.right = false
-							}
-
-						// get direction
-							if (Math.abs(deltaX) > Math.abs(deltaY)) {
-								if (deltaX > 0) {
-									creature.state.movement.direction = "right"
-								}
-								else {
-									creature.state.movement.direction = "left"
-								}
-							}
-							else {
-								if (deltaY > 0) {
-									creature.state.movement.direction = "up"
-								}
-								else {
-									creature.state.movement.direction = "down"
-								}
+								// actions
+									updateActions(request, chamber, creature, callback)
 							}
 
 						// accelerate
-							var maxSpeed = creature.info.statistics.moveSpeed * (creature.state.effects.scissors ? CONSTANTS.scissorsMultiplier : 1)
-							if (Math.abs(creature.state.position.vx) > maxSpeed) {
-								creature.state.position.vx = (Math.abs(creature.state.position.vx) - CONSTANTS.acceleration) * Math.sign(creature.state.position.vx)
-							}
-							else {
-								creature.state.position.vx = Math.max(-maxSpeed, Math.min(maxSpeed, creature.state.position.vx + (creature.state.movement.left ? -CONSTANTS.acceleration : creature.state.movement.right ? CONSTANTS.acceleration : -CONSTANTS.acceleration * Math.sign(creature.state.position.vx))))
-							}
-
-							if (Math.abs(creature.state.position.vy) > maxSpeed) {
-								creature.state.position.vy = (Math.abs(creature.state.position.vy) - CONSTANTS.acceleration) * Math.sign(creature.state.position.vy)
-							}
-							else {
-								creature.state.position.vy = Math.max(-maxSpeed, Math.min(maxSpeed, creature.state.position.vy + (creature.state.movement.down ? -CONSTANTS.acceleration : creature.state.movement.up    ? CONSTANTS.acceleration : -CONSTANTS.acceleration * Math.sign(creature.state.position.vy))))
-							}
+							updateAcceleration(request, creature, callback)
 
 						// get actual target coordinates
-							var newX = creature.state.position.x + creature.state.position.vx
-							var newY = creature.state.position.y + creature.state.position.vy
-							var radiusX = Math.ceil(creature.info.size.x / 2)
-							var radiusY = Math.ceil(creature.info.size.y / 2)
-
 							var targetCoordinates = {
 								id: 		creature.id,
-								radiusX: 	radiusX,
-								radiusY: 	radiusY,
-								x: 			newX,
-								y: 			newY,
+								radiusX: 	Math.ceil(creature.info.size.x / 2),
+								radiusY: 	Math.ceil(creature.info.size.y / 2),
+								x: 			creature.state.position.x + creature.state.position.vx,
+								y: 			creature.state.position.y + creature.state.position.vy,
 								collisionX:	false,
 								collisionY: false
 							}
@@ -2256,32 +2202,25 @@
 							creature.state.position.y = targetCoordinates.y
 
 						// arrest movement?
-							if (targetCoordinates.collisionX) {
-								creature.state.position.vx = 0
-							}
-							if (targetCoordinates.collisionY) {
-								creature.state.position.vy = 0
-							}
+							creature.state.position.vx = targetCoordinates.collisionX ? 0 : creature.state.position.vx
+							creature.state.position.vy = targetCoordinates.collisionY ? 0 : creature.state.position.vy
 
 						// healing
 							if (creature.state.effects.heal) {
-								if (!creature.state.alive) {
-									creature.state.alive = true
-								}
-
+								creature.state.alive = true
 								creature.state.health = Math.min(creature.state.healthMax, creature.state.health + CONSTANTS.heal)
 							}
 
 						// attacks
 							if (creature.state.alive && !Object.keys(creature.items).length) {
 								// a
-									if (!creature.state.cooldowns.a && main.rollRandom(CONSTANTS.monsterChanceA[0], CONSTANTS.monsterChanceA[1])) {
+									if (creature.state.actions.a && !creature.state.cooldowns.a) {
 										creature.state.cooldowns.a = CONSTANTS.aCooldown
 										createRangeAttack(request, chamber, creature, callback)
 									}
 
 								// b
-									if (!creature.state.cooldowns.b && main.rollRandom(CONSTANTS.monsterChanceB[0], CONSTANTS.monsterChanceB[1])) {
+									if (creature.state.actions.b && !creature.state.cooldowns.b) {
 										creature.state.cooldowns.b = CONSTANTS.bCooldown
 										createAreaAttack(request, chamber, creature, callback)
 									}
@@ -2470,6 +2409,117 @@
 
 				// image
 					updateImage(request, item, targetCoordinates, callback)
+			}
+			catch (error) {
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
+			}
+		}
+
+	/* updateMovement */
+		module.exports.updateMovement = updateMovement
+		function updateMovement(request, creature, path, chamber) {
+			try {
+				// save path
+					creature.state.movement.path = path
+
+				// get deltaX / deltaY
+					var nextCoords = path.split(" > ")[1] || path.split(" > ")[0]
+					var nextCellCenterX = Number(nextCoords.split(",")[0]) * CONSTANTS.cellSize
+					var nextCellCenterY = Number(nextCoords.split(",")[1]) * CONSTANTS.cellSize
+					var deltaX = nextCellCenterX - creature.state.position.x
+					var deltaY = nextCellCenterY - creature.state.position.y
+
+				// get movement
+					if (deltaY > 0) {
+						creature.state.movement.up    = true
+						creature.state.movement.down  = false
+					}
+					else if (deltaY < 0) {
+						creature.state.movement.down  = true
+						creature.state.movement.up    = false
+					}
+
+					if (deltaX > 0) {
+						creature.state.movement.right = true
+						creature.state.movement.left  = false
+					}
+					else if (deltaX < 0) {
+						creature.state.movement.left  = true
+						creature.state.movement.right = false
+					}
+
+				// get direction
+					if (Math.abs(deltaX) > Math.abs(deltaY)) {
+						if (deltaX > 0) {
+							creature.state.movement.direction = "right"
+						}
+						else {
+							creature.state.movement.direction = "left"
+						}
+					}
+					else {
+						if (deltaY > 0) {
+							creature.state.movement.direction = "up"
+						}
+						else {
+							creature.state.movement.direction = "down"
+						}
+					}
+			}
+			catch (error) {
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
+			}
+		}
+
+	/* updateActions */
+		module.exports.updateActions = updateActions
+		function updateActions(request, chamber, creature, callback) {
+			try {
+				// reset
+					creature.state.actions.a = false
+					creature.state.actions.b = false
+
+				// heroes
+					if (creature.info.type == "hero") {
+						if (Object.keys(chamber.creatures).length) {
+							creature.state.actions.a = main.rollRandom(CONSTANTS.monsterChanceA[0], CONSTANTS.monsterChanceA[1])
+							creature.state.actions.b = main.rollRandom(CONSTANTS.monsterChanceB[0], CONSTANTS.monsterChanceB[1])
+						}
+					}
+
+				// monsters
+					else {
+						creature.state.actions.a = main.rollRandom(CONSTANTS.monsterChanceA[0], CONSTANTS.monsterChanceA[1])
+						creature.state.actions.b = main.rollRandom(CONSTANTS.monsterChanceB[0], CONSTANTS.monsterChanceB[1])
+					}
+			}
+			catch (error) {
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
+			}
+		}
+
+	/* updateAcceleration */
+		module.exports.updateAcceleration = updateAcceleration
+		function updateAcceleration(request, creature, callback) {
+			try {
+				// max
+					var maxSpeed = creature.info.statistics.moveSpeed * (creature.state.effects.scissors ? CONSTANTS.scissorsMultiplier : 1)
+
+				// x
+					if (Math.abs(creature.state.position.vx) > maxSpeed) {
+						creature.state.position.vx = (Math.abs(creature.state.position.vx) - CONSTANTS.acceleration) * Math.sign(creature.state.position.vx)
+					}
+					else {
+						creature.state.position.vx = Math.max(-maxSpeed, Math.min(maxSpeed, creature.state.position.vx + (creature.state.movement.left ? -CONSTANTS.acceleration : creature.state.movement.right ? CONSTANTS.acceleration : -CONSTANTS.acceleration * Math.sign(creature.state.position.vx))))
+					}
+
+				// y
+					if (Math.abs(creature.state.position.vy) > maxSpeed) {
+						creature.state.position.vy = (Math.abs(creature.state.position.vy) - CONSTANTS.acceleration) * Math.sign(creature.state.position.vy)
+					}
+					else {
+						creature.state.position.vy = Math.max(-maxSpeed, Math.min(maxSpeed, creature.state.position.vy + (creature.state.movement.down ? -CONSTANTS.acceleration : creature.state.movement.up    ? CONSTANTS.acceleration : -CONSTANTS.acceleration * Math.sign(creature.state.position.vy))))
+					}
 			}
 			catch (error) {
 				main.logError(error, arguments.callee.name, [request.session.id], callback)

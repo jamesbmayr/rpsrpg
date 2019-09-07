@@ -73,6 +73,11 @@
 			pointer-events: none;
 		}
 
+		[hidden=true] {
+			display: none;
+			pointer-events: none;
+		}
+
 		.invisible {
 			opacity: 0;
 			pointer-events: none;

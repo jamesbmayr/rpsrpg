@@ -419,19 +419,25 @@
 								try { request.post = JSON.parse(message.utf8Data) || null }
 								catch (error) {main.logError(error)}
 
-							if (request.post && (request.post.action == "pressInput") && request.post.input) {
-								try {
-									game.pressInput(request, updateSocket)
+							// actions
+								if (request.post && (request.post.action == "pressInput") && request.post.input) {
+									try {
+										game.pressInput(request, updateSocket)
+									}
+									catch (error) {_400(error)}
 								}
-								catch (error) {_400(error)}
-							}
-
-							else if (request.post && (request.post.action == "releaseInput") && request.post.input) {
-								try {
-									game.releaseInput(request, updateSocket)
+								else if (request.post && (request.post.action == "releaseInput") && request.post.input) {
+									try {
+										game.releaseInput(request, updateSocket)
+									}
+									catch (error) {_400(error)}
 								}
-								catch (error) {_400(error)}
-							}
+								else if (request.post && (request.post.action == "selectHero") && request.post.input) {
+									try {
+										game.selectHero(request, updateSocket)
+									}
+									catch (error) {_400(error)}
+								}
 						})
 
 					// loop

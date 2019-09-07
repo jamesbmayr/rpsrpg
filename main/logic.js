@@ -133,7 +133,11 @@
 
 					// sprites
 						case "sprites":
-							return ["hero_barbarian_up_moving_inactive", "hero_ranger_up_moving_inactive", "hero_wizard_up_moving_inactive"]
+							return [
+								"hero_barbarian_up_moving_inactive", 	"hero_barbarian_down_moving_inactive", 	"hero_barbarian_left_moving_inactive", 	"hero_barbarian_right_moving_inactive", 	"hero_barbarian_up_standing_inactive", 	"hero_barbarian_down_standing_inactive", 	"hero_barbarian_left_standing_inactive", 	"hero_barbarian_right_standing_inactive", 
+								"hero_ranger_up_moving_inactive", 		"hero_ranger_down_moving_inactive", 	"hero_ranger_left_moving_inactive", 	"hero_ranger_right_moving_inactive", 		"hero_ranger_up_standing_inactive", 	"hero_ranger_down_standing_inactive", 		"hero_ranger_left_standing_inactive", 		"hero_ranger_right_standing_inactive", 
+								"hero_wizard_up_moving_inactive", 		"hero_wizard_down_moving_inactive", 	"hero_wizard_left_moving_inactive", 	"hero_wizard_right_moving_inactive", 		"hero_wizard_up_standing_inactive", 	"hero_wizard_down_standing_inactive", 		"hero_wizard_left_standing_inactive", 		"hero_wizard_right_standing_inactive"
+							]
 						break
 
 					// game parameters
@@ -164,13 +168,15 @@
 								// health
 									baseHealthPercent: 	1,
 									baseHealth: 		128,
-									spawnHealth: 		256,
+									spawnHealth: 		512,
 									heal: 				1,
 									rpsMultiplier: 		2,
 
-								// monster AI
+								// AI
 									monsterChanceA: 	[1,3],
 									monsterChanceB: 	[1,10],
+									heroChanceA: 		[1,2],
+									heroChanceB: 		[1,4],
 
 								// fades
 									rangeAttackFade: 	1,
@@ -424,7 +430,7 @@
 											}
 											else {
 												return paths.sort(function(a, b) {
-													return b.split(" > ").length - a.split(" > ").length
+													return a.split(" > ").length - b.split(" > ").length
 												})[0] || currentCell
 											}
 									} catch (error) { return currentCell }
@@ -502,7 +508,7 @@
 													var cellX = null
 													var cellY = null
 													var itemType = null
-													var preferences = ["orb", "pedestal", "shrine", "portal", "heal"]
+													var preferences = ["orb", "pedestal", "spawn", "shrine", "portal"]
 													for (var i in chamber.items) {
 														var item = chamber.items[i]
 
@@ -605,9 +611,175 @@
 											}
 											else {
 												return paths.sort(function(a, b) {
-													return b.split(" > ").length - a.split(" > ").length
+													return a.split(" > ").length - b.split(" > ").length
 												})[0] || currentCell
 											}
+									} catch (error) { return currentCell }
+								},
+								hero: function(chamber, hero, currentCell, nodemap) {
+									try {
+										// get target object
+											var targets = []
+											var antitargets = []
+
+											// 1: orb (or, if holding orb, pedestal)
+												if (hero.state.alive) {
+													for (var i in chamber.items) {
+														if (chamber.items[i].info.type == "orb" && chamber.items[i].info.rps == hero.info.rps) {
+															targets.unshift(chamber.items[i])
+														}
+														else if (chamber.items[i].info.type == "pedestal" && chamber.items[i].info.rps == hero.info.rps
+														  && Object.keys(hero.items).find(function(i) { return hero.items[i].info.type == "orb" })) {
+															targets.push(chamber.items[i])
+														}
+													}
+												}
+
+											// 2: allies at edge
+												for (var h in chamber.heroes) {
+													if (h == hero.id) {}
+													else if (chamber.heroes[h].player && chamber.heroes[h].state.position.edge) {
+														targets.push(chamber.heroes[h])
+													}
+												}
+
+											// 3: enemies & spawns
+												if (hero.state.alive) {
+													var targetType = (hero.info.rps == "rock") ? "scissors" : (hero.info.rps == "scissors") ? "paper" : "rock"
+													for (var i in chamber.items) {
+														if (chamber.items[i].info.type == "spawn" && chamber.items[i].state.alive) {
+															if (chamber.items[i].info.rps == targetType) {
+																targets.unshift(chamber.items[i])
+															}
+															else if (chamber.items[i].info.rps == hero.info.rps) {
+																targets.push(chamber.items[i])
+															}
+															else {
+																antitargets.push(chamber.items[i])
+															}
+														}
+													}
+
+													for (var c in chamber.creatures) {
+														if (chamber.creatures[c].state.alive) {
+															if (chamber.creatures[c].info.rps == targetType) {
+																targets.unshift(chamber.creatures[c])
+															}
+															else if (chamber.creatures[c].info.rps == hero.info.rps) {
+																targets.push(chamber.creatures[c])
+															}
+															else {
+																antitargets.push(chamber.creatures[c])
+															}
+														}
+													}
+												}
+
+											// 4: allies
+												for (var h in chamber.heroes) {
+													if (h == hero.id) {}
+													else if (chamber.heroes[h].player) {
+														targets.push(chamber.heroes[h])
+													}
+												}
+
+										// get targetCell
+											// antitargets
+												if (antitargets.length) {
+													// distances
+														var distances = {}
+														for (var a in antitargets) {
+															var antitarget = antitargets[a]
+															distances[antitarget.id] = getDistance(hero.state.position.x, hero.state.position.y, antitarget.state.position.x, antitarget.state.position.y)
+														}
+
+													// get closest
+														var keys = Object.keys(distances) || []
+														if (!keys.length) {
+															return currentCell
+														}
+															keys.sort(function(a,b) {
+																return distances[b] - distances[a]
+															})
+														var closestAntitarget = chamber.creatures[keys[0]]
+
+													// get antitarget cell
+														var antitargetX = closestAntitarget.state.position.x
+														var antitargetY = closestAntitarget.state.position.y
+														var cellX = Math.round(Math.abs(antitargetX / CONSTANTS.cellSize)) * Math.sign(antitargetX)
+															if (cellX == -0 || cellX == 0) { cellX = 1 }
+														var cellY = Math.round(Math.abs(antitargetY / CONSTANTS.cellSize)) * Math.sign(antitargetY)
+															if (cellY == -0 || cellY == 0) { cellY = 1 }
+
+													// get cell in opposite quadrant
+														var targetX = Math.sign(cellX) * -1 * Math.floor(chamber.info.chamberSize / 2)
+														var targetY = Math.sign(cellY) * -1 * Math.floor(chamber.info.chamberSize / 2)
+														var targetCell = null
+														var changeDirection = "x"
+														while (!targetCell) {
+															if (chamber.cells[targetX] && chamber.cells[targetX][targetY] && !chamber.cells[targetX][targetY].wall) {
+																targetCell = targetX + "," + targetY
+															}
+															else if (changeDirection == "x") {
+																targetX = (Math.abs(targetX) - 1) * Math.sign(targetX)
+																changeDirection = "y"
+															}
+															else if (changeDirection == "y") {
+																targetY = (Math.abs(targetY) - 1) * Math.sign(targetY)
+																changeDirection = "x"
+															}
+														}
+												}
+
+											// targets
+												else if (targets.length) {
+													// get target cell
+														var targetX = targets[0].state.position.x
+														var targetY = targets[0].state.position.y
+														var cellX = Math.round(Math.abs(targetX / CONSTANTS.cellSize)) * Math.sign(targetX)
+															if (cellX == -0) { cellX = 0 }
+														var cellY = Math.round(Math.abs(targetY / CONSTANTS.cellSize)) * Math.sign(targetY)
+															if (cellY == -0) { cellY = 0 }
+														var targetCell = cellX + "," + cellY
+												}
+
+											// none
+												else {
+													var targetCell = currentCell
+												}
+
+										// get path
+											// old path
+												var oldPath = hero.state.movement.path || null
+												var oldPathArray = oldPath ? oldPath.split(" > ") : []
+
+											// new path
+												var paths = nodemap[currentCell] ? (nodemap[currentCell][targetCell] || []) : []
+												var newPath = paths.length ? paths.sort(function(a, b) {
+													return a.split(" > ").length - b.split(" > ").length
+												})[0] : null
+												var newPathArray = newPath ? newPath.split(" > ") : []
+											
+											// same as current?
+												if (currentCell == targetCell) {
+													return currentCell
+												}
+
+											// no path?
+												else if (!newPath) {
+													return oldPath || currentCell
+												}
+
+											// use old path if same target
+												else if (oldPath && oldPathArray[oldPathArray.length - 1] == targetCell && oldPathArray.length <= newPathArray.length) {
+													return oldPath || currentCell
+												}
+
+											// or else change path
+												else {
+													return newPath || currentCell
+												}
+
 									} catch (error) { return currentCell }
 								}
 							}
@@ -619,11 +791,13 @@
 
 							return {
 								"barbarian": {
+									player: null,
 									info: {
 										rps: "rock",
 										type: "hero",
 										subtype: "barbarian",
 										color: CONSTANTS.colors.orange[2],
+										pathing: "hero",
 										statistics: {
 											moveSpeed: 	Math.floor(quarterCell / 2),
 											rangeSpeed: Math.floor(quarterCell / 2),
@@ -643,11 +817,13 @@
 									}
 								},
 								"wizard": {
+									player: null,
 									info: {
 										rps: "paper",
 										type: "hero",
 										subtype: "wizard",
 										color: CONSTANTS.colors.purple[2],
+										pathing: "hero",
 										statistics: {
 											moveSpeed: 	Math.floor(quarterCell / 2),
 											rangeSpeed: Math.floor(quarterCell / 1),
@@ -667,11 +843,13 @@
 									}
 								},
 								"ranger": {
+									player: null,
 									info: {
 										rps: "scissors",
 										type: "hero",
 										subtype: "ranger",
 										color: CONSTANTS.colors.greengray[2],
+										pathing: "hero",
 										statistics: {
 											moveSpeed: 	Math.floor(quarterCell / 1),
 											rangeSpeed: Math.floor(quarterCell / 1),
@@ -972,6 +1150,7 @@
 					case "player":
 						return {
 							id: 			null,
+							hero: 			null,
 							created: 		(new Date().getTime()),
 							connected: 		false,
 							connection: 	null
@@ -1041,6 +1220,7 @@
 								},
 								movement: {
 									direction: "down",
+									path: null,
 									up: 	false,
 									left: 	false,
 									right: 	false,

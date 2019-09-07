@@ -1,5 +1,11 @@
 /*** globals ***/
 	/* elements */
+		var SELECTION = document.getElementById("selection-inner")
+		var INFO = document.getElementById("info")
+		var DPAD = document.getElementById("d-pad")
+		var MIDDLE = document.getElementById("middle")
+		var ACTIONS = document.getElementById("actions")
+		var HEALTHBAR = document.querySelector("#health-inner")
 		var INPUTS = {
 			up: 	document.querySelector("#up"),
 			down: 	document.querySelector("#down"),
@@ -9,7 +15,9 @@
 			a: 		document.querySelector("#a"),
 			b: 		document.querySelector("#b")
 		}
-		var HEALTHBAR = document.querySelector("#health-inner")
+
+	/* booleans */
+		var SELECTED = false
 
 /*** websocket ***/
 	/* socket */
@@ -52,6 +60,16 @@
 		}, 5000)
 
 /*** inputs ***/
+	/* selectHero */
+		function selectHero(event) {
+			try {
+				socket.send(JSON.stringify({
+					action: 	"selectHero",
+					input: 		event.target.value
+				}))
+			} catch (error) {}
+		}
+
 	/* pressInput */
 		for (var i in INPUTS) { INPUTS[i].addEventListener(on.mousedown, pressInput) }
 		function pressInput(event) {
@@ -90,6 +108,11 @@
 						displayMessage(data.message)
 					}
 
+				// selection
+					if (data.heroOptions) {
+						displaySelection(data.heroOptions)
+					}
+
 				// info
 					if (data.hero) {
 						displayInfo(data.hero)
@@ -98,9 +121,51 @@
 		}
 
 /*** display ***/
+	/* displaySelection */
+		function displaySelection(heroOptions) {
+			try {
+				// clear selection
+					SELECTION.innerHTML = ""
+
+				// create buttons
+					for (var h in heroOptions) {
+						var button = document.createElement("button")
+							button.className = "selection-option"
+							button.style.backgroundImage = "url(selection_" + heroOptions[h].info.subtype + ".png)"
+							button.value = heroOptions[h].info.subtype
+							button.addEventListener(on.click, selectHero)
+						SELECTION.appendChild(button)
+					}
+
+				// no options?
+					if (!heroOptions.length) {
+						var message = document.createElement("div")
+							message.className = "selection-message"
+							message.innerText = "No heroes remaining."
+						SELECTION.appendChild(message)
+					}
+
+				// hide controls
+					INFO.setAttribute("hidden", true)
+					DPAD.setAttribute("hidden", true)
+					MIDDLE.setAttribute("hidden", true)
+					ACTIONS.setAttribute("hidden", true)
+			} catch (error) {}
+		}
+
 	/* displayInfo */
 		function displayInfo(hero) {
 			try {
+				// hide selection/
+					if (!SELECTED) {
+						SELECTED = true
+						SELECTION.parentNode.setAttribute("hidden", true)
+						INFO.removeAttribute("hidden")
+						DPAD.removeAttribute("hidden")
+						MIDDLE.removeAttribute("hidden")
+						ACTIONS.removeAttribute("hidden")
+					}
+
 				// healthbar
 					displayHealthbar(hero)
 
