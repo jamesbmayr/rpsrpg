@@ -107,11 +107,8 @@
 		module.exports.selectHero = selectHero
 		function selectHero(request, callback) {
 			try {
-				if (!request.game.data.state.start) {
-					callback([request.session.id], {success: false, message: "Game has not started."})
-				}
-				else if (request.game.data.state.end) {
-					callback([request.session.id], {success: false, message: "Game already ended."})
+				if (request.game.data.state.end) {
+					callback([request.session.id], {success: false, message: "Game ended."})
 				}
 				else {
 					// get player
@@ -167,11 +164,8 @@
 		module.exports.pressInput = pressInput
 		function pressInput(request, callback) {
 			try {
-				if (!request.game.data.state.start) {
-					callback([request.session.id], {success: false, message: "Game has not started."})
-				}
-				else if (request.game.data.state.end) {
-					callback([request.session.id], {success: false, message: "Game already ended."})
+				if (request.game.data.state.end) {
+					callback([request.session.id], {success: false, message: "Game ended."})
 				}
 				else {
 					var player = request.game.players[request.session.id]
@@ -206,11 +200,8 @@
 		module.exports.releaseInput = releaseInput
 		function releaseInput(request, callback) {
 			try {
-				if (!request.game.data.state.start) {
-					callback([request.session.id], {success: false, message: "Game has not started."})
-				}
-				else if (request.game.data.state.end) {
-					callback([request.session.id], {success: false, message: "Game already ended."})
+				if (request.game.data.state.end) {
+					callback([request.session.id], {success: false, message: "Game ended."})
 				}
 				else {
 					var player = request.game.players[request.session.id]
@@ -1701,6 +1692,7 @@
 										})
 
 										if (orbKey) {
+											request.game.data.state.orbs++
 											chamber.items[item.id].state.active = true
 											chamber.items[item.id].info.style = "filled"
 											delete thing.items[orbKey]
@@ -1797,9 +1789,12 @@
 									}									
 
 								// bump
-									if (recipient.state.alive && (collision.supertype == "hero" || collision.supertype == "creature")) {
-										recipient.state.position.vx = recipient.state.position.vx + (collision.side == "right" ? CONSTANTS.bumpAcceleration : collision.side == "left" ? -CONSTANTS.bumpAcceleration : 0)
-										recipient.state.position.vy = recipient.state.position.vy + (collision.side == "up"    ? CONSTANTS.bumpAcceleration : collision.side == "down" ? -CONSTANTS.bumpAcceleration : 0)
+									if (recipient.state.alive && (collision.supertype == "creature" || collision.supertype == "hero")) {
+										if (attack.info.type == "hero" && !attack.player && recipient.info.type == "hero") { }
+										else {
+											recipient.state.position.vx = recipient.state.position.vx + (collision.side == "right" ? CONSTANTS.bumpAcceleration : collision.side == "left" ? -CONSTANTS.bumpAcceleration : 0)
+											recipient.state.position.vy = recipient.state.position.vy + (collision.side == "up"    ? CONSTANTS.bumpAcceleration : collision.side == "down" ? -CONSTANTS.bumpAcceleration : 0)
+										}
 									}
 							}
 
@@ -1905,7 +1900,7 @@
 									}
 
 								// drop items
-									if (recipient.state.items) {
+									if (recipient.items) {
 										var x = recipient.state.position.x
 										var y = recipient.state.position.y
 
@@ -1934,71 +1929,74 @@
 		module.exports.updateTime = updateTime
 		function updateTime(request, callback) {
 			try {
-				if (!request.game.data.state.start) {
-					callback(Object.keys(request.game.observers), {success: true, chamber: null})
+			// chamber
+				var chamber = request.game.data.chambers[request.game.data.state.chamber.x][request.game.data.state.chamber.y]
+
+			// paused
+				if (request.game.data.state.paused) {
+					callback(Object.keys(request.game.observers), {success: true, paused: CONSTANTS.pauseMessage, chamber: chamber})	
 				}
+
+			// game over
+				else if (request.game.data.state.end) {
+					callback(Object.keys(request.game.observers), {success: true, end: CONSTANTS.endMessage, chamber: chamber})	
+				}
+
+			// play
 				else {
-					// chamber
-						var chamber = request.game.data.chambers[request.game.data.state.chamber.x][request.game.data.state.chamber.y]
+					// time
+						request.game.data.state.time += CONSTANTS.loopInterval
 
-					// paused
-						if (request.game.data.state.paused) {
-							callback(Object.keys(request.game.observers), {success: true, paused: true, chamber: chamber})	
+					// victory
+						if (request.game.data.state.orbs >= CONSTANTS.rps.length) {
+							request.game.data.state.end = true
 						}
 
-					// game over
-						else if (request.game.data.state.end) {
-							callback(Object.keys(request.game.observers), {success: true, end: true, chamber: chamber})	
+					// chamber switch
+						else if (request.game.data.state.nextChamber) {
+							if (chamber.state.cooldowns.fade) {
+								chamber.state.cooldowns.fade = Math.max(0, chamber.state.cooldowns.fade - 1)
+							}
+							else {
+								updateChamber(request, callback)
+								var chamber = request.game.data.chambers[request.game.data.state.chamber.x][request.game.data.state.chamber.y]
+							}
+						}
+						else if (chamber.state.cooldowns.fade) {
+							chamber.state.cooldowns.fade = Math.max(0, chamber.state.cooldowns.fade - 1)
 						}
 
-					// play
+					// regular gameplay
 						else {
-							// time
-								request.game.data.state.time += CONSTANTS.loopInterval
+							// start message
+								var start = request.game.data.state.start ? null : CONSTANTS.startMessage
 
-							// chamber switch
-								if (request.game.data.state.nextChamber) {
-									if (chamber.state.cooldowns.fade) {
-										chamber.state.cooldowns.fade = Math.max(0, chamber.state.cooldowns.fade - 1)
-									}
-									else {
-										updateChamber(request, callback)
-										var chamber = request.game.data.chambers[request.game.data.state.chamber.x][request.game.data.state.chamber.y]
-									}
-								}
-								else if (chamber.state.cooldowns.fade) {
-									chamber.state.cooldowns.fade = Math.max(0, chamber.state.cooldowns.fade - 1)
+							// heroes
+								for (var h in chamber.heroes) {
+									var hero = chamber.heroes[h]
+									updateCreature(request, chamber, hero, callback)
 								}
 
-							// regular gameplay
-								else {
-									// heroes
-										for (var h in chamber.heroes) {
-											var hero = chamber.heroes[h]
-											updateCreature(request, chamber, hero, callback)
-										}
-
-									// creatures
-										for (var c in chamber.creatures) {
-											var creature = chamber.creatures[c]
-											updateCreature(request, chamber, creature, callback)
-										}
-
-									// items
-										for (var i in chamber.items) {
-											var item = chamber.items[i]
-											updateItem(request, chamber, item, callback)
-										}
+							// creatures
+								for (var c in chamber.creatures) {
+									var creature = chamber.creatures[c]
+									updateCreature(request, chamber, creature, callback)
 								}
 
-							// send data
-								callback(Object.keys(request.game.observers), {success: true, chamber: chamber})
-
-								for (var p in request.game.players) {
-									if (request.game.players[p].hero) {
-										callback([p], {success: true, hero: request.game.data.heroes[request.game.players[p].hero]})
-									}
+							// items
+								for (var i in chamber.items) {
+									var item = chamber.items[i]
+									updateItem(request, chamber, item, callback)
 								}
+						}
+
+					// send data
+						callback(Object.keys(request.game.observers), {success: true, start: start, chamber: chamber})
+
+						for (var p in request.game.players) {
+							if (request.game.players[p].hero) {
+								callback([p], {success: true, hero: request.game.data.heroes[request.game.players[p].hero]})
+							}
 						}
 				}
 			}
@@ -2059,6 +2057,9 @@
 		function updateChamber(request, callback) {
 			try {
 				if (request.game.data.state.nextChamber) {
+					// start game if not already
+						request.game.data.state.start = true
+
 					// get old
 						var oldX = Number(request.game.data.state.chamber.x)
 						var oldY = Number(request.game.data.state.chamber.y)

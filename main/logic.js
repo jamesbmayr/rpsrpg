@@ -143,6 +143,11 @@
 					// game parameters
 						case "constants":
 							var constants = {
+								// messages
+									startMessage: 		"RETURN THE ORBS",
+									pauseMessage: 		"PAUSED",
+									endMessage: 		"VICTORY",
+
 								// styling
 									font: 				"monospace",
 									borderRadius: 		16,
@@ -1130,10 +1135,11 @@
 									layers: CONSTANTS.layers
 								},
 								state: {
-									start: 	true,
+									start: 	false,
 									end: 	false,
 									paused: false,
 									time: 	0,
+									orbs: 	0,
 									chamber: {
 										x: 	0,
 										y: 	0

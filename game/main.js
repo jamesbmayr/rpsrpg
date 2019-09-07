@@ -78,21 +78,27 @@
 					}
 
 				// paused
-					if (data.paused) {
-						drawPaused()
+					if (data.end) {
+						drawOverlayMessage(data.end)
+					}
+					else if (data.paused) {
+						drawOverlayMessage(data.paused)
+					}
+					else if (data.start) {
+						drawOverlayMessage(data.start)
 					}
 			} catch (error) {}
 		}
 
 /*** draws ***/
-	/* drawPaused */
-		function drawPaused() {
+	/* drawOverlayMessage */
+		function drawOverlayMessage(message) {
 			try {
 				// overlay
 					drawRectangle(CANVAS, CONTEXT, 0, 0, CANVAS.width, CANVAS.height, {color: CONSTANTS.colors.black[4], opacity: CONSTANTS.pauseOpacity})
 
 				// text
-					drawText(CANVAS, CONTEXT, CANVAS.width / 2, CANVAS.height / 2, "PAUSED", {size: CONSTANTS.cellSize * 2, color: CONSTANTS.colors.white[4], shadow: CONSTANTS.colors.black[4], blur: CONSTANTS.borderRadius})
+					drawText(CANVAS, CONTEXT, CANVAS.width / 2, CANVAS.height / 2, message, {size: CONSTANTS.cellSize, color: CONSTANTS.colors.white[4], shadow: CONSTANTS.colors.black[4], blur: CONSTANTS.borderRadius})
 			} catch (error) {}
 		}
 
