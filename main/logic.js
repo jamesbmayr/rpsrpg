@@ -161,14 +161,14 @@
 									loopInterval: 		50,
 
 								// game creation
-									layers: 			3,
+									layers: 			4,
 									chamberSize: 		9,
 									cellSize: 			128,
-									portalPairs: 		0,
-									monsterCountMin:	1,
-									monsterCountMax:	4,
+									portalPairs: 		2,
+									monsterCountMin:	2,
+									monsterCountMax:	5,
 									monsterChance: 		[3,4],
-									spawnChance: 		[1,1],
+									spawnChance: 		[2,3],
 
 								// health
 									baseHealthPercent: 	1,
@@ -222,7 +222,7 @@
 							// time derivatives
 								var second = (1000 / constants.loopInterval)
 								constants.chamberCooldown 	= Math.floor(second / 4)
-								constants.shrineCooldown 	= Math.floor(second * 2)
+								constants.shrineCooldown 	= Math.floor(second)
 								constants.spawnCooldown 	= Math.floor(second * 4)
 								constants.portalCooldown 	= Math.floor(second * 3)
 								constants.deathCooldown 	= Math.floor(second / 2)
