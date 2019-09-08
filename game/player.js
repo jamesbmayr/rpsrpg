@@ -1,11 +1,13 @@
 /*** globals ***/
 	/* elements */
-		var SELECTION = document.getElementById("selection-inner")
-		var INFO = document.getElementById("info")
-		var DPAD = document.getElementById("d-pad")
-		var MIDDLE = document.getElementById("middle")
-		var ACTIONS = document.getElementById("actions")
-		var HEALTHBAR = document.querySelector("#health-inner")
+		var SELECTION 	= document.getElementById("selection-inner")
+		var WIRE 		= document.getElementById("wire")
+		var CONTAINER 	= document.getElementById("container")
+		var INFO 		= document.getElementById("info")
+		var DPAD 		= document.getElementById("d-pad")
+		var MIDDLE 		= document.getElementById("middle")
+		var ACTIONS 	= document.getElementById("actions")
+		var HEALTHBAR 	= document.querySelector("#health-inner")
 		var INPUTS = {
 			up: 	document.querySelector("#up"),
 			down: 	document.querySelector("#down"),
@@ -156,7 +158,7 @@
 	/* displayInfo */
 		function displayInfo(hero) {
 			try {
-				// hide selection/
+				// hide selection
 					if (!SELECTED) {
 						SELECTED = true
 						SELECTION.parentNode.setAttribute("hidden", true)
@@ -164,6 +166,9 @@
 						DPAD.removeAttribute("hidden")
 						MIDDLE.removeAttribute("hidden")
 						ACTIONS.removeAttribute("hidden")
+
+						WIRE.style.backgroundColor = hero.info.color
+						CONTAINER.style.borderColor = hero.info.color
 					}
 
 				// healthbar

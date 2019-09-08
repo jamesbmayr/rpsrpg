@@ -140,8 +140,8 @@
 					}
 
 				// overlay
-					if (chamber.state.cooldowns.fade) {
-						drawOverlay(chamber.state.cooldowns.fade, chamber.state.fadeout)
+					if (chamber.state.cooldowns.activate) {
+						drawOverlay(chamber.state.cooldowns.activate, chamber.state.fadeout)
 					}
 			} catch (error) {}
 		}

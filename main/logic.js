@@ -144,7 +144,7 @@
 						case "constants":
 							var constants = {
 								// messages
-									startMessage: 		"RETURN THE ORBS",
+									startMessage: 		"FIND THE ORBS",
 									pauseMessage: 		"PAUSED",
 									endMessage: 		"VICTORY",
 
@@ -161,19 +161,19 @@
 									loopInterval: 		50,
 
 								// game creation
-									layers: 			4,
+									layers: 			3,
 									chamberSize: 		9,
 									cellSize: 			128,
-									portalPairs: 		2,
+									portalPairs: 		0,
 									monsterCountMin:	1,
 									monsterCountMax:	4,
 									monsterChance: 		[3,4],
-									spawnChance: 		[1,2],
+									spawnChance: 		[1,1],
 
 								// health
 									baseHealthPercent: 	1,
 									baseHealth: 		128,
-									spawnHealth: 		512,
+									spawnHealth: 		1024,
 									heal: 				1,
 									rpsMultiplier: 		2,
 
@@ -221,12 +221,12 @@
 
 							// time derivatives
 								var second = (1000 / constants.loopInterval)
-								constants.chamberCooldown 	= Math.floor(second / 5)
+								constants.chamberCooldown 	= Math.floor(second / 4)
 								constants.shrineCooldown 	= Math.floor(second * 2)
 								constants.spawnCooldown 	= Math.floor(second * 4)
 								constants.portalCooldown 	= Math.floor(second * 3)
 								constants.deathCooldown 	= Math.floor(second / 2)
-								constants.effectCooldown 	= Math.floor(second * 10)
+								constants.effectCooldown 	= Math.floor(second * 20)
 								constants.aCooldown 		= Math.floor(second / 4)
 								constants.bCooldown 		= Math.floor(second)
 
@@ -624,18 +624,18 @@
 								hero: function(chamber, hero, currentCell, nodemap) {
 									try {
 										// get target object
-											var targets = []
+											var targets = {}
 											var antitargets = []
 
 											// 1: orb (or, if holding orb, pedestal)
 												if (hero.state.alive) {
 													for (var i in chamber.items) {
 														if (chamber.items[i].info.type == "orb" && chamber.items[i].info.rps == hero.info.rps) {
-															targets.unshift(chamber.items[i])
+															targets["0"] = chamber.items[i]
 														}
 														else if (chamber.items[i].info.type == "pedestal" && chamber.items[i].info.rps == hero.info.rps
 														  && Object.keys(hero.items).find(function(i) { return hero.items[i].info.type == "orb" })) {
-															targets.push(chamber.items[i])
+															targets["0"] = chamber.items[i]
 														}
 													}
 												}
@@ -644,7 +644,7 @@
 												for (var h in chamber.heroes) {
 													if (h == hero.id) {}
 													else if (chamber.heroes[h].player && chamber.heroes[h].state.position.edge) {
-														targets.push(chamber.heroes[h])
+														targets["1"] = chamber.heroes[h]
 													}
 												}
 
@@ -654,10 +654,10 @@
 													for (var i in chamber.items) {
 														if (chamber.items[i].info.type == "spawn" && chamber.items[i].state.alive) {
 															if (chamber.items[i].info.rps == targetType) {
-																targets.unshift(chamber.items[i])
+																targets["2"] = chamber.items[i]
 															}
 															else if (chamber.items[i].info.rps == hero.info.rps) {
-																targets.push(chamber.items[i])
+																targets["4"] = chamber.items[i]
 															}
 															else {
 																antitargets.push(chamber.items[i])
@@ -668,10 +668,10 @@
 													for (var c in chamber.creatures) {
 														if (chamber.creatures[c].state.alive) {
 															if (chamber.creatures[c].info.rps == targetType) {
-																targets.unshift(chamber.creatures[c])
+																targets["3"] = chamber.creatures[c]
 															}
 															else if (chamber.creatures[c].info.rps == hero.info.rps) {
-																targets.push(chamber.creatures[c])
+																targets["5"] = chamber.creatures[c]
 															}
 															else {
 																antitargets.push(chamber.creatures[c])
@@ -683,8 +683,20 @@
 											// 4: allies
 												for (var h in chamber.heroes) {
 													if (h == hero.id) {}
+													else if (chamber.heroes[h].player && Object.keys(chamber.heroes[h].items).length) {
+														targets["6"] = chamber.heroes[h]
+													}
+													else if (chamber.heroes[h].player && chamber.heroes[h].state.alive && chamber.heroes[h].state.health < CONSTANTS.baseHealth / 4) {
+														targets["7"] = chamber.heroes[h]
+													}
+													else if (chamber.heroes[h].player && chamber.heroes[h].state.alive && chamber.heroes[h].state.health < CONSTANTS.baseHealth / 2) {
+														targets["8"] = chamber.heroes[h]
+													}
+													else if (chamber.heroes[h].player && chamber.heroes[h].state.alive) {
+														targets["9"] = chamber.heroes[h]
+													}
 													else if (chamber.heroes[h].player) {
-														targets.push(chamber.heroes[h])
+														targets["10"] = chamber.heroes[h]
 													}
 												}
 
@@ -737,10 +749,15 @@
 												}
 
 											// targets
-												else if (targets.length) {
+												else if (Object.keys(targets).length) {
+													// get target key
+														var firstKey = Object.keys(targets).sort(function(a, b) {
+															return a - b
+														})[0]
+
 													// get target cell
-														var targetX = targets[0].state.position.x
-														var targetY = targets[0].state.position.y
+														var targetX = targets[firstKey].state.position.x
+														var targetY = targets[firstKey].state.position.y
 														var cellX = Math.round(Math.abs(targetX / CONSTANTS.cellSize)) * Math.sign(targetX)
 															if (cellX == -0) { cellX = 0 }
 														var cellY = Math.round(Math.abs(targetY / CONSTANTS.cellSize)) * Math.sign(targetY)
@@ -897,8 +914,8 @@
 										}
 									},
 									state: {
-										health: CONSTANTS.baseHealth * CONSTANTS.baseHealthPercent / 4,
-										healthMax: CONSTANTS.baseHealth / 4
+										health: CONSTANTS.baseHealth / 2 * CONSTANTS.baseHealthPercent,
+										healthMax: CONSTANTS.baseHealth / 2
 									}
 								},
 								"dendroid": {
@@ -914,12 +931,12 @@
 											rangePower: Math.floor(CONSTANTS.baseHealth / 16),
 											bumpPower: 	Math.floor(CONSTANTS.baseHealth / 8),
 											areaPower: 	Math.floor(CONSTANTS.baseHealth / 8),
-											armorPower: Math.floor(CONSTANTS.baseHealth / 8)
+											armorPower: Math.floor(CONSTANTS.baseHealth / 16)
 										}
 									},
 									state: {
-										health: CONSTANTS.baseHealth * CONSTANTS.baseHealthPercent / 4,
-										healthMax: CONSTANTS.baseHealth / 4
+										health: CONSTANTS.baseHealth / 2 * CONSTANTS.baseHealthPercent,
+										healthMax: CONSTANTS.baseHealth / 2
 									}
 								},
 								"golem": {
@@ -939,8 +956,8 @@
 										}
 									},
 									state: {
-										health: CONSTANTS.baseHealth * CONSTANTS.baseHealthPercent / 4,
-										healthMax: CONSTANTS.baseHealth / 4										
+										health: CONSTANTS.baseHealth / 2 * CONSTANTS.baseHealthPercent,
+										healthMax: CONSTANTS.baseHealth / 2									
 									}
 								}
 							}

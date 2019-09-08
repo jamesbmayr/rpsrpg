@@ -411,7 +411,6 @@
 					var spawnChambers = specialChambers.slice(shrineTypes.length + CONSTANTS.portalPairs * 2)
 
 				// loop through spiral to make chambers
-					var chambers = request.game.data.chambers
 					for (var a in allChambers) {
 						// get coords
 							var coords = allChambers[a].split(",")
@@ -449,6 +448,27 @@
 
 						// create chamber (cells, walls, doors, specials, nodemap)
 							createChamber(request, Number(x), Number(y), options, callback)
+					}
+
+				// loop through chambers to make nodemaps
+					for (var x in request.game.data.chambers) {
+						for (var y in request.game.data.chambers[x]) {
+							// chamber
+								var chamber = request.game.data.chambers[x][y]
+
+							// create nodemap
+								var nodemap = {}
+									nodemap.id = chamber.id
+								request.game.data.nodemaps[chamber.id] = nodemap
+
+							// neighbor connections
+								var connectedCells = ["0,0"]
+								var i = 0
+								while (i < connectedCells.length) {
+									createNeighborConnections(request, chamber, nodemap, connectedCells, connectedCells[i], callback)
+									i++
+								}
+						}
 					}
 			}
 			catch (error) {
@@ -511,19 +531,6 @@
 						if (options.monsters) {
 							createMonsters(request, chamber, options.monsters, callback)
 						}
-					}
-
-				// create nodemap
-					var nodemap = {}
-						nodemap.id = chamber.id
-					request.game.data.nodemaps[chamber.id] = nodemap
-
-				// neighbor connections
-					var connectedCells = ["0,0"]
-					var i = 0
-					while (i < connectedCells.length) {
-						createNeighborConnections(request, chamber, nodemap, connectedCells, connectedCells[i], callback)
-						i++
 					}
 			}
 			catch (error) {
@@ -1779,8 +1786,8 @@
 
 										var alive = resolveDamage(request, chamber, recipient, {
 											power: 	power,
-											rps: 	attack.info.rps,
-											type: 	attacker.info.type
+											rps: 	attacker ? attacker.info.rps  : attack.info.rps,
+											type: 	attacker ? attacker.info.type : attack.info.type
 										}, callback)
 
 										if (!alive) {
@@ -1954,16 +1961,16 @@
 
 					// chamber switch
 						else if (request.game.data.state.nextChamber) {
-							if (chamber.state.cooldowns.fade) {
-								chamber.state.cooldowns.fade = Math.max(0, chamber.state.cooldowns.fade - 1)
+							if (chamber.state.cooldowns.activate) {
+								chamber.state.cooldowns.activate = Math.max(0, chamber.state.cooldowns.activate - 1)
 							}
 							else {
 								updateChamber(request, callback)
 								var chamber = request.game.data.chambers[request.game.data.state.chamber.x][request.game.data.state.chamber.y]
 							}
 						}
-						else if (chamber.state.cooldowns.fade) {
-							chamber.state.cooldowns.fade = Math.max(0, chamber.state.cooldowns.fade - 1)
+						else if (chamber.state.cooldowns.activate) {
+							chamber.state.cooldowns.activate = Math.max(0, chamber.state.cooldowns.activate - 1)
 						}
 
 					// regular gameplay
@@ -2482,7 +2489,12 @@
 
 				// heroes
 					if (creature.info.type == "hero") {
-						if (Object.keys(chamber.creatures).length) {
+						var creatureCount = Object.keys(chamber.creatures).length
+						var spawnCount = (Object.keys(chamber.items).filter(function(i) {
+							return chamber.items[i].info.type == "spawn"
+						}) || []).length
+						
+						if (creatureCount || spawnCount) {
 							creature.state.actions.a = main.rollRandom(CONSTANTS.monsterChanceA[0], CONSTANTS.monsterChanceA[1])
 							creature.state.actions.b = main.rollRandom(CONSTANTS.monsterChanceB[0], CONSTANTS.monsterChanceB[1])
 						}
