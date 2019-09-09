@@ -432,11 +432,16 @@
 								options.portal = portalPairs[allChambers[a]]
 							}
 							else if (spawnChambers.includes(allChambers[a]) && main.rollRandom(CONSTANTS.spawnChance[0], CONSTANTS.spawnChance[1])) {
-								options.spawn = main.chooseRandom(spawnTypes)
+								var spawnCount = main.rangeRandom(CONSTANTS.spawnCountMin, CONSTANTS.spawnCountMax)
+								options.spawns = []
+								for (var s = 0; s < spawnCount; s++) {
+									options.spawns.push(main.chooseRandom(spawnTypes))
+								}
+								
 							}
 
 						// monsters ?
-							if (!(x == 0 && y == 0) && main.rollRandom(CONSTANTS.monsterChance[0], CONSTANTS.monsterChance[1])) {
+							if (!options.temple && main.rollRandom(CONSTANTS.monsterChance[0], CONSTANTS.monsterChance[1])) {
 								var monsterCount = main.rangeRandom(CONSTANTS.monsterCountMin, CONSTANTS.monsterCountMax)
 								options.monsters = []
 
@@ -484,7 +489,7 @@
 					var chamber = main.getSchema("chamber")
 						chamber.info.x = chamberX
 						chamber.info.y = chamberY
-						chamber.info.colors = CONSTANTS.colors[main.chooseRandom(Object.keys(CONSTANTS.colors))]
+						chamber.info.colors = CONSTANTS.colors[main.chooseRandom(Object.keys(CONSTANTS.colors).slice(0,-3))]
 
 				// attach heroes
 					chamber.heroes = request.game.data.heroes
@@ -524,8 +529,8 @@
 						else if (options.portal) {
 							createPortal(request, chamber, options.portal, callback)
 						}
-						else if (options.spawn) {
-							createSpawn(request, chamber, options.spawn, callback)
+						else if (options.spawns) {
+							createSpawns(request, chamber, options.spawns, callback)
 						}
 
 						if (options.monsters) {
@@ -884,23 +889,16 @@
 									chamber.cells[x][y].wall = true
 								}
 
-							// clear the rest and add heals
+							// clear the rest
 								else {
 									chamber.cells[x][y].wall = false
-
-									var heal = createItem(request, main.getAsset("heal"), callback)
-									main.overwriteObject(heal, {
-										state: {
-											position: {
-												x: CONSTANTS.cellSize * x,
-												y: CONSTANTS.cellSize * y
-											}
-										}
-									})
-									chamber.items[heal.id] = heal
 								}
 						}
 					}
+
+				// add heal
+					var heal = createItem(request, main.getAsset("heal"), callback)
+					chamber.items[heal.id] = heal
 
 				// set pedestals
 					var pedestals = main.getAsset("pedestals")
@@ -987,48 +985,56 @@
 			}
 		}
 
-	/* createSpawn */
-		module.exports.createSpawn = createSpawn
-		function createSpawn(request, chamber, spawnType, callback) {
+	/* createSpawns */
+		module.exports.createSpawns = createSpawns
+		function createSpawns(request, chamber, spawnTypes, callback) {
 			try {
-				// clear 3x3 area
-					var quarterChamber = Math.floor(CONSTANTS.chamberSize / 4)
-					var spawnX = main.rangeRandom(-quarterChamber, quarterChamber)
-					var spawnY = main.rangeRandom(-quarterChamber, quarterChamber)
+				var quarterChamber = Math.floor(CONSTANTS.chamberSize / 4)
 
-					for (var x = spawnX - 1; x <= spawnX + 1; x++) {
-						for (var y = spawnY - 1; y <= spawnY + 1; y++) {
-							chamber.cells[x][y].wall = false
-						}
-					}
+				for (var s in spawnTypes) {
+					// get spawnX & spawnY
+						do {
+							var spawnX = main.rangeRandom(-quarterChamber, quarterChamber)
+							var spawnY = main.rangeRandom(-quarterChamber, quarterChamber)
+						} while (Object.keys(chamber.items).filter(function(i) {
+							return (chamber.items[i] && chamber.items[i].state.position.x == spawnX && chamber.items[i].state.position.y == spawnY)
+						}).length)
 
-				// get monsterTypes
-					var monsterTypes = []
-					for (var m in MONSTERS) {
-						if (MONSTERS[m].info.rps == spawnType) {
-							monsterTypes.push(m)
-						}
-					}
-
-				// create spawn
-					var spawn = createItem(request, main.getAsset("spawn"), callback)
-					main.overwriteObject(spawn, {
-						info: {
-							rps: spawnType,
-							subtype: spawnType,
-							color: main.getAsset("orbs")[spawnType].info.color,
-							monsterTypes: monsterTypes
-						},
-						state: {
-							position: {
-								x: spawnX * CONSTANTS.cellSize,
-								y: spawnY * CONSTANTS.cellSize,
+					// clear 3x3 area
+						for (var x = spawnX - 1; x <= spawnX + 1; x++) {
+							for (var y = spawnY - 1; y <= spawnY + 1; y++) {
+								chamber.cells[x][y].wall = false
 							}
 						}
-					})
-				
-				// add to chamber
-					chamber.items[spawn.id] = spawn
+
+					// get monsterTypes
+						var monsterTypes = []
+						for (var m in MONSTERS) {
+							if (MONSTERS[m].info.rps == spawnTypes[s]) {
+								monsterTypes.push(m)
+							}
+						}
+
+					// create spawn
+						var spawn = createItem(request, main.getAsset("spawn"), callback)
+						main.overwriteObject(spawn, {
+							info: {
+								rps: spawnTypes[s],
+								subtype: spawnTypes[s],
+								color: main.getAsset("orbs")[spawnTypes[s]].info.color,
+								monsterTypes: monsterTypes
+							},
+							state: {
+								position: {
+									x: spawnX * CONSTANTS.cellSize,
+									y: spawnY * CONSTANTS.cellSize,
+								}
+							}
+						})
+					
+					// add to chamber
+						chamber.items[spawn.id] = spawn
+				}
 			}
 			catch (error) {
 				main.logError(error, arguments.callee.name, [request.session.id], callback)

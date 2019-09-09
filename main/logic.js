@@ -167,7 +167,9 @@
 									portalPairs: 		2,
 									monsterCountMin:	2,
 									monsterCountMax:	5,
-									monsterChance: 		[3,4],
+									monsterChance: 		[1,1],
+									spawnCountMin: 		1,
+									spawnCountMax: 		3,
 									spawnChance: 		[2,3],
 
 								// health
@@ -215,7 +217,10 @@
 										blue: 		["#d0e0fb","#7a9bd3","#2b76ef","#0b3d8e","#04142f"],
 										purple: 	["#dac0f7","#b08bda","#7b3dc2","#4a2574","#180c26"],
 										black: 		["#e4e6e7","#a2a7a9","#6e7477","#3d4142","#232526"],
-										white: 		["#c0dee5","#cee2e8","#dcf1f7","#e3f5f9","#f9fdff"]
+										white: 		["#c0dee5","#cee2e8","#dcf1f7","#e3f5f9","#f9fdff"],
+										barbarian: 	["#ff8700"],
+										wizard: 	["#22d0a7"],
+										ranger: 	["#c4004b"]
 									}
 							}
 
@@ -818,7 +823,7 @@
 										rps: "rock",
 										type: "hero",
 										subtype: "barbarian",
-										color: CONSTANTS.colors.orange[2],
+										color: CONSTANTS.colors.barbarian[0],
 										pathing: "hero",
 										statistics: {
 											moveSpeed: 	Math.floor(quarterCell / 2),
@@ -833,8 +838,8 @@
 										health: CONSTANTS.baseHealth * CONSTANTS.baseHealthPercent,
 										healthMax: CONSTANTS.baseHealth,
 										position: {
-											x: -3 * quarterCell,
-											y:  3 * quarterCell
+											x: 0 * quarterCell,
+											y: 1 * quarterCell
 										}
 									}
 								},
@@ -844,7 +849,7 @@
 										rps: "paper",
 										type: "hero",
 										subtype: "wizard",
-										color: CONSTANTS.colors.purple[2],
+										color: CONSTANTS.colors.wizard[0],
 										pathing: "hero",
 										statistics: {
 											moveSpeed: 	Math.floor(quarterCell / 2),
@@ -860,7 +865,7 @@
 										healthMax: CONSTANTS.baseHealth,
 										position: {
 											x: -1 * quarterCell,
-											y: -3 * quarterCell
+											y: -1 * quarterCell
 										}
 									}
 								},
@@ -870,7 +875,7 @@
 										rps: "scissors",
 										type: "hero",
 										subtype: "ranger",
-										color: CONSTANTS.colors.greengray[2],
+										color: CONSTANTS.colors.ranger[0],
 										pathing: "hero",
 										statistics: {
 											moveSpeed: 	Math.floor(quarterCell / 1),
@@ -885,8 +890,8 @@
 										health: CONSTANTS.baseHealth * CONSTANTS.baseHealthPercent,
 										healthMax: CONSTANTS.baseHealth,
 										position: {
-											x:  3 * quarterCell,
-											y:  3 * quarterCell
+											x: 1 * quarterCell,
+											y: -1 * quarterCell
 										}
 									}
 								}
@@ -902,7 +907,7 @@
 										rps: "rock",
 										type: "monster",
 										subtype: "troll",
-										color: CONSTANTS.colors.orange[2],
+										color: CONSTANTS.colors.barbarian[0],
 										pathing: "aggressive",
 										statistics: {
 											moveSpeed: 	Math.floor(quarterCell / 2),
@@ -923,7 +928,7 @@
 										rps: "paper",
 										type: "monster",
 										subtype: "dendroid",
-										color: CONSTANTS.colors.purple[2],
+										color: CONSTANTS.colors.wizard[0],
 										pathing: "aggressive",
 										statistics: {
 											moveSpeed: 	Math.floor(quarterCell / 4),
@@ -944,7 +949,7 @@
 										rps: "scissors",
 										type: "monster",
 										subtype: "golem",
-										color: CONSTANTS.colors.greengray[2],
+										color: CONSTANTS.colors.ranger[0],
 										pathing: "aggressive",
 										statistics: {
 											moveSpeed: 	Math.floor(quarterCell / 4),
@@ -979,7 +984,7 @@
 										},
 										shape: "circle",
 										style: "fill",
-										color: CONSTANTS.colors.orange[3]
+										color: CONSTANTS.colors.barbarian[0]
 									}
 								},
 								"paper": {
@@ -993,7 +998,7 @@
 										},
 										shape: "circle",
 										style: "fill",
-										color: CONSTANTS.colors.purple[3]
+										color: CONSTANTS.colors.wizard[0]
 									}
 								},
 								"scissors": {
@@ -1007,7 +1012,7 @@
 										},
 										shape: "circle",
 										style: "fill",
-										color: CONSTANTS.colors.greengray[3]
+										color: CONSTANTS.colors.ranger[0]
 									}
 								}
 							}
@@ -1025,23 +1030,22 @@
 										style: "border"
 									},
 									state: {
-										active: false,
-										position: {
-											x: 0,
-											y: 0
-										}
+										active: false
 									}
 								})
 							}
 
-							overwriteObject(pedestals["rock"],     {state: {position: {x: -4 * quarterCell}}})
-							overwriteObject(pedestals["scissors"], {state: {position: {x:  4 * quarterCell}}})
+							overwriteObject(pedestals["rock"],     {state: {position: {x:  0 * quarterCell, y: 	4 * quarterCell}}})
+							overwriteObject(pedestals["paper"],    {state: {position: {x: -4 * quarterCell, y: -4 * quarterCell}}})
+							overwriteObject(pedestals["scissors"], {state: {position: {x:  4 * quarterCell, y: -4 * quarterCell}}})
 							
 							return pedestals
 						break
 
 					// tiles
 						case "heal":
+							var quarterCell = Math.floor(CONSTANTS.cellSize / 4)
+
 							return {
 								info: {
 									type: "heal",
@@ -1053,6 +1057,12 @@
 									color: CONSTANTS.colors.green[1],
 									shape: "square",
 									style: "border"
+								},
+								state: {
+									position: {
+										x: 0,
+										y: 0
+									}
 								}
 							}
 						break

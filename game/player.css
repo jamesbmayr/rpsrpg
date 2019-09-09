@@ -115,7 +115,7 @@
 		}
 
 		#health-inner[effect] {
-			box-shadow: 0px 0px calc(var(--borderRadius) * 4) var(--purple-3) inset;
+			box-shadow: 0px 0px calc(var(--borderRadius) * 4) var(--wizard-0) inset;
 		}
 
 /*** controls ***/
@@ -147,7 +147,7 @@
 		}
 
 		#d-pad button[effect] {
-			box-shadow: 0px 0px calc(var(--borderRadius) * 2) var(--greengray-3) inset;
+			box-shadow: 0px 0px calc(var(--borderRadius) * 2) var(--ranger-0) inset;
 		}
 
 		#up {
@@ -232,7 +232,7 @@
 		}
 
 		#actions button[effect] {
-			box-shadow: 0px 0px calc(var(--borderRadius) * 2) var(--orange-3) inset;
+			box-shadow: 0px 0px calc(var(--borderRadius) * 2) var(--barbarian-0) inset;
 		}
 
 		#a {
