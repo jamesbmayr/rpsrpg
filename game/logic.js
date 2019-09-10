@@ -1428,25 +1428,25 @@
 					}
 
 				// test each size
-					if (targetCoordinates.y + targetCoordinates.radiusY > chamberUp - quarterCell) {
+					if (targetCoordinates.y + targetCoordinates.radiusY > chamberUp - quarterCell / 2) {
 						var edge = "up"
 						if (targetCoordinates.y + targetCoordinates.radiusY > chamberUp) {
 							collision.side = "up"
 						}
 					}
-					else if (targetCoordinates.x - targetCoordinates.radiusX < chamberLeft + quarterCell) {
+					else if (targetCoordinates.x - targetCoordinates.radiusX < chamberLeft + quarterCell / 2) {
 						var edge = "left"
 						if (targetCoordinates.x - targetCoordinates.radiusX < chamberLeft) {
 							collision.side = "left"
 						}
 					}
-					else if (targetCoordinates.x + targetCoordinates.radiusX > chamberRight - quarterCell) {
+					else if (targetCoordinates.x + targetCoordinates.radiusX > chamberRight - quarterCell / 2) {
 						var edge = "right"
 						if (targetCoordinates.x + targetCoordinates.radiusX > chamberRight) {
 							collision.side = "right"
 						}
 					}
-					else if (targetCoordinates.y - targetCoordinates.radiusY < chamberDown + quarterCell) {
+					else if (targetCoordinates.y - targetCoordinates.radiusY < chamberDown + quarterCell / 2) {
 						var edge = "down"
 						if (targetCoordinates.y - targetCoordinates.radiusY < chamberDown) {
 							collision.side = "down"
