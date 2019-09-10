@@ -2204,6 +2204,15 @@
 										creature.state.position.x = 0
 										creature.state.position.y = 0
 										creature.state.position.edge = null
+
+										if (!chamber.info.x && !chamber.info.y) {
+											var clone = HEROES[creature.info.subtype]
+											creature.state.position.x = clone.state.position.x
+											creature.state.position.y = clone.state.position.y
+											creature.info.size.x = creature.info.size.maxX
+											creature.info.size.y = creature.info.size.maxY
+											creature.state.alive = true
+										}
 									}
 
 								// delete creature
