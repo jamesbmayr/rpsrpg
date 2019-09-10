@@ -134,6 +134,7 @@
 					// sprites
 						case "sprites":
 							return [
+								"orb_rock_all_standing_inactive",		"orb_paper_all_standing_inactive",		"orb_scissors_all_standing_inactive",
 								"hero_barbarian_up_moving_inactive", 	"hero_barbarian_down_moving_inactive", 	"hero_barbarian_left_moving_inactive", 	"hero_barbarian_right_moving_inactive", 	"hero_barbarian_up_standing_inactive", 	"hero_barbarian_down_standing_inactive", 	"hero_barbarian_left_standing_inactive", 	"hero_barbarian_right_standing_inactive", 
 								"hero_ranger_up_moving_inactive", 		"hero_ranger_down_moving_inactive", 	"hero_ranger_left_moving_inactive", 	"hero_ranger_right_moving_inactive", 		"hero_ranger_up_standing_inactive", 	"hero_ranger_down_standing_inactive", 		"hero_ranger_left_standing_inactive", 		"hero_ranger_right_standing_inactive", 
 								"hero_wizard_up_moving_inactive", 		"hero_wizard_down_moving_inactive", 	"hero_wizard_left_moving_inactive", 	"hero_wizard_right_moving_inactive", 		"hero_wizard_up_standing_inactive", 	"hero_wizard_down_standing_inactive", 		"hero_wizard_left_standing_inactive", 		"hero_wizard_right_standing_inactive"
@@ -905,11 +906,11 @@
 							var quarterCell = Math.floor(CONSTANTS.cellSize / 4)
 
 							return {
-								"troll": {
+								"avalanche": {
 									info: {
 										rps: "rock",
 										type: "monster",
-										subtype: "troll",
+										subtype: "avalanche",
 										color: CONSTANTS.colors.barbarian[0],
 										pathing: "aggressive",
 										statistics: {

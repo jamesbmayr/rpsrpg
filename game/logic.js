@@ -2336,12 +2336,6 @@
 									var newY 		= item.state.position.y + (direction == "down" ? -speed : direction == "up"    ? speed : 0)
 
 									targetCoordinates.x = newX
-
-
-
-
-
-
 									targetCoordinates.y = newY
 
 								// resolve edges
