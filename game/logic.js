@@ -386,10 +386,10 @@
 				// pick shrineChambers
 					specialChambers = main.sortRandom(specialChambers)
 					var shrineTypes = main.sortRandom(CONSTANTS.rps)
-					var shrineChambers = specialChambers.slice(0, shrineTypes.length)
+					var shrineChambers = specialChambers.slice(0, shrineTypes.length * CONSTANTS.shrineSets)
 
 				// pick portalChambers
-					var portalChambers = specialChambers.slice(shrineTypes.length, shrineTypes.length + CONSTANTS.portalPairs * 2)
+					var portalChambers = specialChambers.slice(shrineTypes.length * CONSTANTS.shrineSets, shrineTypes.length * CONSTANTS.shrineSets + CONSTANTS.portalPairs * 2)
 					var portalsNeeded = CONSTANTS.portalPairs * 2
 					var portalPairs = {}
 
@@ -408,7 +408,7 @@
 
 				// pick spawnChambers
 					var spawnTypes = main.sortRandom(CONSTANTS.rps)
-					var spawnChambers = specialChambers.slice(shrineTypes.length + CONSTANTS.portalPairs * 2)
+					var spawnChambers = specialChambers.slice(shrineTypes.length * CONSTANTS.shrineSets + portalsPlaced)
 
 				// loop through spiral to make chambers
 					for (var a in allChambers) {
@@ -426,6 +426,10 @@
 								options.orb = orbTypes.shift()
 							}
 							else if (shrineChambers.includes(allChambers[a])) {
+								if (!shrineTypes.length) {
+									shrineTypes = main.sortRandom(CONSTANTS.rps)
+								}
+
 								options.shrine = shrineTypes.shift()
 							}
 							else if (portalPairs[allChambers[a]]) {
@@ -493,6 +497,9 @@
 
 				// attach heroes
 					chamber.heroes = request.game.data.heroes
+
+				// attach overlay
+					chamber.state.overlay = request.game.data.state.overlay
 
 				// add to game
 					if (!request.game.data.chambers[chamberX]) {
@@ -1477,7 +1484,7 @@
 						// all agreed?
 							var agreed = true
 							for (var h in request.game.data.heroes) {
-								if (request.game.data.heroes[h].state.position.edge !== destination) {
+								if (request.game.data.heroes[h].state.alive && request.game.data.heroes[h].state.position.edge !== destination) {
 									agreed = false
 								}
 							}
@@ -1666,7 +1673,7 @@
 							}
 
 						// shrine
-							else if (item.info.type == "shrine" && thing.info.type == "hero" && thing.state.alive) {
+							else if (item.info.type == "shrine" && thing.info.type == "hero") {
 								if (!item.state.cooldowns.activate) {
 									thing.state.effects[item.info.subtype] = CONSTANTS.effectCooldown
 									item.state.cooldowns.activate = CONSTANTS.shrineCooldown
@@ -1682,7 +1689,7 @@
 							}
 
 						// orbs
-							else if (item.info.type == "orb" && ["hero", "monster", "creature"].includes(thing.info.type) && thing.state.alive) {
+							else if (item.info.type == "orb" && ["hero", "monster", "creature"].includes(thing.info.type)) {
 								// collect orb
 									if (thing.info.type == "hero" && thing.info.rps == chamber.items[item.id].info.rps) {
 										thing.items[item.id] = main.duplicateObject(chamber.items[item.id])
@@ -1696,7 +1703,7 @@
 							}
 
 						// pedestal
-							else if (item.info.type == "pedestal" && ["hero", "monster", "creature"].includes(thing.info.type) && thing.state.alive) {
+							else if (item.info.type == "pedestal" && ["hero", "monster", "creature"].includes(thing.info.type)) {
 								// deposit orb
 									if (thing.info.type == "hero" && thing.info.rps == chamber.items[item.id].info.rps) {
 										var itemKeys = Object.keys(thing.items)
@@ -1718,7 +1725,7 @@
 					}
 
 				// bumpAttacks (other heroes / creatures)
-					if (["hero", "monster", "creature"].includes(thing.info.type) && thing.state.alive && (collision.supertype == "hero" || collision.supertype == "creature" || collision.type == "spawn")) {
+					if (["hero", "monster", "creature"].includes(thing.info.type) && (collision.supertype == "hero" || collision.supertype == "creature" || collision.type == "spawn")) {
 						targetCoordinates = resolveAttackCollision(request, chamber, thing, targetCoordinates, collision, callback)
 					}
 
@@ -1908,7 +1915,7 @@
 									}
 
 								// recipients shrink
-									if (recipient.info.type !== "hero" && !recipient.state.cooldowns.death) {
+									if (!recipient.state.cooldowns.death) {
 										recipient.state.cooldowns.death = CONSTANTS.deathCooldown
 									}
 
@@ -1947,12 +1954,14 @@
 
 			// paused
 				if (request.game.data.state.paused) {
-					callback(Object.keys(request.game.observers), {success: true, paused: CONSTANTS.pauseMessage, chamber: chamber})	
+					request.game.data.state.overlay.message = CONSTANTS.pauseMessage
+					callback(Object.keys(request.game.observers), {success: true, chamber: chamber})	
 				}
 
 			// game over
 				else if (request.game.data.state.end) {
-					callback(Object.keys(request.game.observers), {success: true, end: CONSTANTS.endMessage, chamber: chamber})	
+					request.game.data.state.overlay.message = CONSTANTS.endMessage
+					callback(Object.keys(request.game.observers), {success: true, chamber: chamber})	
 				}
 
 			// play
@@ -1963,6 +1972,16 @@
 					// victory
 						if (request.game.data.state.orbs >= CONSTANTS.rps.length) {
 							request.game.data.state.end = true
+							request.game.data.state.overlay.message = CONSTANTS.endMessage
+						}
+
+					// full party death
+						else if (request.game.data.state.start && !request.game.data.state.nextChamber
+							&& !Object.keys(request.game.data.heroes).filter(function(h) {
+								return request.game.data.heroes[h].player && request.game.data.heroes[h].state.alive
+							}).length) {
+							updateNextChamber(request, 0, 0, "reset", callback)
+							request.game.data.state.overlay.message = CONSTANTS.deathMessage
 						}
 
 					// chamber switch
@@ -1982,7 +2001,7 @@
 					// regular gameplay
 						else {
 							// start message
-								var start = request.game.data.state.start ? null : CONSTANTS.startMessage
+								request.game.data.state.overlay.message = request.game.data.state.start ? null : CONSTANTS.startMessage
 
 							// heroes
 								for (var h in chamber.heroes) {
@@ -2004,7 +2023,7 @@
 						}
 
 					// send data
-						callback(Object.keys(request.game.observers), {success: true, start: start, chamber: chamber})
+						callback(Object.keys(request.game.observers), {success: true, chamber: chamber})
 
 						for (var p in request.game.players) {
 							if (request.game.players[p].hero) {
@@ -2053,6 +2072,9 @@
 								var toPortal = request.game.data.chambers[newX][newY].items[toKey]
 									toPortal.state.cooldowns.activate = CONSTANTS.portalCooldown
 									toPortal.info.size.x = toPortal.info.size.y = 0
+
+							// message
+								request.game.data.state.overlay.message = CONSTANTS.teleportMessage
 						}
 
 					// set cooldown
@@ -2077,6 +2099,7 @@
 						var oldX = Number(request.game.data.state.chamber.x)
 						var oldY = Number(request.game.data.state.chamber.y)
 						var oldChamber = request.game.data.chambers[oldX][oldY]
+							oldChamber.state.fadeout  = false
 
 					// remove dead creatures
 						for (var c in oldChamber.creatures) {
@@ -2097,6 +2120,7 @@
 						var newX = Number(request.game.data.state.nextChamber.x)
 						var newY = Number(request.game.data.state.nextChamber.y)
 						var newChamber = request.game.data.chambers[newX][newY]
+							newChamber.state.cooldowns.activate = CONSTANTS.chamberCooldown
 					
 					// set new
 						request.game.data.state.chamber.x = newX
@@ -2105,8 +2129,24 @@
 					// unset next
 						request.game.data.state.nextChamber = null
 
+					// full party death? reset hero positions
+						if (isEdge == "reset") {
+							newChamber.state.cooldowns.activate = CONSTANTS.chamberCooldown * 2
+							request.game.data.state.overlay.message = CONSTANTS.deathMessage
+
+							for (var h in request.game.data.heroes) {
+								var hero = request.game.data.heroes[h]
+								var clone = HEROES[hero.info.subtype]
+									hero.state.position.x = clone.state.position.x
+									hero.state.position.y = clone.state.position.y
+									hero.info.size.x = hero.info.size.maxX
+									hero.info.size.y = hero.info.size.maxY
+									hero.state.alive = true
+							}
+						}
+
 					// edge? flip hero positions
-						if (isEdge) {
+						else if (isEdge) {
 							var direction = (newX !== oldX) ? "x" : "y"
 							for (var h in request.game.data.heroes) {
 								request.game.data.heroes[h].state.position[direction] *= -1
@@ -2136,11 +2176,7 @@
 									request.game.data.heroes[h].state.position.x -= portalDeltaX
 									request.game.data.heroes[h].state.position.y -= portalDeltaY
 								}
-						}
-
-					// set cooldown
-						request.game.data.chambers[newX][newY].state.cooldowns.activate = CONSTANTS.chamberCooldown
-						request.game.data.chambers[oldX][oldY].state.fadeout  = false
+						}						
 				}
 			}
 			catch (error) {
@@ -2153,7 +2189,7 @@
 		function updateCreature(request, chamber, creature, callback) {
 			try {
 				// dead creature (not hero)
-					if (creature.info.type !== "hero" && !creature.state.alive) {
+					if (!creature.state.alive) {
 						// reduce cooldown
 							creature.state.cooldowns.death = Math.max(0, creature.state.cooldowns.death - CONSTANTS.deathFade)
 
@@ -2161,9 +2197,19 @@
 							creature.info.size.x = Math.max(0, creature.info.size.x * creature.state.cooldowns.death / CONSTANTS.deathCooldown)
 							creature.info.size.y = Math.max(0, creature.info.size.y * creature.state.cooldowns.death / CONSTANTS.deathCooldown)
 
-						// 0 cooldown? --> delete
+						// 0 cooldown?
 							if (!creature.state.cooldowns.death) {
-								delete chamber.creatures[creature.id]
+								// put hero at center
+									if (creature.info.type == "hero") {
+										creature.state.position.x = 0
+										creature.state.position.y = 0
+										creature.state.position.edge = null
+									}
+
+								// delete creature
+									else {
+										delete chamber.creatures[creature.id]
+									}
 							}
 					}
 
@@ -2221,12 +2267,11 @@
 
 						// healing
 							if (creature.state.effects.heal) {
-								creature.state.alive = true
 								creature.state.health = Math.min(creature.state.healthMax, creature.state.health + CONSTANTS.heal)
 							}
 
 						// attacks
-							if (creature.state.alive && !Object.keys(creature.items).length) {
+							if (!Object.keys(creature.items).length) {
 								// a
 									if (creature.state.actions.a && !creature.state.cooldowns.a) {
 										creature.state.cooldowns.a = CONSTANTS.aCooldown
@@ -2291,6 +2336,12 @@
 									var newY 		= item.state.position.y + (direction == "down" ? -speed : direction == "up"    ? speed : 0)
 
 									targetCoordinates.x = newX
+
+
+
+
+
+
 									targetCoordinates.y = newY
 
 								// resolve edges
@@ -2360,7 +2411,8 @@
 
 						// reduce cooldown
 							item.state.cooldowns.activate = Math.max(0, item.state.cooldowns.activate - 1)
-							item.info.size.x = item.info.size.y = item.info.size.max * ((cooldownMax - item.state.cooldowns.activate) / cooldownMax)
+							item.info.size.x = item.info.size.maxX * ((cooldownMax - item.state.cooldowns.activate) / cooldownMax)
+							item.info.size.y = item.info.size.maxY * ((cooldownMax - item.state.cooldowns.activate) / cooldownMax)
 
 						// portal
 							if (item.info.type == "portal") {
@@ -2379,7 +2431,8 @@
 										// reduce cooldown for destination's portal too
 											var portal = destinationChamber.items[portalKey]
 												portal.state.cooldowns.activate = Math.max(0, portal.state.cooldowns.activate - 1)
-												portal.info.size.x = portal.info.size.y = portal.info.size.max * ((cooldownMax - portal.state.cooldowns.activate) / cooldownMax)
+												portal.info.size.x = portal.info.size.maxX * ((cooldownMax - portal.state.cooldowns.activate) / cooldownMax)
+												portal.info.size.y = portal.info.size.maxY * ((cooldownMax - portal.state.cooldowns.activate) / cooldownMax)
 									}
 							}
 

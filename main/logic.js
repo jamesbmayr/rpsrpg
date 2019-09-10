@@ -144,15 +144,17 @@
 						case "constants":
 							var constants = {
 								// messages
-									startMessage: 		"FIND THE ORBS",
+									startMessage: 		"FIND THE ORBS!",
 									pauseMessage: 		"PAUSED",
-									endMessage: 		"VICTORY",
+									endMessage: 		"VICTORY!",
+									deathMessage: 		"REVIVING",
+									teleportMessage: 	"TELEPORTING",
 
 								// styling
 									font: 				"monospace",
 									borderRadius: 		16,
 									borderThickness: 	8,
-									pauseOpacity: 		0.5,
+									overlayOpacity: 	0.5,
 									deadOpacity: 		0.5,
 									healthHigh: 		60,
 									healthLow: 			30,
@@ -165,6 +167,7 @@
 									chamberSize: 		9,
 									cellSize: 			128,
 									portalPairs: 		2,
+									shrineSets: 		2,
 									monsterCountMin:	2,
 									monsterCountMax:	5,
 									monsterChance: 		[1,1],
@@ -226,7 +229,7 @@
 
 							// time derivatives
 								var second = (1000 / constants.loopInterval)
-								constants.chamberCooldown 	= Math.floor(second / 4)
+								constants.chamberCooldown 	= Math.floor(second / 2)
 								constants.shrineCooldown 	= Math.floor(second)
 								constants.spawnCooldown 	= Math.floor(second * 4)
 								constants.portalCooldown 	= Math.floor(second * 3)
@@ -831,7 +834,7 @@
 											rangePower: Math.floor(CONSTANTS.baseHealth / 8),
 											bumpPower: 	Math.floor(CONSTANTS.baseHealth / 2),
 											areaPower: 	Math.floor(CONSTANTS.baseHealth / 8),
-											armorPower: Math.floor(CONSTANTS.baseHealth / 8)
+											armorPower: Math.floor(CONSTANTS.baseHealth / 16)
 										}
 									},
 									state: {
@@ -980,7 +983,9 @@
 										subtype: "rock",
 										size: {
 											x: orbSize,
-											y: orbSize
+											y: orbSize,
+											maxX: orbSize,
+											maxY: orbSize
 										},
 										shape: "circle",
 										style: "fill",
@@ -994,7 +999,9 @@
 										subtype: "paper",
 										size: {
 											x: orbSize,
-											y: orbSize
+											y: orbSize,
+											maxX: orbSize,
+											maxY: orbSize
 										},
 										shape: "circle",
 										style: "fill",
@@ -1008,7 +1015,9 @@
 										subtype: "scissors",
 										size: {
 											x: orbSize,
-											y: orbSize
+											y: orbSize,
+											maxX: orbSize,
+											maxY: orbSize
 										},
 										shape: "circle",
 										style: "fill",
@@ -1052,7 +1061,9 @@
 									subtype: "heal",
 									size: {
 										x: Math.floor(CONSTANTS.cellSize / 8) * 7,
-										y: Math.floor(CONSTANTS.cellSize / 8) * 7
+										y: Math.floor(CONSTANTS.cellSize / 8) * 7,
+										maxX: Math.floor(CONSTANTS.cellSize / 8) * 7,
+										maxY: Math.floor(CONSTANTS.cellSize / 8) * 7
 									},
 									color: CONSTANTS.colors.green[1],
 									shape: "square",
@@ -1073,9 +1084,10 @@
 									type: "portal",
 									subtype: "portal",
 									size: {
-										max: Math.floor(CONSTANTS.cellSize / 8) * 7,
 										x: Math.floor(CONSTANTS.cellSize / 8) * 7,
-										y: Math.floor(CONSTANTS.cellSize / 8) * 7
+										y: Math.floor(CONSTANTS.cellSize / 8) * 7,
+										maxX: Math.floor(CONSTANTS.cellSize / 8) * 7,
+										maxY: Math.floor(CONSTANTS.cellSize / 8) * 7
 									},
 									color: CONSTANTS.colors.blue[1],
 									shape: "square",
@@ -1095,9 +1107,10 @@
 								info: {
 									type: "shrine",
 									size: {
-										max: Math.floor(CONSTANTS.cellSize / 8) * 7,
 										x: Math.floor(CONSTANTS.cellSize / 8) * 7,
-										y: Math.floor(CONSTANTS.cellSize / 8) * 7
+										y: Math.floor(CONSTANTS.cellSize / 8) * 7,
+										maxX: Math.floor(CONSTANTS.cellSize / 8) * 7,
+										maxY: Math.floor(CONSTANTS.cellSize / 8) * 7
 									},
 									shape: "square",
 									style: "border"
@@ -1115,9 +1128,10 @@
 								info: {
 									type: "spawn",
 									size: {
-										max: Math.floor(CONSTANTS.cellSize / 8) * 7,
 										x: Math.floor(CONSTANTS.cellSize / 8) * 7,
-										y: Math.floor(CONSTANTS.cellSize / 8) * 7
+										y: Math.floor(CONSTANTS.cellSize / 8) * 7,
+										maxX: Math.floor(CONSTANTS.cellSize / 8) * 7,
+										maxY: Math.floor(CONSTANTS.cellSize / 8) * 7
 									},
 									shape: "triangle",
 									style: "border",
@@ -1167,6 +1181,9 @@
 									paused: false,
 									time: 	0,
 									orbs: 	0,
+									overlay: {
+										message: null
+									},
 									chamber: {
 										x: 	0,
 										y: 	0
@@ -1201,6 +1218,7 @@
 								cellSize: CONSTANTS.cellSize
 							},
 							state: {
+								overlay: {},
 								cooldowns: {
 									fade: 0
 								},
@@ -1222,7 +1240,9 @@
 								subtype:	null,
 								size: {
 									x: 		Math.floor(CONSTANTS.cellSize / 2),
-									y: 		Math.floor(CONSTANTS.cellSize / 2)
+									y: 		Math.floor(CONSTANTS.cellSize / 2),
+									maxX: 	Math.floor(CONSTANTS.cellSize / 2),
+									maxY: 	Math.floor(CONSTANTS.cellSize / 2)
 								},
 								color: 		null,
 								statistics: {
@@ -1284,7 +1304,9 @@
 								subtype: 	null,
 								size: {
 									x: Math.floor(CONSTANTS.cellSize / 4),
-									y: Math.floor(CONSTANTS.cellSize / 4)
+									y: Math.floor(CONSTANTS.cellSize / 4),
+									maxX: Math.floor(CONSTANTS.cellSize / 4),
+									maxY: Math.floor(CONSTANTS.cellSize / 4)
 								},
 								color: 		null
 							},

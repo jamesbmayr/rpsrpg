@@ -76,32 +76,10 @@
 					if (data.chamber) {
 						drawChamber(data.chamber)
 					}
-
-				// paused
-					if (data.end) {
-						drawOverlayMessage(data.end)
-					}
-					else if (data.paused) {
-						drawOverlayMessage(data.paused)
-					}
-					else if (data.start) {
-						drawOverlayMessage(data.start)
-					}
 			} catch (error) {}
 		}
 
 /*** draws ***/
-	/* drawOverlayMessage */
-		function drawOverlayMessage(message) {
-			try {
-				// overlay
-					drawRectangle(CANVAS, CONTEXT, 0, 0, CANVAS.width, CANVAS.height, {color: CONSTANTS.colors.black[4], opacity: CONSTANTS.pauseOpacity})
-
-				// text
-					drawText(CANVAS, CONTEXT, CANVAS.width / 2, CANVAS.height / 2, message, {size: CONSTANTS.cellSize, color: CONSTANTS.colors.white[4], shadow: CONSTANTS.colors.black[4], blur: CONSTANTS.borderRadius})
-			} catch (error) {}
-		}
-
 	/* drawChamber */
 		function drawChamber(chamber) {
 			try {
@@ -143,6 +121,11 @@
 					if (chamber.state.cooldowns.activate) {
 						drawOverlay(chamber.state.cooldowns.activate, chamber.state.fadeout)
 					}
+
+					if (chamber.state.overlay.message) {
+						drawOverlayMessage(chamber.state.overlay.message)
+					}
+
 			} catch (error) {}
 		}
 
@@ -161,6 +144,27 @@
 
 				// draw
 					drawRectangle(CANVAS, CONTEXT, 0, 0, CANVAS.width, CANVAS.height, {color: CONSTANTS.colors.black[4], opacity: opacity})
+			} catch (error) {}
+		}
+
+	/* drawOverlayMessage */
+		function drawOverlayMessage(message) {
+			try {
+				// overlay
+					var options = {
+						color: CONSTANTS.colors.black[4],
+						opacity: CONSTANTS.overlayOpacity,
+						radii: {
+							topLeft: CONSTANTS.borderRadius,
+							topRight: CONSTANTS.borderRadius,
+							bottomLeft: CONSTANTS.borderRadius,
+							bottomRight: CONSTANTS.borderRadius
+						}
+					}
+					drawRectangle(CANVAS, CONTEXT, CONSTANTS.borderRadius, CANVAS.height * 3 / 8, CANVAS.width - CONSTANTS.borderRadius * 2, CANVAS.height / 4, options)
+
+				// text
+					drawText(CANVAS, CONTEXT, CANVAS.width / 2, CANVAS.height / 2, message, {size: CONSTANTS.cellSize, color: CONSTANTS.colors.white[4], shadow: CONSTANTS.colors.black[4], blur: CONSTANTS.borderRadius})
 			} catch (error) {}
 		}
 
