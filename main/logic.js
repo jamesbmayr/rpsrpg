@@ -235,7 +235,7 @@
 								var second = (1000 / constants.loopInterval)
 								constants.gameCooldown 		= Math.floor(second * 60 * 3)
 								constants.chamberCooldown 	= Math.floor(second / 2)
-								constants.edgeCooldown 		= Math.floor(second)
+								constants.edgeCooldown 		= Math.floor(second * 2)
 								constants.shrineCooldown 	= Math.floor(second)
 								constants.spawnCooldown 	= Math.floor(second * 4)
 								constants.portalCooldown 	= Math.floor(second * 3)

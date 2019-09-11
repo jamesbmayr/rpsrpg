@@ -1423,25 +1423,25 @@
 					}
 
 				// test each size
-					if (targetCoordinates.y + targetCoordinates.radiusY > chamberUp - quarterCell / 2) {
+					if (targetCoordinates.y + targetCoordinates.radiusY > chamberUp - quarterCell) {
 						var edge = "up"
 						if (targetCoordinates.y + targetCoordinates.radiusY > chamberUp) {
 							collision.side = "up"
 						}
 					}
-					else if (targetCoordinates.x - targetCoordinates.radiusX < chamberLeft + quarterCell / 2) {
+					else if (targetCoordinates.x - targetCoordinates.radiusX < chamberLeft + quarterCell) {
 						var edge = "left"
 						if (targetCoordinates.x - targetCoordinates.radiusX < chamberLeft) {
 							collision.side = "left"
 						}
 					}
-					else if (targetCoordinates.x + targetCoordinates.radiusX > chamberRight - quarterCell / 2) {
+					else if (targetCoordinates.x + targetCoordinates.radiusX > chamberRight - quarterCell) {
 						var edge = "right"
 						if (targetCoordinates.x + targetCoordinates.radiusX > chamberRight) {
 							collision.side = "right"
 						}
 					}
-					else if (targetCoordinates.y - targetCoordinates.radiusY < chamberDown + quarterCell / 2) {
+					else if (targetCoordinates.y - targetCoordinates.radiusY < chamberDown + quarterCell) {
 						var edge = "down"
 						if (targetCoordinates.y - targetCoordinates.radiusY < chamberDown) {
 							collision.side = "down"
@@ -1807,7 +1807,7 @@
 
 								// bump
 									if (recipient.state.alive && (collision.supertype == "creature" || collision.supertype == "hero")) {
-										if (attack.info.type == "hero" && !attack.player && recipient.info.type == "hero") { }
+										if (attacker.info.type == "hero" && !attacker.player && recipient.info.type == "hero") { }
 										else {
 											recipient.state.position.vx = recipient.state.position.vx + (collision.side == "right" ? CONSTANTS.bumpAcceleration : collision.side == "left" ? -CONSTANTS.bumpAcceleration : 0)
 											recipient.state.position.vy = recipient.state.position.vy + (collision.side == "up"    ? CONSTANTS.bumpAcceleration : collision.side == "down" ? -CONSTANTS.bumpAcceleration : 0)
@@ -1918,13 +1918,13 @@
 
 								// drop items
 									if (recipient.items) {
-										var x = recipient.state.position.x
-										var y = recipient.state.position.y
+										var x = Number(recipient.state.position.x)
+										var y = Number(recipient.state.position.y)
 
 										for (var i in recipient.items) {
 											var item = main.duplicateObject(recipient.items[i])
-												item.state.position.x = x + Math.floor(Math.random() * 2 * CONSTANTS.itemDropRadius) - CONSTANTS.itemDropRadius
-												item.state.position.y = y + Math.floor(Math.random() * 2 * CONSTANTS.itemDropRadius) - CONSTANTS.itemDropRadius
+												item.state.position.x = x + Number(Math.floor(Math.random() * 2 * CONSTANTS.itemDropRadius) - CONSTANTS.itemDropRadius)
+												item.state.position.y = y + Number(Math.floor(Math.random() * 2 * CONSTANTS.itemDropRadius) - CONSTANTS.itemDropRadius)
 											chamber.items[i] = item
 
 											delete recipient.items[i]
@@ -2139,13 +2139,13 @@
 									
 									// drop items
 										if (!hero.player && hero.items) {
-											var x = hero.state.position.x
-											var y = hero.state.position.y
+											var x = Number(hero.state.position.x)
+											var y = Number(hero.state.position.y)
 
 											for (var i in hero.items) {
 												var item = main.duplicateObject(hero.items[i])
-													item.state.position.x = x + Math.floor(Math.random() * 2 * CONSTANTS.itemDropRadius) - CONSTANTS.itemDropRadius
-													item.state.position.y = y + Math.floor(Math.random() * 2 * CONSTANTS.itemDropRadius) - CONSTANTS.itemDropRadius
+													item.state.position.x = x + Number(Math.floor(Math.random() * 2 * CONSTANTS.itemDropRadius) - CONSTANTS.itemDropRadius)
+													item.state.position.y = y + Number(Math.floor(Math.random() * 2 * CONSTANTS.itemDropRadius) - CONSTANTS.itemDropRadius)
 												chamber.items[i] = item
 
 												delete hero.items[i]

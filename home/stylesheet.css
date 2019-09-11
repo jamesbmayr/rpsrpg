@@ -2,156 +2,145 @@
 	html, body {
 		width: 100%;
 		height: 100%;
+		background-color: var(--bluegray-2);
 	}
 
 	/* container */
 		#container {
-			position: absolute;
-			height: auto;
-			min-width: 50%;
-			max-width: 90%;
+			position: fixed;
+			height: 90%;
+			width: 90%;
 			top: 50%;
 			left: 50%;
-			padding: 5%;
 			transform: translateX(-50%) translateY(-50%);
 			text-align: center;
 			z-index: 2;
-			background: transparent;
+			background: rgba(0,0,0,0.3);
 			user-select: none;
 			-webkit-user-select: none;
 			-moz-user-select: none;
 			-ms-user-select: none;
 			-o-user-select: none;
+			border-radius: var(--borderRadius);
 		}
 
-/*** form ***/
-	/* title */
-		#title-outer {
-			top: 5vh;
-			left: 5vh;
-			background-color: var(--white-4);
-		}
+/*** title ***/
+	#title {
+		float: left;
+		height: 15%;
+		width: 90%;
+		padding: 2.5% 5%;
+		margin: 0px;
+		user-select: none;
+		cursor: pointer;
+		color: var(--white-4);
+		text-shadow: 0px 0px 10px var(--black-4);
+		font-size: 250%;
+		text-decoration: none;
+		line-height: 1;
+		overflow: hidden;
+	}
 
-		#title {
-			height: 40vh;
-			width: 60vh;
-			max-height: 50vw;
-			max-width: 75vw;
-			background-color: var(--cerulean-3);
-			user-select: none;
-			cursor: pointer;
-			text-shadow: 0px 0px 10px var(--black-4);
-			box-shadow: 0px 0px 10px var(--black-2);
-			background-image: url("banner.png");
-			background-position: center center;
-			background-size: cover;
-			background-repeat: no-repeat;
-		}
+	#title a, #title a:visited {
+		color: var(--white-4);
+	}
 
-		#title-inner {
-			position: absolute;
-			top: 50%;
-			left: 50%;
-			transform: translateX(-50%) translateY(-50%);
-			width: 80%;
-			color: var(--white-4);
-			font-size: 0%;
-			text-align: center;
-		}
+	#title a:hover, #title a:focus {
+		text-shadow: 0px 0px 30px var(--black-4);
+	}
 
-		#title:hover, #title:focus {
-			box-shadow: 0px 0px 20px var(--black-4);
-		}
+/* form */
+	#form {
+		float: left;
+		height: 35%;
+		width: 90%;
+		padding: 2.5% 5%;
+	}
 
-	/* creator */
-		#creator-outer {
-			top: 20px;
-			right: 100px;
-		}
+	#createGame {
+		float: left;
+		width: 50%;
+		height: 100%;
+		text-align: center;
+		line-height: 1;
+		font-size: 100%;
+		padding: 0px;
+		border-radius: var(--borderRadius) 0px 0px var(--borderRadius);
+		border: 0px;
+		background-color: var(--green-2);
+	}
 
-		#creator {
-			background-color: var(--black-3);
-			background-image: url("j.png");
-			background-position: center center;
-			background-size: contain;
-			background-repeat: no-repeat;
-			left: -10px;
-			height: 60px;
-			width: 90px;
-			border-radius: var(--borderRadius) 0px 0px var(--borderRadius);
-			box-shadow: 0px 0px 10px var(--black-2);
-		}
+	#createGame:hover, #createGame:focus {
+		background-color: var(--green-3);
+	}
+	
+	#gameCode {
+		float: left;
+		width: calc(50% - 30px);
+		height: calc(50% - 30px);
+		padding: 10px;
+		text-align: center;
+		line-height: 1;
+		font-size: 100%;
+		border-radius: 0px var(--borderRadius) 0px 0px;
+		border-width: 10px 10px 0px 0px;
+		background-color: var(--white-4);
+		border-color: var(--blue-2);
+		margin: 0px;
+	}
 
-		#creator-outer .flag-pole {
-			left: 80px;
-		}
+	#gameCode:hover, #gameCode:focus {
+		border-color: var(--blue-3);
+	}
 
-		#creator:hover, #creator:focus {
-			box-shadow: 0px 0px 20px var(--black-4);
-		}	
+	#joinGame {
+		float: left;
+		width: 50%;
+		height: 50%;
+		text-align: center;
+		line-height: 1;
+		font-size: 100%;
+		padding: 0px;
+		border-radius: 0px 0px var(--borderRadius) 0px;
+		border: 0px;
+		background-color: var(--blue-2);
+	}
 
-	/* new */
-		#new-outer {
-			position: absolute;
-			top: calc(50vh);
-			left: 15vw;
-		}
+	#joinGame:hover, #joinGame:focus {
+		background-color: var(--blue-3);
+	}
 
-		#createGame {
-			position: absolute;
-			top: 0px;
-			left: 0px;
-			width: calc(30vw + 15px);
-			height: 135px;
-			float: left;
-			text-align: center;
-			line-height: 1;
-			font-size: 100%;
-			padding: 5px 5px 5px 0px;
-			border-radius: 0px var(--borderRadius) var(--borderRadius) 0px;
-			border: 0px;
-			background-color: var(--green-2);
-		}
+/* images */
+	#images {
+		height: 20%;
+		padding: 2.5% 5%;
+		width: 90%;
+		float: left;
+	}
 
-	/* join */
-		#join-outer {
-			position: absolute;
-			top: calc(50vh - 150px);
-			right: 40vw;
-		}
-		
-		#gameCode {
-			position: absolute;
-			top: 70px;
-			left: 0px;
-			width: 30vw;
-			height: 40px;
-			padding: 5px;
-			text-align: center;
-			line-height: 1;
-			font-size: 100%;
-			border-radius: 0px var(--borderRadius) var(--borderRadius) 0px;
-			border-width: 5px 5px 5px 0px;
-			background-color: var(--yellow-0);
-		}
+	#images div {
+		display: inline-block;
+		width: 20%;
+		height: 100%;
+		background-size: contain;
+		background-repeat: no-repeat;
+		background-position: center;
+	}
 
-		#joinGame {
-			position: absolute;
-			top: 140px;
-			left: 0px;
-			width: calc(30vw + 15px);
-			height: 60px;
-			text-align: center;
-			line-height: 1;
-			font-size: 100%;
-			padding: 5px 5px 5px 0px;
-			border-radius: 0px var(--borderRadius) var(--borderRadius) 0px;
-			border: 0px;
-			background-color: var(--blue-2);
-		}
+	#images #rock {
+		background-image: url(orb_rock_all_standing_active.png);
+	}
+
+	#images #paper {
+		background-image: url(orb_paper_all_standing_active.png);
+	}
+
+	#images #scissors {
+		background-image: url(orb_scissors_all_standing_active.png);
+	}
 
 /*** mobile ***/
-	@media screen and (max-width: 800px) {
+	/*@media screen and (max-width: 800px) {
 		#creator-outer {
 			top: 10px;
 			right: 90px;
@@ -165,4 +154,4 @@
 			top: calc(50vh - 65px);
 			right: 42vw;
 		}
-	}
+	}*/
