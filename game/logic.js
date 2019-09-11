@@ -2020,7 +2020,6 @@
 								return request.game.data.heroes[h].player && request.game.data.heroes[h].state.alive
 							}).length) {
 							updateNextChamber(request, 0, 0, "reset", callback)
-							request.game.data.state.overlay.message = CONSTANTS.deathMessage
 						}
 
 					// chamber switch
@@ -2123,6 +2122,39 @@
 
 							// message
 								request.game.data.state.overlay.message = CONSTANTS.teleportMessage
+						}
+
+					// full party death
+						else if (isEdge == "reset") {
+							// non-player heroes
+								for (var h in request.game.data.heroes) {
+									var hero = request.game.data.heroes[h]
+
+									// stop effects
+										if (!hero.player && hero.state.effects) {
+											for (var e in hero.state.effects) {
+												hero.state.effects[e] = 0
+											}
+										}
+									
+									// drop items
+										if (!hero.player && hero.items) {
+											var x = hero.state.position.x
+											var y = hero.state.position.y
+
+											for (var i in hero.items) {
+												var item = main.duplicateObject(hero.items[i])
+													item.state.position.x = x + Math.floor(Math.random() * 2 * CONSTANTS.itemDropRadius) - CONSTANTS.itemDropRadius
+													item.state.position.y = y + Math.floor(Math.random() * 2 * CONSTANTS.itemDropRadius) - CONSTANTS.itemDropRadius
+												chamber.items[i] = item
+
+												delete hero.items[i]
+											}
+										}
+								}
+
+							// message
+								request.game.data.state.overlay.message = CONSTANTS.deathMessage
 						}
 
 					// set cooldown

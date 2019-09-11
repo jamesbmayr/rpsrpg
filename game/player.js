@@ -244,10 +244,10 @@
 		function displayButtons(hero) {
 			try {
 				// action button sizes / border
-					for (var c in hero.state.cooldowns) {
-						var button = document.getElementById(c)
+					for (var a in CONSTANTS.actions) {
+						var button = document.getElementById(CONSTANTS.actions[a])
 						var size = Math.ceil(button.getBoundingClientRect().width)
-						var fraction = (hero.state.cooldowns[c] / CONSTANTS[c + "Cooldown"]) / 3
+						var fraction = (hero.state.cooldowns[CONSTANTS.actions[a]] / CONSTANTS[CONSTANTS.actions[a] + "Cooldown"]) / 3
 						button.style.borderWidth = Math.max(0, Math.min(size, fraction * size)) + "px"
 					}
 
@@ -268,26 +268,26 @@
 
 				// rock effects
 					if (hero.state.effects.rock) {
-						INPUTS.a.setAttribute("effect", true)
-						INPUTS.b.setAttribute("effect", true)
+						for (var a in CONSTANTS.actions) {
+							INPUTS[CONSTANTS.actions[a]].setAttribute("effect", true)
+						}
 					}
 					else {
-						INPUTS.a.removeAttribute("effect")
-						INPUTS.b.removeAttribute("effect")
+						for (var a in CONSTANTS.actions) {
+							INPUTS[CONSTANTS.actions[a]].removeAttribute("effect")
+						}
 					}
 
 				// scissors effects
 					if (hero.state.effects.scissors) {
-						INPUTS.up.setAttribute(   "effect", true)
-						INPUTS.down.setAttribute( "effect", true)
-						INPUTS.left.setAttribute( "effect", true)
-						INPUTS.right.setAttribute("effect", true)
+						for (var d in CONSTANTS.directions) {
+							INPUTS[CONSTANTS.directions[d]].setAttribute("effect", true)
+						}
 					}
 					else {
-						INPUTS.up.removeAttribute(   "effect")
-						INPUTS.down.removeAttribute( "effect")
-						INPUTS.left.removeAttribute( "effect")
-						INPUTS.right.removeAttribute("effect")
+						for (var d in CONSTANTS.directions) {
+							INPUTS[CONSTANTS.directions[d]].removeAttribute("effect")
+						}
 					}
 			} catch (error) {}
 		}
