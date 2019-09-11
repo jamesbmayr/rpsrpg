@@ -96,6 +96,47 @@
 			} catch (error) {}
 		}
 
+	/* determineInput */
+		document.addEventListener("keydown", determineInput)
+		document.addEventListener("keyup", determineInput)
+		function determineInput(event) {
+			try {
+				var input = null
+				switch (event.key) {
+					case "a":
+						input = "left"
+					break
+					case "s":
+						input = "down"
+					break
+					case "d":
+						input = "right"
+					break
+					case "w":
+						input = "up"
+					break
+					case "Escape":
+						input = "start"
+					break
+					case "l":
+						input = "b"
+					break
+					case "p":
+						input = "a"
+					break
+				}
+
+				if (input) {
+					if (event.type == "keydown") {
+						pressInput({target: INPUTS[input]})
+					}
+					else if (event.type == "keyup") {
+						releaseInput({target: INPUTS[input]})
+					}
+				}
+			} catch (error) {}
+		}
+
 /*** receives ***/
 	/* receivePost */
 		function receivePost(data) {

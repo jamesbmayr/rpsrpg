@@ -888,18 +888,13 @@
 		module.exports.createTemple = createTemple
 		function createTemple(request, chamber, callback) {
 			try {
-				// loop through middle 5x5
+				// set to visited
+					chamber.state.visited = true
+
+				// loop through middle 5x5 and clear
 					for (var x = -2; x <= 2; x++) {
 						for (var y = -2; y <= 2; y++) {
-							// wall the corners
-								if (Math.abs(x) == 2 && Math.abs(y) == 2) {
-									chamber.cells[x][y].wall = true
-								}
-
-							// clear the rest
-								else {
-									chamber.cells[x][y].wall = false
-								}
+							chamber.cells[x][y].wall = false
 						}
 					}
 
@@ -1489,7 +1484,7 @@
 								}
 							}
 
-							if (agreed) {
+							if (agreed && !chamber.state.cooldowns.edge) {
 								// get nextChamber for edges
 									if (isEdge) {
 										var nextChamberX = Number(chamber.info.x) + (destination == "left" ? -1 : destination == "right" ? 1 : 0)
@@ -1715,6 +1710,8 @@
 											request.game.data.state.orbs++
 											chamber.items[item.id].state.active = true
 											chamber.items[item.id].info.style = "filled"
+											resolvePoints(request, item, callback)
+
 											delete thing.items[orbKey]
 										}
 									}
@@ -1803,8 +1800,8 @@
 											type: 	attacker ? attacker.info.type : attack.info.type
 										}, callback)
 
-										if (!alive) {
-											attacker.state.kills++
+										if (!alive && attacker.info.type == "hero") {
+											resolvePoints(request, recipient, callback)
 										}
 									}									
 
@@ -1944,6 +1941,43 @@
 			}
 		}
 
+	/* resolvePoints */
+		module.exports.resolvePoints = resolvePoints
+		function resolvePoints(request, thing, callback) {
+			try {
+				// points
+					var points = 0
+
+				// chamber
+					if (thing.info && thing.info.type == "chamber") {
+						points = thing.info.points || CONSTANTS.newChamberPoints
+					}
+
+				// creature
+					else if (thing.info && (thing.info.type == "creature" || thing.info.type == "monster")) {
+						points = thing.info.points || CONSTANTS.monsterPoints
+					}
+
+				// spawn
+					else if (thing.info && thing.info.type == "spawn") {
+						points = thing.info.points || CONSTANTS.spawnPoints
+					}
+
+				// pedestal
+					else if (thing.info && thing.info.type == "pedestal") {
+						points = thing.info.points || CONSTANTS.pedestalPoints
+					}
+
+				// points?
+					if (points) {
+						request.game.data.state.overlay.timeout = Math.max(0, Math.min(CONSTANTS.gameCooldown, request.game.data.state.overlay.timeout + points))
+					}
+			}
+			catch (error) {
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
+			}
+		}
+
 /*** updates ***/
 	/* updateTime */
 		module.exports.updateTime = updateTime
@@ -1960,7 +1994,6 @@
 
 			// game over
 				else if (request.game.data.state.end) {
-					request.game.data.state.overlay.message = CONSTANTS.endMessage
 					callback(Object.keys(request.game.observers), {success: true, chamber: chamber})	
 				}
 
@@ -1972,7 +2005,13 @@
 					// victory
 						if (request.game.data.state.orbs >= CONSTANTS.rps.length) {
 							request.game.data.state.end = true
-							request.game.data.state.overlay.message = CONSTANTS.endMessage
+							request.game.data.state.overlay.message = CONSTANTS.victoryMessage
+						}
+
+					// timeout
+						else if (!request.game.data.state.overlay.timeout) {
+							request.game.data.state.end = true
+							request.game.data.state.overlay.message = CONSTANTS.defeatMessage
 						}
 
 					// full party death
@@ -2000,8 +2039,17 @@
 
 					// regular gameplay
 						else {
-							// start message
-								request.game.data.state.overlay.message = request.game.data.state.start ? null : CONSTANTS.startMessage
+							// started?
+								if (!request.game.data.state.start) {
+									request.game.data.state.overlay.message = CONSTANTS.startMessage
+								}
+								else {
+									request.game.data.state.overlay.message = null
+									request.game.data.state.overlay.timeout = Math.max(0, Math.min(CONSTANTS.gameCooldown, request.game.data.state.overlay.timeout - 1))
+								}
+
+							// edge cooldown?
+								chamber.state.cooldowns.edge = Math.max(0, chamber.state.cooldowns.edge - 1)
 
 							// heroes
 								for (var h in chamber.heroes) {
@@ -2121,6 +2169,13 @@
 						var newY = Number(request.game.data.state.nextChamber.y)
 						var newChamber = request.game.data.chambers[newX][newY]
 							newChamber.state.cooldowns.activate = CONSTANTS.chamberCooldown
+							newChamber.state.cooldowns.edge 	= CONSTANTS.edgeCooldown
+
+					// truly new?
+						if (!newChamber.state.visited) {
+							newChamber.state.visited = true
+							resolvePoints(request, newChamber, callback)
+						}
 					
 					// set new
 						request.game.data.state.chamber.x = newX

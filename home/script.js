@@ -13,6 +13,9 @@
 					action: "createGame"
 				}
 
+			// loading messages
+				displayMessage("creating game...")
+
 			// submit
 				sendPost(post, function(data) {
 					if (!data.success) {

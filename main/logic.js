@@ -134,7 +134,7 @@
 					// sprites
 						case "sprites":
 							return [
-								"orb_rock_all_standing_inactive",		"orb_paper_all_standing_inactive",		"orb_scissors_all_standing_inactive",
+								"orb_rock_all_standing_inactive",		"orb_paper_all_standing_inactive",		"orb_scissors_all_standing_inactive",	"orb_rock_all_standing_active",				"orb_paper_all_standing_active",		"orb_scissors_all_standing_active",
 								"hero_barbarian_up_moving_inactive", 	"hero_barbarian_down_moving_inactive", 	"hero_barbarian_left_moving_inactive", 	"hero_barbarian_right_moving_inactive", 	"hero_barbarian_up_standing_inactive", 	"hero_barbarian_down_standing_inactive", 	"hero_barbarian_left_standing_inactive", 	"hero_barbarian_right_standing_inactive", 
 								"hero_ranger_up_moving_inactive", 		"hero_ranger_down_moving_inactive", 	"hero_ranger_left_moving_inactive", 	"hero_ranger_right_moving_inactive", 		"hero_ranger_up_standing_inactive", 	"hero_ranger_down_standing_inactive", 		"hero_ranger_left_standing_inactive", 		"hero_ranger_right_standing_inactive", 
 								"hero_wizard_up_moving_inactive", 		"hero_wizard_down_moving_inactive", 	"hero_wizard_left_moving_inactive", 	"hero_wizard_right_moving_inactive", 		"hero_wizard_up_standing_inactive", 	"hero_wizard_down_standing_inactive", 		"hero_wizard_left_standing_inactive", 		"hero_wizard_right_standing_inactive"
@@ -147,7 +147,8 @@
 								// messages
 									startMessage: 		"FIND THE ORBS!",
 									pauseMessage: 		"PAUSED",
-									endMessage: 		"VICTORY!",
+									victoryMessage: 	"VICTORY!",
+									defeatMessage: 		"TIME'S UP!",
 									deathMessage: 		"REVIVING",
 									teleportMessage: 	"TELEPORTING",
 
@@ -159,6 +160,8 @@
 									deadOpacity: 		0.5,
 									healthHigh: 		60,
 									healthLow: 			30,
+									timeHigh: 			90,
+									timeLow: 			45,
 
 								// game loop
 									loopInterval: 		50,
@@ -230,7 +233,9 @@
 
 							// time derivatives
 								var second = (1000 / constants.loopInterval)
+								constants.gameCooldown 		= Math.floor(second * 60 * 3)
 								constants.chamberCooldown 	= Math.floor(second / 2)
+								constants.edgeCooldown 		= Math.floor(second)
 								constants.shrineCooldown 	= Math.floor(second)
 								constants.spawnCooldown 	= Math.floor(second * 4)
 								constants.portalCooldown 	= Math.floor(second * 3)
@@ -238,6 +243,12 @@
 								constants.effectCooldown 	= Math.floor(second * 20)
 								constants.aCooldown 		= Math.floor(second / 4)
 								constants.bCooldown 		= Math.floor(second)
+
+							// points
+								constants.monsterPoints 	= Math.floor(second * 10)
+								constants.spawnPoints 		= Math.floor(second * 30)
+								constants.newChamberPoints 	= Math.floor(second * 10)
+								constants.pedestalPoints	= Math.floor(second * 60 * 2)
 
 							// distance derivatives
 								constants.acceleration 		= Math.floor(constants.cellSize / 32)
@@ -913,6 +924,7 @@
 										subtype: "avalanche",
 										color: CONSTANTS.colors.barbarian[0],
 										pathing: "aggressive",
+										points: CONSTANTS.monsterPoints,
 										statistics: {
 											moveSpeed: 	Math.floor(quarterCell / 2),
 											rangeSpeed: Math.floor(quarterCell / 2),
@@ -934,6 +946,7 @@
 										subtype: "dendroid",
 										color: CONSTANTS.colors.wizard[0],
 										pathing: "aggressive",
+										points: CONSTANTS.monsterPoints,
 										statistics: {
 											moveSpeed: 	Math.floor(quarterCell / 4),
 											rangeSpeed: Math.floor(quarterCell / 4),
@@ -955,6 +968,7 @@
 										subtype: "golem",
 										color: CONSTANTS.colors.ranger[0],
 										pathing: "aggressive",
+										points: CONSTANTS.monsterPoints,
 										statistics: {
 											moveSpeed: 	Math.floor(quarterCell / 4),
 											rangeSpeed: Math.floor(quarterCell / 4),
@@ -1036,6 +1050,7 @@
 								overwriteObject(pedestals[p], {
 									info: {
 										type: "pedestal",
+										points: CONSTANTS.pedestalPoints,
 										shape: "circle",
 										style: "border"
 									},
@@ -1128,6 +1143,7 @@
 							return {
 								info: {
 									type: "spawn",
+									points: CONSTANTS.spawnPoints,
 									size: {
 										x: Math.floor(CONSTANTS.cellSize / 8) * 7,
 										y: Math.floor(CONSTANTS.cellSize / 8) * 7,
@@ -1183,7 +1199,8 @@
 									time: 	0,
 									orbs: 	0,
 									overlay: {
-										message: null
+										message: null,
+										timeout: CONSTANTS.gameCooldown
 									},
 									chamber: {
 										x: 	0,
@@ -1212,13 +1229,16 @@
 						return {
 							id: 			generateRandom(),
 							info: {
+								type: "chamber",
 								colors: 	[],
 								x: 0,
 								y: 0,
 								chamberSize: CONSTANTS.chamberSize,
-								cellSize: CONSTANTS.cellSize
+								cellSize: CONSTANTS.cellSize,
+								points: CONSTANTS.newChamberPoints,
 							},
 							state: {
+								visited: false,
 								overlay: {},
 								cooldowns: {
 									fade: 0
@@ -1288,9 +1308,7 @@
 									a: 		0,
 									b: 		0
 								},
-								image: 		null,
-								kills: 		0,
-								points: 	0
+								image: 		null
 							},
 							items: 			{}
 						}

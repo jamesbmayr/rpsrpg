@@ -4,6 +4,9 @@
 		var CONTEXT = CANVAS.getContext("2d")
 		var CHAMBERID = null
 
+		var TIMER = document.getElementById("timer")
+		var TIMERCONTEXT = TIMER.getContext("2d")
+
 	/* preloadImages */
 		var IMAGES = []
 		preloadImages()
@@ -17,6 +20,9 @@
 				}
 			} catch (error) {}
 		}
+
+	/* other */
+		var RADIANS = (Math.PI / 180)
 
 /*** websocket ***/
 	/* socket */
@@ -79,21 +85,22 @@
 			} catch (error) {}
 		}
 
-/*** draws ***/
+/*** draws: UI ***/
 	/* drawChamber */
 		function drawChamber(chamber) {
 			try {
 				// resize
 					if (chamber.id !== CHAMBERID) {
-						CHAMBERID 	   = chamber.id
-						CANVAS.width   = chamber.info.chamberSize * chamber.info.cellSize
-						CANVAS.height  = chamber.info.chamberSize * chamber.info.cellSize
+						CHAMBERID 		= chamber.id
+						CANVAS.width 	= chamber.info.chamberSize * chamber.info.cellSize
+						CANVAS.height 	= chamber.info.chamberSize * chamber.info.cellSize
 					}
 
-				// clear
-					clearCanvas(CANVAS, CONTEXT)
+				// drawTimer
+					drawTimer(chamber)
 
-				// background
+				// clear & background
+					clearCanvas(CANVAS, CONTEXT)
 					drawRectangle(CANVAS, CONTEXT, 0, 0, CANVAS.width, CANVAS.height, {color: chamber.info.colors[0]})
 
 				// minimap
@@ -125,7 +132,6 @@
 					if (chamber.state.overlay.message) {
 						drawOverlayMessage(chamber.state.overlay.message)
 					}
-
 			} catch (error) {}
 		}
 
@@ -196,6 +202,27 @@
 			} catch (error) {}
 		}
 
+	/* drawTimer */
+		function drawTimer(chamber) {
+			try {
+				// clear
+					clearCanvas(TIMER, TIMERCONTEXT)
+
+				// percentage
+					var degrees = Math.max(0, Math.min(360, 360 * chamber.state.overlay.timeout / CONSTANTS.gameCooldown))
+					var color = degrees > CONSTANTS.timeHigh ? CONSTANTS.colors.blue[2] : degrees > CONSTANTS.timeLow ? CONSTANTS.colors.yellow[2] : CONSTANTS.colors.red[2] 
+
+				// update wheel
+					drawCircle(TIMER, TIMERCONTEXT, TIMER.width / 2, TIMER.height / 2, TIMER.width * 2, {
+						color: color,
+						start: RADIANS * (degrees - 90),
+						end:   RADIANS * -90
+					})
+
+			} catch (error) {}
+		}
+
+/*** draws: in-game ***/
 	/* drawWalls */
 		function drawWalls(chamber) {
 			try {
