@@ -340,7 +340,7 @@
 
 				// draw
 					if (IMAGES[item.state.image]) {
-						drawImage(CANVAS, CONTEXT, item.state.position.x + Math.ceil(CANVAS.width  / 2), item.state.position.y + Math.ceil(CANVAS.height / 2)+ Math.ceil(CANVAS.height / 2), item.info.size.x, item.info.size.y, {image: IMAGES[item.state.image], color: item.info.color})
+						drawImage(CANVAS, CONTEXT, itemX, itemY, item.info.size.x, item.info.size.y, {image: IMAGES[item.state.image], color: item.info.color})
 					}
 					else {
 						if (item.info.shape == "circle") {
