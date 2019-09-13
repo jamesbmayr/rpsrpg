@@ -137,7 +137,9 @@
 								"orb_rock_all_standing_inactive",		"orb_paper_all_standing_inactive",		"orb_scissors_all_standing_inactive",	"orb_rock_all_standing_active",				"orb_paper_all_standing_active",		"orb_scissors_all_standing_active",
 								"hero_barbarian_up_moving_inactive", 	"hero_barbarian_down_moving_inactive", 	"hero_barbarian_left_moving_inactive", 	"hero_barbarian_right_moving_inactive", 	"hero_barbarian_up_standing_inactive", 	"hero_barbarian_down_standing_inactive", 	"hero_barbarian_left_standing_inactive", 	"hero_barbarian_right_standing_inactive", 
 								"hero_ranger_up_moving_inactive", 		"hero_ranger_down_moving_inactive", 	"hero_ranger_left_moving_inactive", 	"hero_ranger_right_moving_inactive", 		"hero_ranger_up_standing_inactive", 	"hero_ranger_down_standing_inactive", 		"hero_ranger_left_standing_inactive", 		"hero_ranger_right_standing_inactive", 
-								"hero_wizard_up_moving_inactive", 		"hero_wizard_down_moving_inactive", 	"hero_wizard_left_moving_inactive", 	"hero_wizard_right_moving_inactive", 		"hero_wizard_up_standing_inactive", 	"hero_wizard_down_standing_inactive", 		"hero_wizard_left_standing_inactive", 		"hero_wizard_right_standing_inactive"
+								"hero_wizard_up_moving_inactive", 		"hero_wizard_down_moving_inactive", 	"hero_wizard_left_moving_inactive", 	"hero_wizard_right_moving_inactive", 		"hero_wizard_up_standing_inactive", 	"hero_wizard_down_standing_inactive", 		"hero_wizard_left_standing_inactive", 		"hero_wizard_right_standing_inactive",
+								"monster_avalanche_up_moving_inactive", 		"monster_avalanche_down_moving_inactive", 	"monster_avalanche_left_moving_inactive", 	"monster_avalanche_right_moving_inactive", 		"monster_avalanche_up_standing_inactive", 	"monster_avalanche_down_standing_inactive", 		"monster_avalanche_left_standing_inactive", 		"monster_avalanche_right_standing_inactive",
+								"monster_tatters_up_moving_inactive", 		"monster_tatters_down_moving_inactive", 	"monster_tatters_left_moving_inactive", 	"monster_tatters_right_moving_inactive", 		"monster_tatters_up_standing_inactive", 	"monster_tatters_down_standing_inactive", 		"monster_tatters_left_standing_inactive", 		"monster_tatters_right_standing_inactive"
 							]
 						break
 
@@ -961,7 +963,7 @@
 										healthMax: CONSTANTS.baseHealth / 2
 									}
 								},
-								"golem": {
+								"tatters": {
 									info: {
 										rps: "scissors",
 										type: "monster",
