@@ -134,12 +134,32 @@
 					// sprites
 						case "sprites":
 							return [
-								"orb_rock_all_standing_inactive",		"orb_paper_all_standing_inactive",		"orb_scissors_all_standing_inactive",	"orb_rock_all_standing_active",				"orb_paper_all_standing_active",		"orb_scissors_all_standing_active",
-								"hero_barbarian_up_moving_inactive", 	"hero_barbarian_down_moving_inactive", 	"hero_barbarian_left_moving_inactive", 	"hero_barbarian_right_moving_inactive", 	"hero_barbarian_up_standing_inactive", 	"hero_barbarian_down_standing_inactive", 	"hero_barbarian_left_standing_inactive", 	"hero_barbarian_right_standing_inactive", 
-								"hero_ranger_up_moving_inactive", 		"hero_ranger_down_moving_inactive", 	"hero_ranger_left_moving_inactive", 	"hero_ranger_right_moving_inactive", 		"hero_ranger_up_standing_inactive", 	"hero_ranger_down_standing_inactive", 		"hero_ranger_left_standing_inactive", 		"hero_ranger_right_standing_inactive", 
-								"hero_wizard_up_moving_inactive", 		"hero_wizard_down_moving_inactive", 	"hero_wizard_left_moving_inactive", 	"hero_wizard_right_moving_inactive", 		"hero_wizard_up_standing_inactive", 	"hero_wizard_down_standing_inactive", 		"hero_wizard_left_standing_inactive", 		"hero_wizard_right_standing_inactive",
-								"monster_avalanche_up_moving_inactive", 		"monster_avalanche_down_moving_inactive", 	"monster_avalanche_left_moving_inactive", 	"monster_avalanche_right_moving_inactive", 		"monster_avalanche_up_standing_inactive", 	"monster_avalanche_down_standing_inactive", 		"monster_avalanche_left_standing_inactive", 		"monster_avalanche_right_standing_inactive",
-								"monster_tatters_up_moving_inactive", 		"monster_tatters_down_moving_inactive", 	"monster_tatters_left_moving_inactive", 	"monster_tatters_right_moving_inactive", 		"monster_tatters_up_standing_inactive", 	"monster_tatters_down_standing_inactive", 		"monster_tatters_left_standing_inactive", 		"monster_tatters_right_standing_inactive"
+								"orb_rock_all_standing_inactive",			"orb_paper_all_standing_inactive",				"orb_scissors_all_standing_inactive",			"orb_rock_all_standing_active",					"orb_paper_all_standing_active",				"orb_scissors_all_standing_active",
+								
+								"hero_barbarian_up_moving_inactive", 		"hero_barbarian_down_moving_inactive", 			"hero_barbarian_left_moving_inactive", 			"hero_barbarian_right_moving_inactive", 		"hero_barbarian_up_standing_inactive", 			"hero_barbarian_down_standing_inactive", 		"hero_barbarian_left_standing_inactive", 		"hero_barbarian_right_standing_inactive", 
+								"hero_barbarian_up_moving_rangeAttack", 	"hero_barbarian_down_moving_rangeAttack", 		"hero_barbarian_left_moving_rangeAttack", 		"hero_barbarian_right_moving_rangeAttack", 		"hero_barbarian_up_standing_rangeAttack", 		"hero_barbarian_down_standing_rangeAttack", 	"hero_barbarian_left_standing_rangeAttack", 	"hero_barbarian_right_standing_rangeAttack", 
+								"hero_barbarian_up_moving_areaAttack", 		"hero_barbarian_down_moving_areaAttack", 		"hero_barbarian_left_moving_areaAttack", 		"hero_barbarian_right_moving_areaAttack", 		"hero_barbarian_up_standing_areaAttack", 		"hero_barbarian_down_standing_areaAttack", 		"hero_barbarian_left_standing_areaAttack", 		"hero_barbarian_right_standing_areaAttack", 
+								"hero_barbarian_up_moving_collision", 		"hero_barbarian_down_moving_collision", 		"hero_barbarian_left_moving_collision", 		"hero_barbarian_right_moving_collision", 		"hero_barbarian_up_standing_collision", 		"hero_barbarian_down_standing_collision", 		"hero_barbarian_left_standing_collision", 		"hero_barbarian_right_standing_collision", 
+								
+								"hero_ranger_up_moving_inactive", 			"hero_ranger_down_moving_inactive", 			"hero_ranger_left_moving_inactive", 			"hero_ranger_right_moving_inactive", 			"hero_ranger_up_standing_inactive", 			"hero_ranger_down_standing_inactive", 			"hero_ranger_left_standing_inactive", 			"hero_ranger_right_standing_inactive", 
+								"hero_ranger_up_moving_rangeAttack", 		"hero_ranger_down_moving_rangeAttack", 			"hero_ranger_left_moving_rangeAttack", 			"hero_ranger_right_moving_rangeAttack", 		"hero_ranger_up_standing_rangeAttack", 			"hero_ranger_down_standing_rangeAttack", 		"hero_ranger_left_standing_rangeAttack", 		"hero_ranger_right_standing_rangeAttack", 
+								"hero_ranger_up_moving_areaAttack", 		"hero_ranger_down_moving_areaAttack", 			"hero_ranger_left_moving_areaAttack", 			"hero_ranger_right_moving_areaAttack", 			"hero_ranger_up_standing_areaAttack", 			"hero_ranger_down_standing_areaAttack", 		"hero_ranger_left_standing_areaAttack", 		"hero_ranger_right_standing_areaAttack", 
+								"hero_ranger_up_moving_collision", 			"hero_ranger_down_moving_collision", 			"hero_ranger_left_moving_collision", 			"hero_ranger_right_moving_collision", 			"hero_ranger_up_standing_collision", 			"hero_ranger_down_standing_collision", 			"hero_ranger_left_standing_collision", 			"hero_ranger_right_standing_collision", 
+								
+								"hero_wizard_up_moving_inactive", 			"hero_wizard_down_moving_inactive", 			"hero_wizard_left_moving_inactive", 			"hero_wizard_right_moving_inactive", 			"hero_wizard_up_standing_inactive", 			"hero_wizard_down_standing_inactive", 			"hero_wizard_left_standing_inactive", 			"hero_wizard_right_standing_inactive",
+								"hero_wizard_up_moving_rangeAttack", 		"hero_wizard_down_moving_rangeAttack", 			"hero_wizard_left_moving_rangeAttack", 			"hero_wizard_right_moving_rangeAttack", 		"hero_wizard_up_standing_rangeAttack", 			"hero_wizard_down_standing_rangeAttack", 		"hero_wizard_left_standing_rangeAttack", 		"hero_wizard_right_standing_rangeAttack",
+								"hero_wizard_up_moving_areaAttack", 		"hero_wizard_down_moving_areaAttack", 			"hero_wizard_left_moving_areaAttack", 			"hero_wizard_right_moving_areaAttack", 			"hero_wizard_up_standing_areaAttack", 			"hero_wizard_down_standing_areaAttack", 		"hero_wizard_left_standing_areaAttack", 		"hero_wizard_right_standing_areaAttack",
+								"hero_wizard_up_moving_collision", 			"hero_wizard_down_moving_collision", 			"hero_wizard_left_moving_collision", 			"hero_wizard_right_moving_collision", 			"hero_wizard_up_standing_collision", 			"hero_wizard_down_standing_collision", 			"hero_wizard_left_standing_collision", 			"hero_wizard_right_standing_collision",
+								
+								"monster_avalanche_up_moving_inactive", 	"monster_avalanche_down_moving_inactive", 		"monster_avalanche_left_moving_inactive", 		"monster_avalanche_right_moving_inactive", 		"monster_avalanche_up_standing_inactive", 		"monster_avalanche_down_standing_inactive", 	"monster_avalanche_left_standing_inactive", 	"monster_avalanche_right_standing_inactive",
+								"monster_avalanche_up_moving_rangeAttack", 	"monster_avalanche_down_moving_rangeAttack", 	"monster_avalanche_left_moving_rangeAttack", 	"monster_avalanche_right_moving_rangeAttack", 	"monster_avalanche_up_standing_rangeAttack", 	"monster_avalanche_down_standing_rangeAttack", 	"monster_avalanche_left_standing_rangeAttack", 	"monster_avalanche_right_standing_rangeAttack",
+								"monster_avalanche_up_moving_areaAttack", 	"monster_avalanche_down_moving_areaAttack",	 	"monster_avalanche_left_moving_areaAttack", 	"monster_avalanche_right_moving_areaAttack", 	"monster_avalanche_up_standing_areaAttack", 	"monster_avalanche_down_standing_areaAttack", 	"monster_avalanche_left_standing_areaAttack", 	"monster_avalanche_right_standing_areaAttack",
+								"monster_avalanche_up_moving_collision", 	"monster_avalanche_down_moving_collision",	 	"monster_avalanche_left_moving_collision", 		"monster_avalanche_right_moving_collision", 	"monster_avalanche_up_standing_collision", 		"monster_avalanche_down_standing_collision", 	"monster_avalanche_left_standing_collision", 	"monster_avalanche_right_standing_collision",
+								
+								"monster_tatters_up_moving_inactive", 		"monster_tatters_down_moving_inactive", 		"monster_tatters_left_moving_inactive", 		"monster_tatters_right_moving_inactive", 		"monster_tatters_up_standing_inactive", 		"monster_tatters_down_standing_inactive", 		"monster_tatters_left_standing_inactive", 		"monster_tatters_right_standing_inactive",
+								"monster_tatters_up_moving_rangeAttack", 	"monster_tatters_down_moving_rangeAttack", 		"monster_tatters_left_moving_rangeAttack", 		"monster_tatters_right_moving_rangeAttack", 	"monster_tatters_up_standing_rangeAttack", 		"monster_tatters_down_standing_rangeAttack", 	"monster_tatters_left_standing_rangeAttack", 	"monster_tatters_right_standing_rangeAttack",
+								"monster_tatters_up_moving_areaAttack", 	"monster_tatters_down_moving_areaAttack", 		"monster_tatters_left_moving_areaAttack", 		"monster_tatters_right_moving_areaAttack", 		"monster_tatters_up_standing_areaAttack", 		"monster_tatters_down_standing_areaAttack", 	"monster_tatters_left_standing_areaAttack", 	"monster_tatters_right_standing_areaAttack",
+								"monster_tatters_up_moving_collision", 		"monster_tatters_down_moving_collision", 		"monster_tatters_left_moving_collision", 		"monster_tatters_right_moving_collision", 		"monster_tatters_up_standing_collision", 		"monster_tatters_down_standing_collision", 		"monster_tatters_left_standing_collision", 		"monster_tatters_right_standing_collision"
 							]
 						break
 
@@ -164,6 +184,7 @@
 									healthLow: 			30,
 									timeHigh: 			90,
 									timeLow: 			45,
+									loadFade: 			4,
 
 								// game loop
 									loopInterval: 		50,
@@ -171,6 +192,7 @@
 								// game creation
 									layers: 			4,
 									chamberSize: 		9,
+									edgeBuffer: 		2,
 									cellSize: 			128,
 									portalPairs: 		2,
 									shrineSets: 		2,
@@ -235,8 +257,8 @@
 
 							// time derivatives
 								var second = (1000 / constants.loopInterval)
-								constants.gameCooldown 		= Math.floor(second * 60 * 3)
-								constants.chamberCooldown 	= Math.floor(second / 2)
+								constants.gameCooldown 		= Math.floor(second * 60 * 2)
+								constants.chamberCooldown 	= Math.floor(second / 4)
 								constants.edgeCooldown 		= Math.floor(second * 2)
 								constants.shrineCooldown 	= Math.floor(second)
 								constants.spawnCooldown 	= Math.floor(second * 4)
@@ -247,16 +269,27 @@
 								constants.bCooldown 		= Math.floor(second)
 
 							// points
-								constants.monsterPoints 	= Math.floor(second * 10)
-								constants.spawnPoints 		= Math.floor(second * 30)
-								constants.newChamberPoints 	= Math.floor(second * 10)
-								constants.pedestalPoints	= Math.floor(second * 60 * 2)
+								constants.monsterPoints 	= Math.floor(second * 5)
+								constants.spawnPoints 		= Math.floor(second * 10)
+								constants.newChamberPoints 	= Math.floor(second * 5)
+								constants.pedestalPoints	= Math.floor(second * 60)
 
 							// distance derivatives
-								constants.acceleration 		= Math.floor(constants.cellSize / 32)
+								constants.acceleration 		= Math.floor(constants.cellSize / 16)
 								constants.bumpAcceleration	= Math.floor(constants.cellSize / 8)
-								constants.areaAttackRadius 	= Math.floor(constants.cellSize / 4)
+								constants.areaAttackRadius 	= Math.floor(constants.cellSize / 8)
 								constants.itemDropRadius 	= Math.floor(constants.cellSize / 4)
+								constants.monsterAwareness 	= Math.floor(constants.cellSize * constants.chamberSize / 4)
+
+							// chamber colors by layer
+								constants.chamberColors = [
+									constants.colors.cyan,
+									constants.colors.bluegray,
+									constants.colors.cerulean,
+									constants.colors.blue,
+									constants.colors.purple,
+									constants.colors.black
+								]
 
 							return constants
 						break
@@ -469,7 +502,10 @@
 											for (var h in chamber.heroes) {
 												var hero = chamber.heroes[h]
 												if (hero.state.alive) {
-													distances[h] = getDistance(monster.state.position.x, monster.state.position.y, hero.state.position.x, hero.state.position.y)
+													var distance = getDistance(monster.state.position.x, monster.state.position.y, hero.state.position.x, hero.state.position.y)
+													if (distance <= CONSTANTS.monsterAwareness) {
+														distances[h] = distance
+													}
 												}
 											}
 
@@ -575,7 +611,10 @@
 											for (var h in chamber.heroes) {
 												var hero = chamber.heroes[h]
 												if (hero.state.alive) {
-													distances[h] = getDistance(monster.state.position.x, monster.state.position.y, hero.state.position.x, hero.state.position.y)
+													var distance = getDistance(monster.state.position.x, monster.state.position.y, hero.state.position.x, hero.state.position.y)
+													if (distance <= CONSTANTS.monsterAwareness) {
+														distances[h] = distance
+													}
 												}
 											}
 
@@ -831,7 +870,8 @@
 
 					// creatures
 						case "heroes":
-							var quarterCell = Math.floor(CONSTANTS.cellSize / 4)
+							var sixteenthCell = Math.floor(CONSTANTS.cellSize / 16)
+							var sixteenthHealth = Math.floor(CONSTANTS.baseHealth / 16)
 
 							return {
 								"barbarian": {
@@ -841,22 +881,23 @@
 										type: "hero",
 										subtype: "barbarian",
 										color: CONSTANTS.colors.barbarian[0],
+										shape: "circle",
 										pathing: "hero",
 										statistics: {
-											moveSpeed: 	Math.floor(quarterCell / 2),
-											rangeSpeed: Math.floor(quarterCell / 2),
-											rangePower: Math.floor(CONSTANTS.baseHealth / 8),
-											bumpPower: 	Math.floor(CONSTANTS.baseHealth / 2),
-											areaPower: 	Math.floor(CONSTANTS.baseHealth / 8),
-											armorPower: Math.floor(CONSTANTS.baseHealth / 16)
+											moveSpeed: 	sixteenthCell * 2,
+											rangeSpeed: sixteenthCell * 3,
+											rangePower: sixteenthHealth * 2,
+											meleePower:	sixteenthHealth * 5,
+											areaPower: 	sixteenthHealth * 2,
+											armorPower: sixteenthHealth * 2
 										}
 									},
 									state: {
 										health: CONSTANTS.baseHealth * CONSTANTS.baseHealthPercent,
 										healthMax: CONSTANTS.baseHealth,
 										position: {
-											x: 0 * quarterCell,
-											y: 1 * quarterCell
+											x: 0,
+											y: 4 * sixteenthCell
 										}
 									}
 								},
@@ -867,22 +908,23 @@
 										type: "hero",
 										subtype: "wizard",
 										color: CONSTANTS.colors.wizard[0],
+										shape: "circle",
 										pathing: "hero",
 										statistics: {
-											moveSpeed: 	Math.floor(quarterCell / 2),
-											rangeSpeed: Math.floor(quarterCell / 1),
-											rangePower: Math.floor(CONSTANTS.baseHealth / 4),
-											bumpPower: 	Math.floor(CONSTANTS.baseHealth / 16),
-											areaPower: 	Math.floor(CONSTANTS.baseHealth / 8),
-											armorPower: Math.floor(CONSTANTS.baseHealth / 16)
+											moveSpeed: 	sixteenthCell * 2,
+											rangeSpeed: sixteenthCell * 4,
+											rangePower: sixteenthHealth * 3,
+											meleePower:	sixteenthHealth,
+											areaPower: 	sixteenthHealth * 3,
+											armorPower: sixteenthHealth
 										}
 									},
 									state: {
 										health: CONSTANTS.baseHealth * CONSTANTS.baseHealthPercent,
 										healthMax: CONSTANTS.baseHealth,
 										position: {
-											x: -1 * quarterCell,
-											y: -1 * quarterCell
+											x: -4 * sixteenthCell,
+											y: -4 * sixteenthCell
 										}
 									}
 								},
@@ -893,22 +935,23 @@
 										type: "hero",
 										subtype: "ranger",
 										color: CONSTANTS.colors.ranger[0],
+										shape: "circle",
 										pathing: "hero",
 										statistics: {
-											moveSpeed: 	Math.floor(quarterCell / 1),
-											rangeSpeed: Math.floor(quarterCell / 1),
-											rangePower: Math.floor(CONSTANTS.baseHealth / 4),
-											bumpPower: 	Math.floor(CONSTANTS.baseHealth / 8),
-											areaPower: 	Math.floor(CONSTANTS.baseHealth / 16),
-											armorPower: Math.floor(CONSTANTS.baseHealth / 16)
+											moveSpeed: 	sixteenthCell * 3,
+											rangeSpeed: sixteenthCell * 4,
+											rangePower: sixteenthHealth * 4,
+											meleePower:	sixteenthHealth * 3,
+											areaPower: 	sixteenthHealth,
+											armorPower: sixteenthHealth
 										}
 									},
 									state: {
 										health: CONSTANTS.baseHealth * CONSTANTS.baseHealthPercent,
 										healthMax: CONSTANTS.baseHealth,
 										position: {
-											x: 1 * quarterCell,
-											y: -1 * quarterCell
+											x:  4 * sixteenthCell,
+											y: -4 * sixteenthCell
 										}
 									}
 								}
@@ -916,7 +959,8 @@
 						break
 
 						case "monsters":
-							var quarterCell = Math.floor(CONSTANTS.cellSize / 4)
+							var sixteenthCell = Math.floor(CONSTANTS.cellSize / 16)
+							var sixteenthHealth = Math.floor(CONSTANTS.baseHealth / 16)
 
 							return {
 								"avalanche": {
@@ -925,15 +969,16 @@
 										type: "monster",
 										subtype: "avalanche",
 										color: CONSTANTS.colors.barbarian[0],
+										shape: "triangle",
 										pathing: "aggressive",
 										points: CONSTANTS.monsterPoints,
 										statistics: {
-											moveSpeed: 	Math.floor(quarterCell / 2),
-											rangeSpeed: Math.floor(quarterCell / 2),
-											rangePower: Math.floor(CONSTANTS.baseHealth / 8),
-											bumpPower: 	Math.floor(CONSTANTS.baseHealth / 8),
-											areaPower: 	Math.floor(CONSTANTS.baseHealth / 16),
-											armorPower: Math.floor(CONSTANTS.baseHealth / 16)
+											moveSpeed: 	sixteenthCell,
+											rangeSpeed: sixteenthCell * 3,
+											rangePower: sixteenthHealth * 2,
+											meleePower:	sixteenthHealth * 4,
+											areaPower: 	sixteenthHealth,
+											armorPower: sixteenthHealth
 										}
 									},
 									state: {
@@ -947,15 +992,16 @@
 										type: "monster",
 										subtype: "dendroid",
 										color: CONSTANTS.colors.wizard[0],
+										shape: "triangle",
 										pathing: "aggressive",
 										points: CONSTANTS.monsterPoints,
 										statistics: {
-											moveSpeed: 	Math.floor(quarterCell / 4),
-											rangeSpeed: Math.floor(quarterCell / 4),
-											rangePower: Math.floor(CONSTANTS.baseHealth / 16),
-											bumpPower: 	Math.floor(CONSTANTS.baseHealth / 8),
-											areaPower: 	Math.floor(CONSTANTS.baseHealth / 8),
-											armorPower: Math.floor(CONSTANTS.baseHealth / 16)
+											moveSpeed: 	sixteenthCell,
+											rangeSpeed: sixteenthCell * 3,
+											rangePower: sixteenthHealth * 4,
+											meleePower:	sixteenthHealth * 2,
+											areaPower: 	sixteenthHealth,
+											armorPower: sixteenthHealth
 										}
 									},
 									state: {
@@ -967,17 +1013,18 @@
 									info: {
 										rps: "scissors",
 										type: "monster",
-										subtype: "golem",
+										subtype: "tatters",
 										color: CONSTANTS.colors.ranger[0],
+										shape: "triangle",
 										pathing: "aggressive",
 										points: CONSTANTS.monsterPoints,
 										statistics: {
-											moveSpeed: 	Math.floor(quarterCell / 4),
-											rangeSpeed: Math.floor(quarterCell / 4),
-											rangePower: Math.floor(CONSTANTS.baseHealth / 16),
-											bumpPower: 	Math.floor(CONSTANTS.baseHealth / 4),
-											areaPower: 	Math.floor(CONSTANTS.baseHealth / 16),
-											armorPower: Math.floor(CONSTANTS.baseHealth / 16)
+											moveSpeed: 	sixteenthCell * 2,
+											rangeSpeed: sixteenthCell * 2,
+											rangePower: sixteenthHealth,
+											meleePower:	sixteenthHealth * 3,
+											areaPower: 	sixteenthHealth * 2,
+											armorPower: sixteenthHealth
 										}
 									},
 									state: {
@@ -1202,7 +1249,17 @@
 									orbs: 	0,
 									overlay: {
 										message: null,
-										timeout: CONSTANTS.gameCooldown
+										timeout: CONSTANTS.gameCooldown,
+										minimap: {},
+										minimapColors: {
+											active: 	CONSTANTS.colors.black[3],
+											normal: 	CONSTANTS.colors.black[1],
+											temple: 	getAsset("heal").info.color,
+											portal: 	getAsset("portal").info.color,
+											rock: 		CONSTANTS.colors.barbarian[0],
+											paper: 		CONSTANTS.colors.wizard[0],
+											scissors: 	CONSTANTS.colors.ranger[0]
+										}
 									},
 									chamber: {
 										x: 	0,
@@ -1229,90 +1286,90 @@
 
 					case "chamber":
 						return {
-							id: 			generateRandom(),
+							id: 				generateRandom(),
 							info: {
-								type: "chamber",
-								colors: 	[],
-								x: 0,
-								y: 0,
-								chamberSize: CONSTANTS.chamberSize,
-								cellSize: CONSTANTS.cellSize,
-								points: CONSTANTS.newChamberPoints,
+								type: 			"chamber",
+								colors: 		{},
+								x: 				0,
+								y: 				0,
+								chamberSize: 	CONSTANTS.chamberSize,
+								cellSize: 		CONSTANTS.cellSize,
+								points: 		CONSTANTS.newChamberPoints,
 							},
 							state: {
-								visited: false,
-								overlay: {},
+								visited: 		false,
+								overlay: 		{},
 								cooldowns: {
-									fade: 0
+									fade: 		0
 								},
-								fadeout:  false
+								fadeout:  		false
 							},
-							cells:          {},
-							heroes: 		{},
-							creatures: 		{},
-							items:			{}
+							cells:          	{},
+							heroes: 			{},
+							creatures: 			{},
+							items:				{}
 						}
 					break
 
 					case "creature":
 						return {
-							id: 			generateRandom(),
+							id: 				generateRandom(),
 							info: {
-								rps: 		null,
-								type: 		"creature",
-								subtype:	null,
+								rps: 			null,
+								type: 			"creature",
+								subtype:		null,
 								size: {
-									x: 		Math.floor(CONSTANTS.cellSize / 2),
-									y: 		Math.floor(CONSTANTS.cellSize / 2),
-									maxX: 	Math.floor(CONSTANTS.cellSize / 2),
-									maxY: 	Math.floor(CONSTANTS.cellSize / 2)
+									x: 			Math.floor(CONSTANTS.cellSize / 2),
+									y: 			Math.floor(CONSTANTS.cellSize / 2),
+									maxX: 		Math.floor(CONSTANTS.cellSize / 2),
+									maxY: 		Math.floor(CONSTANTS.cellSize / 2)
 								},
-								color: 		null,
+								color: 			null,
 								statistics: {
 									moveSpeed:  0,
 									rangeSpeed: 0,
 									rangePower: 0,
-									bumpPower: 	0,
+									meleePower:	0,
 									areaPower: 	0,
 									armorPower: 0
 								}
 							},
 							state: {
-								alive: 		true,
-								health: 	0,
-								healthMax: 	0,
+								alive: 			true,
+								health: 		0,
+								healthMax: 		0,
 								effects: {
-									heal: 	false,
-									rock: 	false,
-									paper: 	false,
-									scissors: false	
+									heal: 		false,
+									rock: 		false,
+									paper: 		false,
+									scissors: 	false	
 								},
 								position: {
-									vx: 	0,
-									vy: 	0,
-									x: 		0,
-									y: 		0,
-									edge: 	null
+									vx: 		0,
+									vy: 		0,
+									x: 			0,
+									y: 			0,
+									edge: 		null
 								},
 								movement: {
-									direction: "down",
-									path: null,
-									up: 	false,
-									left: 	false,
-									right: 	false,
-									down: 	false
+									direction: 	"down",
+									path: 		null,
+									up: 		false,
+									left: 		false,
+									right: 		false,
+									down: 		false
 								},
 								actions: {
-									a: 		false,
-									b: 		false
+									a: 			false,
+									b: 			false
 								},
 								cooldowns: {
-									a: 		0,
-									b: 		0
+									a: 			0,
+									b: 			0
 								},
-								image: 		null
+								image: 			null
 							},
-							items: 			{}
+							items: 				{}
 						}
 					break
 
@@ -1324,10 +1381,10 @@
 								type: 		"item",
 								subtype: 	null,
 								size: {
-									x: Math.floor(CONSTANTS.cellSize / 4),
-									y: Math.floor(CONSTANTS.cellSize / 4),
-									maxX: Math.floor(CONSTANTS.cellSize / 4),
-									maxY: Math.floor(CONSTANTS.cellSize / 4)
+									x: 		Math.floor(CONSTANTS.cellSize / 4),
+									y: 		Math.floor(CONSTANTS.cellSize / 4),
+									maxX: 	Math.floor(CONSTANTS.cellSize / 4),
+									maxY: 	Math.floor(CONSTANTS.cellSize / 4)
 								},
 								color: 		null
 							},
@@ -1344,21 +1401,21 @@
 						return {
 							info: {
 								attacker: {
-									id: null,
-									type: null,
-									subtype: null
+									id: 		null,
+									type: 		null,
+									subtype: 	null
 								},
-								shape: "circle",
-								style: "fill",
-								opacity: 0.5,
+								shape: 			"circle",
+								style: 			"fill",
+								opacity: 		0.5,
 								statistics: {
-									speed: 0,
-									power: 0
+									speed: 		0,
+									power: 		0
 								}
 							},
 							state: {
 								movement: {
-									direction: null
+									direction: 	null
 								}
 							}
 						}

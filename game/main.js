@@ -101,7 +101,7 @@
 
 				// clear & background
 					clearCanvas(CANVAS, CONTEXT)
-					drawRectangle(CANVAS, CONTEXT, 0, 0, CANVAS.width, CANVAS.height, {color: chamber.info.colors[0]})
+					drawRectangle(CANVAS, CONTEXT, 0, 0, CANVAS.width, CANVAS.height, {color: chamber.info.colors.background})
 
 				// minimap
 					drawMinimap(chamber)
@@ -121,7 +121,7 @@
 
 				// draw heroes
 					for (var h in chamber.heroes) {
-						drawHero(chamber.heroes[h])
+						drawCreature(chamber.heroes[h])
 					}
 
 				// overlay
@@ -178,8 +178,8 @@
 		function drawMinimap(chamber) {
 			try {
 				// sizing variables
-					var squareRadius = Math.floor(chamber.info.cellSize / (2 * CONSTANTS.layers) / 2)
-					var squareSize = squareRadius * 2
+					var squareSize = Math.floor(chamber.info.cellSize / (2 * CONSTANTS.layers))
+					var squareRadius = Math.floor(squareSize / 2)
 					var radii = {
 						topLeft: CONSTANTS.borderRadius / 4,
 						topRight: CONSTANTS.borderRadius / 4,
@@ -187,15 +187,24 @@
 						bottomRight: CONSTANTS.borderRadius / 4
 					}
 
+				// visited
+					var visitedKeys = Object.keys(chamber.state.overlay.minimap)
+
 				// loop through chambers, highlighting current chamber
 					for (var x = 1 - CONSTANTS.layers; x < CONSTANTS.layers; x++) {
 						for (var y = 1 - CONSTANTS.layers; y < CONSTANTS.layers; y++) {
 							if (Math.abs(x) + Math.abs(y) < CONSTANTS.layers) {
 								var positionX = (x * squareSize) - squareRadius + Math.ceil(CANVAS.width  / 2)
 								var positionY = (y * squareSize) - squareRadius + Math.ceil(CANVAS.height / 2)
-								var color = (x == chamber.info.x && y == chamber.info.y) ? chamber.info.colors[2] : chamber.info.colors[1]
 
-								drawRectangle(CANVAS, CONTEXT, positionX, positionY, squareSize, squareSize, {color: color, radii: radii})
+								var chamberType = visitedKeys.includes(x + "," + y) ? chamber.state.overlay.minimap[x + "," + y] : null
+								var options = {
+									color: (x == chamber.info.x && y == chamber.info.y) ? chamber.state.overlay.minimapColors.active : (chamber.state.overlay.minimapColors[chamberType] || chamber.state.overlay.minimapColors.normal),
+									opacity: chamberType ? 1 : CONSTANTS.overlayOpacity,
+									radii: radii
+								}
+
+								drawRectangle(CANVAS, CONTEXT, positionX, positionY, squareSize, squareSize, options)
 							}
 						}
 					}
@@ -257,39 +266,8 @@
 									}
 
 								// draw
-									drawRectangle(CANVAS, CONTEXT, wallX, wallY, wallWidth, wallHeight, {color: chamber.info.colors[4], radii: radii})
+									drawRectangle(CANVAS, CONTEXT, wallX, wallY, wallWidth, wallHeight, {color: chamber.info.colors.wall, radii: radii})
 							}
-						}
-					}
-			} catch (error) {}
-		}
-
-	/* drawHero */
-		function drawHero(hero) {
-			try {
-				// variables
-					var heroX = hero.state.position.x + Math.ceil(CANVAS.width  / 2)
-					var heroY = hero.state.position.y + Math.ceil(CANVAS.height / 2)
-					var heroRadius = Math.ceil(((hero.info.size.x + hero.info.size.y) / 2) / 2)
-					var heroColor = hero.info.color
-					var heroOpacity = hero.state.alive ? 1 : CONSTANTS.deadOpacity
-
-				// draw
-					if (IMAGES[hero.state.image]) {
-						drawImage(CANVAS, CONTEXT, heroX, heroY, hero.info.size.x, hero.info.size.y, {image: IMAGES[hero.state.image], color: heroColor, opacity: heroOpacity})
-					}
-					else {
-						drawCircle(CANVAS, CONTEXT, heroX, heroY, heroRadius, {color: heroColor, opacity: heroOpacity})
-					}
-
-				// orb ?
-					for (var i in hero.items) {
-						if (hero.items[i].info.type == "orb") {
-							var item = hero.items[i]
-							var itemRadius = Math.ceil(((item.info.size.x + item.info.size.y) / 2) / 2)
-							var itemColor = item.info.color
-
-							drawCircle(CANVAS, CONTEXT, heroX, heroY, itemRadius, {color: itemColor, opacity: heroOpacity})
 						}
 					}
 			} catch (error) {}
@@ -299,23 +277,63 @@
 		function drawCreature(creature) {
 			try {
 				// variables
-					var creatureColor = creature.info.color
-					var creatureRadius = Math.ceil(((creature.info.size.x + creature.info.size.y) / 2) / 2)
-
-				// coordinates
-					var x1 = creature.state.position.x                  + Math.ceil(CANVAS.width  / 2)
-					var y1 = creature.state.position.y + creatureRadius + Math.ceil(CANVAS.height / 2)
-					var x2 = creature.state.position.x + creatureRadius + Math.ceil(CANVAS.width  / 2)
-					var y2 = creature.state.position.y - creatureRadius + Math.ceil(CANVAS.height / 2)
-					var x3 = creature.state.position.x - creatureRadius + Math.ceil(CANVAS.width  / 2)
-					var y3 = creature.state.position.y - creatureRadius + Math.ceil(CANVAS.height / 2)
+					var creatureX = creature.state.position.x + Math.ceil(CANVAS.width  / 2)
+					var creatureY = creature.state.position.y + Math.ceil(CANVAS.height / 2)
+					var options = {
+						image: IMAGES[creature.state.image] ? IMAGES[creature.state.image] : null,
+						color: creature.info.color,
+						shape: creature.info.shape,
+						opacity: Math.max(0, Math.min(1, 0.5 + (creature.state.health / creature.state.healthMax * 0.5)))
+					}
 
 				// draw
-					if (IMAGES[creature.state.image]) {
-						drawImage(CANVAS, CONTEXT, creature.state.position.x + Math.ceil(CANVAS.width  / 2), creature.state.position.y + Math.ceil(CANVAS.height / 2), creature.info.size.x, creature.info.size.y, {image: IMAGES[hero.state.image], color: creature.info.color})
+					if (options.image) {
+						drawImage(CANVAS, CONTEXT, creatureX, creatureY, creature.info.size.x, creature.info.size.y, options)
 					}
-					else {
-						drawTriangle(CANVAS, CONTEXT, x1, y1, x2, y2, x3, y3, {color: creature.info.color})
+					else if (options.shape == "circle") {
+						drawCircle(CANVAS, CONTEXT, creatureX, creatureY, Math.ceil(((creature.info.size.x + creature.info.size.y) / 2) / 2), options)
+					}
+					else if (options.shape == "triangle") {
+						var x1 = creatureX
+						var y1 = creatureY + (creature.info.size.y / 2)
+						var x2 = creatureX + (creature.info.size.x / 2)
+						var y2 = creatureY - (creature.info.size.y / 2)
+						var x3 = creatureX - (creature.info.size.x / 2)
+						var y3 = creatureY - (creature.info.size.y / 2)
+
+						drawTriangle(CANVAS, CONTEXT, x1, y1, x2, y2, x3, y3, options)
+					}
+					else if (options.shape == "square") {
+						options.radii = {
+							topLeft: 		CONSTANTS.borderRadius,
+							topRight: 		CONSTANTS.borderRadius,
+							bottomRight: 	CONSTANTS.borderRadius,
+							bottomLeft: 	CONSTANTS.borderRadius
+						}
+						drawRectangle(CANVAS, CONTEXT, creatureX - (creature.info.size.x / 2), creatureY - (creature.info.size.y / 2), creature.info.size.x, creature.info.size.y, options)
+					}
+
+				// items
+					for (var i in creature.items) {
+						drawItem({
+							info: {
+								color: item.info.color,
+								shape: item.info.shape,
+								style: item.info.style,
+								opacity: item.info.opacity,
+								size: {
+									x: item.info.size.x,
+									y: item.info.size.y
+								}
+							},
+							state: {
+								image: item.state.image,
+								position: {
+									x: creature.state.position.x,
+									y: creature.state.position.y
+								}
+							}
+						})
 					}
 			} catch (error) {}
 		}
@@ -326,45 +344,43 @@
 				// variables
 					var itemX = item.state.position.x + Math.ceil(CANVAS.width  / 2)
 					var itemY = item.state.position.y + Math.ceil(CANVAS.height / 2)
-					var itemRadius = Math.ceil(((item.info.size.x + item.info.size.y) / 2) / 2)
-					var itemOptions = {
-						color: item.info.color
+					var options = {
+						image: IMAGES[item.state.image] ? IMAGES[item.state.image] : null,
+						color: item.info.color,
+						shape: item.info.shape,
+						opacity: item.info.opacity || 1,
+						border: (item.info.style == "border") ? CONSTANTS.borderThickness : null
 					}
 
-					if (item.info.style == "border") {
-						itemOptions.border = CONSTANTS.borderThickness
-					}
-					if (item.info.opacity) {
-						itemOptions.opacity = item.info.opacity
+					if (item.state.health) {
+						options.opacity = Math.max(0, Math.min(1, 0.5 + (item.state.health / item.state.healthMax * 0.5)))
 					}
 
 				// draw
-					if (IMAGES[item.state.image]) {
-						drawImage(CANVAS, CONTEXT, itemX, itemY, item.info.size.x, item.info.size.y, {image: IMAGES[item.state.image], color: item.info.color})
+					if (options.image) {
+						drawImage(CANVAS, CONTEXT, itemX, itemY, item.info.size.x, item.info.size.y, options)
 					}
-					else {
-						if (item.info.shape == "circle") {
-							drawCircle(CANVAS, CONTEXT, itemX, itemY, itemRadius, itemOptions)
-						}
-						else if (item.info.shape == "triangle") {
-							var x1 = item.state.position.x              + Math.ceil(CANVAS.width  / 2)
-							var y1 = item.state.position.y + itemRadius + Math.ceil(CANVAS.height / 2)
-							var x2 = item.state.position.x + itemRadius + Math.ceil(CANVAS.width  / 2)
-							var y2 = item.state.position.y - itemRadius + Math.ceil(CANVAS.height / 2)
-							var x3 = item.state.position.x - itemRadius + Math.ceil(CANVAS.width  / 2)
-							var y3 = item.state.position.y - itemRadius + Math.ceil(CANVAS.height / 2)
+					else if (options.shape == "circle") {
+						drawCircle(CANVAS, CONTEXT, itemX, itemY, Math.ceil(((item.info.size.x + item.info.size.y) / 2) / 2), options)
+					}
+					else if (options.shape == "triangle") {
+						var x1 = itemX
+						var y1 = itemY + (item.info.size.y / 2)
+						var x2 = itemX + (item.info.size.x / 2)
+						var y2 = itemY - (item.info.size.y / 2)
+						var x3 = itemX - (item.info.size.x / 2)
+						var y3 = itemY - (item.info.size.y / 2)
 
-							drawTriangle(CANVAS, CONTEXT, x1, y1, x2, y2, x3, y3, itemOptions)
+						drawTriangle(CANVAS, CONTEXT, x1, y1, x2, y2, x3, y3, options)
+					}
+					else if (options.shape == "square") {
+						options.radii = {
+							topLeft: 		CONSTANTS.borderRadius,
+							topRight: 		CONSTANTS.borderRadius,
+							bottomRight: 	CONSTANTS.borderRadius,
+							bottomLeft: 	CONSTANTS.borderRadius
 						}
-						else if (item.info.shape == "square") {
-							itemOptions.radii = {
-								topLeft: 		CONSTANTS.borderRadius,
-								topRight: 		CONSTANTS.borderRadius,
-								bottomRight: 	CONSTANTS.borderRadius,
-								bottomLeft: 	CONSTANTS.borderRadius
-							}
-							drawRectangle(CANVAS, CONTEXT, itemX - itemRadius, itemY - itemRadius, itemRadius * 2, itemRadius * 2, itemOptions)
-						}
+						drawRectangle(CANVAS, CONTEXT, itemX - (item.info.size.x / 2), itemY - (item.info.size.y / 2), item.info.size.x, item.info.size.y, options)
 					}
 			} catch (error) {}
 		}

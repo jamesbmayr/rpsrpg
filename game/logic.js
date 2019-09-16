@@ -490,11 +490,15 @@
 		function createChamber(request, chamberX, chamberY, options, callback) {
 			try {
 				// create chamber
+					var layer = Math.abs(chamberX) + Math.abs(chamberY)
 					var chamber = main.getSchema("chamber")
 						chamber.info.x = chamberX
 						chamber.info.y = chamberY
-						chamber.info.colors = CONSTANTS.colors[main.chooseRandom(Object.keys(CONSTANTS.colors).slice(0,-3))]
-
+						chamber.info.colors = {
+							background: 	CONSTANTS.chamberColors[layer][0],
+							wall: 			CONSTANTS.chamberColors[layer][4]
+						}
+					
 				// attach heroes
 					chamber.heroes = request.game.data.heroes
 
@@ -890,6 +894,7 @@
 			try {
 				// set to visited
 					chamber.state.visited = true
+					updateMinimap(request, chamber, callback)
 
 				// loop through middle 5x5 and clear
 					for (var x = -2; x <= 2; x++) {
@@ -908,6 +913,9 @@
 						var pedestal = createItem(request, pedestals[p], callback)
 						chamber.items[pedestal.id] = pedestal
 					}
+
+				// set fade-in
+					chamber.state.cooldowns.activate = CONSTANTS.chamberCooldown * CONSTANTS.loadFade
 			}
 			catch (error) {
 				main.logError(error, arguments.callee.name, [request.session.id], callback)
@@ -919,9 +927,9 @@
 		function createPortal(request, chamber, destination, callback) {
 			try {
 				// clear 3x3 area
-					var quarterChamber = Math.floor(CONSTANTS.chamberSize / 4)
-					var portalX = main.rangeRandom(-quarterChamber, quarterChamber)
-					var portalY = main.rangeRandom(-quarterChamber, quarterChamber)
+					var chamberRadius = Math.floor(chamber.info.chamberSize / 2)
+					var portalX = main.rangeRandom(-chamberRadius + CONSTANTS.edgeBuffer, chamberRadius - CONSTANTS.edgeBuffer)
+					var portalY = main.rangeRandom(-chamberRadius + CONSTANTS.edgeBuffer, chamberRadius - CONSTANTS.edgeBuffer)
 
 					for (var x = portalX - 1; x <= portalX + 1; x++) {
 						for (var y = portalY - 1; y <= portalY + 1; y++) {
@@ -954,9 +962,9 @@
 		function createShrine(request, chamber, shrineType, callback)  {
 			try {
 				// clear 3x3 area
-					var quarterChamber = Math.floor(CONSTANTS.chamberSize / 4)
-					var shrineX = main.rangeRandom(-quarterChamber, quarterChamber)
-					var shrineY = main.rangeRandom(-quarterChamber, quarterChamber)
+					var chamberRadius = Math.floor(chamber.info.chamberSize / 2)
+					var shrineX = main.rangeRandom(-chamberRadius + CONSTANTS.edgeBuffer, chamberRadius - CONSTANTS.edgeBuffer)
+					var shrineY = main.rangeRandom(-chamberRadius + CONSTANTS.edgeBuffer, chamberRadius - CONSTANTS.edgeBuffer)
 
 					for (var x = shrineX - 1; x <= shrineX + 1; x++) {
 						for (var y = shrineY - 1; y <= shrineY + 1; y++) {
@@ -991,13 +999,13 @@
 		module.exports.createSpawns = createSpawns
 		function createSpawns(request, chamber, spawnTypes, callback) {
 			try {
-				var quarterChamber = Math.floor(CONSTANTS.chamberSize / 4)
+				var chamberRadius = Math.floor(chamber.info.chamberSize / 2)
 
 				for (var s in spawnTypes) {
 					// get spawnX & spawnY
 						do {
-							var spawnX = main.rangeRandom(-quarterChamber, quarterChamber)
-							var spawnY = main.rangeRandom(-quarterChamber, quarterChamber)
+							var spawnX = main.rangeRandom(-chamberRadius + CONSTANTS.edgeBuffer, chamberRadius - CONSTANTS.edgeBuffer)
+							var spawnY = main.rangeRandom(-chamberRadius + CONSTANTS.edgeBuffer, chamberRadius - CONSTANTS.edgeBuffer)
 						} while (Object.keys(chamber.items).filter(function(i) {
 							return (chamber.items[i] && chamber.items[i].state.position.x == spawnX && chamber.items[i].state.position.y == spawnY)
 						}).length)
@@ -1063,9 +1071,9 @@
 		function createOrb(request, chamber, orbType, callback) {
 			try {
 				// clear 3x3 area
-					var quarterChamber = Math.floor(CONSTANTS.chamberSize / 4)
-					var orbX = main.rangeRandom(-quarterChamber, quarterChamber)
-					var orbY = main.rangeRandom(-quarterChamber, quarterChamber)
+					var chamberRadius = Math.floor(chamber.info.chamberSize / 2)
+					var orbX = main.rangeRandom(-chamberRadius + CONSTANTS.edgeBuffer, chamberRadius - CONSTANTS.edgeBuffer)
+					var orbY = main.rangeRandom(-chamberRadius + CONSTANTS.edgeBuffer, chamberRadius - CONSTANTS.edgeBuffer)
 
 					for (var x = orbX - 1; x <= orbX + 1; x++) {
 						for (var y = orbY - 1; y <= orbY + 1; y++) {
@@ -1207,8 +1215,8 @@
 				// get eligible cells
 					var chamberRadius = Math.floor(chamber.info.chamberSize / 2)
 					var emptyCells = []
-					for (var x = -chamberRadius + 1; x <= chamberRadius - 1; x++) {
-						for (var y = -chamberRadius + 1; y <= chamberRadius - 1; y++) {
+					for (var x = -chamberRadius + CONSTANTS.edgeBuffer; x <= chamberRadius - CONSTANTS.edgeBuffer; x++) {
+						for (var y = -chamberRadius + CONSTANTS.edgeBuffer; y <= chamberRadius - CONSTANTS.edgeBuffer; y++) {
 							if (chamber.cells[x] && chamber.cells[x][y] && !chamber.cells[x][y].wall) {
 								var itemKeys = Object.keys(chamber.items)
 								if (!itemKeys.find(function(key) {
@@ -1721,7 +1729,7 @@
 							}
 					}
 
-				// bumpAttacks (other heroes / creatures)
+				// meleeAttacks (other heroes / creatures)
 					if (["hero", "monster", "creature"].includes(thing.info.type) && (collision.supertype == "hero" || collision.supertype == "creature" || collision.type == "spawn")) {
 						targetCoordinates = resolveAttackCollision(request, chamber, thing, targetCoordinates, collision, callback)
 					}
@@ -1791,7 +1799,7 @@
 											var power = attack.info.statistics.power
 										}
 										else {
-											var power = attacker.info.statistics.bumpPower * (attacker.state.effects.rock ? CONSTANTS.rockMultiplier : 1)
+											var power = attacker.info.statistics.meleePower * (attacker.state.effects.rock ? CONSTANTS.rockMultiplier : 1)
 										}
 
 										var alive = resolveDamage(request, chamber, recipient, {
@@ -1807,7 +1815,7 @@
 
 								// bump
 									if (recipient.state.alive && (collision.supertype == "creature" || collision.supertype == "hero")) {
-										if (attacker.info.type == "hero" && !attacker.player && recipient.info.type == "hero") { }
+										if (attacker && attacker.info.type == "hero" && !attacker.player && recipient.info.type == "hero") { }
 										else {
 											recipient.state.position.vx = recipient.state.position.vx + (collision.side == "right" ? CONSTANTS.bumpAcceleration : collision.side == "left" ? -CONSTANTS.bumpAcceleration : 0)
 											recipient.state.position.vy = recipient.state.position.vy + (collision.side == "up"    ? CONSTANTS.bumpAcceleration : collision.side == "down" ? -CONSTANTS.bumpAcceleration : 0)
@@ -2053,19 +2061,25 @@
 							// heroes
 								for (var h in chamber.heroes) {
 									var hero = chamber.heroes[h]
-									updateCreature(request, chamber, hero, callback)
+									if (hero) {
+										updateCreature(request, chamber, hero, callback)
+									}
 								}
 
 							// creatures
 								for (var c in chamber.creatures) {
 									var creature = chamber.creatures[c]
-									updateCreature(request, chamber, creature, callback)
+									if (creature) {
+										updateCreature(request, chamber, creature, callback)
+									}
 								}
 
 							// items
 								for (var i in chamber.items) {
 									var item = chamber.items[i]
-									updateItem(request, chamber, item, callback)
+									if (item) {
+										updateItem(request, chamber, item, callback)
+									}
 								}
 						}
 
@@ -2206,6 +2220,7 @@
 					// truly new?
 						if (!newChamber.state.visited) {
 							newChamber.state.visited = true
+							updateMinimap(request, newChamber, callback)
 							resolvePoints(request, newChamber, callback)
 						}
 					
@@ -2688,6 +2703,39 @@
 			}
 		}
 
+	/* updateMinimap */
+		module.exports.updateMinimap = updateMinimap
+		function updateMinimap(request, chamber, callback) {
+			try {
+				// normal
+					var chamberType = "normal"
+
+				// temple
+					if (!chamber.info.x && !chamber.info.y) {
+						chamberType = "temple"
+					}
+					else {
+						for (var i in chamber.items) {
+							if (chamber.items[i].info.type == "shrine") {
+								chamberType = chamber.items[i].info.subtype
+								break
+							}
+							else if (chamber.items[i].info.type == "portal") {
+								chamberType = "portal"
+								break
+							}
+						}
+					}
+
+				// set
+					chamber.state.overlay.minimap[chamber.info.x + "," + chamber.info.y] = chamberType
+
+			}
+			catch (error) {
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
+			}
+		}
+
 	/* updateImage */
 		module.exports.updateImage = updateImage
 		function updateImage(request, thing, targetCoordinates, callback) {
@@ -2699,7 +2747,7 @@
 							imageName.push(thing.info.subtype)
 							imageName.push(thing.state.movement ? thing.state.movement.direction : "all")
 							imageName.push(thing.state.movement && thing.state.movement[thing.state.movement.direction] ? "moving" : "standing")
-							imageName.push(thing.state.actions.a ? "rangeattack" : thing.state.actions.b ? "areaattack" : (targetCoordinates.collisionX || targetCoordinates.collisionY) ? "collision" : Object.keys(thing.items).length ? "holding" : "inactive")
+							imageName.push(thing.state.actions.a ? "rangeAttack" : thing.state.actions.b ? "areaAttack" : (targetCoordinates.collisionX || targetCoordinates.collisionY) ? "collision" : Object.keys(thing.items).length ? "holding" : "inactive")
 						thing.state.image = imageName.join("_")
 					}
 

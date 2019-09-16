@@ -41,7 +41,7 @@
 		width: 90vw;
 		max-height: 90vh;
 		max-width: 90vh;
-		background-color: var(--bluegray-0);
+		background-color: var(--black-4);
 		box-shadow: 0px 0px 10px var(--bluegray-3);
 		border-radius: var(--borderRadius);
 	}
@@ -57,7 +57,6 @@
 		width: 95vw;
 		max-height: 95vh;
 		max-width: 95vh;
-		background-color: var(--bluegray-0);
-		box-shadow: 0px 0px 10px var(--bluegray-3);
+		background-color: transparent;
 		border-radius: calc(2 * var(--borderRadius));
 	}

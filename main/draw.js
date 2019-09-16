@@ -233,6 +233,7 @@
 
 				// image
 					else {
+						context.globalAlpha  = options.opacity !== undefined ? options.opacity : 1
 						context.drawImage(options.image, x - (width / 2), (canvas.height - y) - (height / 2), width, height)
 					}
 			} catch (error) {}
