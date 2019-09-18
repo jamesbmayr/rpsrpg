@@ -914,6 +914,9 @@
 						chamber.items[pedestal.id] = pedestal
 					}
 
+				// add background
+					chamber.info.images.background = "temple_background"
+
 				// set fade-in
 					chamber.state.cooldowns.activate = CONSTANTS.chamberCooldown * CONSTANTS.loadFade
 			}
@@ -1838,19 +1841,19 @@
 			try {
 				// directions
 					if (collision.side == "left") {
-						targetCoordinates.x = Math.max(targetCoordinates.x, obstacle.state.position.x + (obstacle.info.size.x / 2) + targetCoordinates.radiusX)
+						targetCoordinates.x = Math.round(Math.max(targetCoordinates.x, obstacle.state.position.x + (obstacle.info.size.x / 2) + targetCoordinates.radiusX))
 						targetCoordinates.collisionX = true
 					}
 					else if (collision.side == "right") {
-						targetCoordinates.x = Math.min(targetCoordinates.x, obstacle.state.position.x - (obstacle.info.size.x / 2) - targetCoordinates.radiusX)
+						targetCoordinates.x = Math.round(Math.min(targetCoordinates.x, obstacle.state.position.x - (obstacle.info.size.x / 2) - targetCoordinates.radiusX))
 						targetCoordinates.collisionX = true
 					}
 					else if (collision.side == "up") {
-						targetCoordinates.y = Math.min(targetCoordinates.y, obstacle.state.position.y - (obstacle.info.size.y / 2) - targetCoordinates.radiusY)
+						targetCoordinates.y = Math.round(Math.min(targetCoordinates.y, obstacle.state.position.y - (obstacle.info.size.y / 2) - targetCoordinates.radiusY))
 						targetCoordinates.collisionY = true
 					}
 					else if (collision.side == "down") {
-						targetCoordinates.y = Math.max(targetCoordinates.y, obstacle.state.position.y + (obstacle.info.size.y / 2) + targetCoordinates.radiusY)
+						targetCoordinates.y = Math.round(Math.max(targetCoordinates.y, obstacle.state.position.y + (obstacle.info.size.y / 2) + targetCoordinates.radiusY))
 						targetCoordinates.collisionY = true
 					}
 
@@ -1931,8 +1934,8 @@
 
 										for (var i in recipient.items) {
 											var item = main.duplicateObject(recipient.items[i])
-												item.state.position.x = x + Number(Math.floor(Math.random() * 2 * CONSTANTS.itemDropRadius) - CONSTANTS.itemDropRadius)
-												item.state.position.y = y + Number(Math.floor(Math.random() * 2 * CONSTANTS.itemDropRadius) - CONSTANTS.itemDropRadius)
+												item.state.position.x = Math.round(x + Number(Math.floor(Math.random() * 2 * CONSTANTS.itemDropRadius) - CONSTANTS.itemDropRadius))
+												item.state.position.y = Math.round(y + Number(Math.floor(Math.random() * 2 * CONSTANTS.itemDropRadius) - CONSTANTS.itemDropRadius))
 											chamber.items[i] = item
 
 											delete recipient.items[i]
@@ -2158,9 +2161,9 @@
 
 											for (var i in hero.items) {
 												var item = main.duplicateObject(hero.items[i])
-													item.state.position.x = x + Number(Math.floor(Math.random() * 2 * CONSTANTS.itemDropRadius) - CONSTANTS.itemDropRadius)
-													item.state.position.y = y + Number(Math.floor(Math.random() * 2 * CONSTANTS.itemDropRadius) - CONSTANTS.itemDropRadius)
-												chamber.items[i] = item
+													item.state.position.x = Math.round(x + Number(Math.floor(Math.random() * 2 * CONSTANTS.itemDropRadius) - CONSTANTS.itemDropRadius))
+													item.state.position.y = Math.round(y + Number(Math.floor(Math.random() * 2 * CONSTANTS.itemDropRadius) - CONSTANTS.itemDropRadius))
+												request.game.data.chambers[oldX][oldY].items[i] = item
 
 												delete hero.items[i]
 											}
@@ -2244,6 +2247,7 @@
 									hero.info.size.x = hero.info.size.maxX
 									hero.info.size.y = hero.info.size.maxY
 									hero.state.alive = true
+									hero.state.health = hero.state.healthMax * CONSTANTS.reviveHealthFraction
 							}
 						}
 
@@ -2314,6 +2318,7 @@
 											creature.info.size.x = creature.info.size.maxX
 											creature.info.size.y = creature.info.size.maxY
 											creature.state.alive = true
+											creature.state.health = creature.state.healthMax * CONSTANTS.reviveHealthFraction
 										}
 									}
 
@@ -2353,8 +2358,8 @@
 								id: 		creature.id,
 								radiusX: 	Math.ceil(creature.info.size.x / 2),
 								radiusY: 	Math.ceil(creature.info.size.y / 2),
-								x: 			creature.state.position.x + creature.state.position.vx,
-								y: 			creature.state.position.y + creature.state.position.vy,
+								x: 			Math.round(creature.state.position.x + creature.state.position.vx),
+								y: 			Math.round(creature.state.position.y + creature.state.position.vy),
 								collisionX:	false,
 								collisionY: false
 							}
@@ -2369,8 +2374,8 @@
 							targetCoordinates = resolveCollisions(request, chamber, creature, targetCoordinates, callback)
 
 						// move creature
-							creature.state.position.x = targetCoordinates.x
-							creature.state.position.y = targetCoordinates.y
+							creature.state.position.x = Math.round(targetCoordinates.x)
+							creature.state.position.y = Math.round(targetCoordinates.y)
 
 						// arrest movement?
 							creature.state.position.vx = targetCoordinates.collisionX ? 0 : creature.state.position.vx
@@ -2446,8 +2451,8 @@
 									var newX 		= item.state.position.x + (direction == "left" ? -speed : direction == "right" ? speed : 0)
 									var newY 		= item.state.position.y + (direction == "down" ? -speed : direction == "up"    ? speed : 0)
 
-									targetCoordinates.x = newX
-									targetCoordinates.y = newY
+									targetCoordinates.x = Math.round(newX)
+									targetCoordinates.y = Math.round(newY)
 
 								// resolve edges
 									targetCoordinates = resolveEdges(request, chamber, item, targetCoordinates, callback)
@@ -2468,8 +2473,8 @@
 									}
 
 								// move & shrink item
-									item.state.position.x = targetCoordinates.x
-									item.state.position.y = targetCoordinates.y
+									item.state.position.x = Math.round(targetCoordinates.x)
+									item.state.position.y = Math.round(targetCoordinates.y)
 									item.info.statistics.power = Math.max(0, item.info.statistics.power - CONSTANTS.rangeAttackFade)
 									item.info.size.x = Math.max(0, item.info.size.x - CONSTANTS.rangeAttackFade)
 									item.info.size.y = Math.max(0, item.info.size.y - CONSTANTS.rangeAttackFade)
@@ -2494,15 +2499,15 @@
 						// still has power
 							else {
 								// target coordinates
-									targetCoordinates.x = attacker.state.position.x
-									targetCoordinates.y = attacker.state.position.y
+									targetCoordinates.x = Math.round(attacker.state.position.x)
+									targetCoordinates.y = Math.round(attacker.state.position.y)
 
 								// resolve collisions
 									targetCoordinates = resolveCollisions(request, chamber, item, targetCoordinates, callback)
 
 								// move & shrink item
-									item.state.position.x = attacker.state.position.x
-									item.state.position.y = attacker.state.position.y
+									item.state.position.x = Math.round(attacker.state.position.x)
+									item.state.position.y = Math.round(attacker.state.position.y)
 									item.info.statistics.power = Math.max(0, item.info.statistics.power - CONSTANTS.areaAttackFade)
 									item.info.size.x = Math.max(0, item.info.size.x - (CONSTANTS.areaAttackFade * CONSTANTS.areaAttackRadius))
 									item.info.size.y = Math.max(0, item.info.size.y - (CONSTANTS.areaAttackFade * CONSTANTS.areaAttackRadius))
@@ -2653,21 +2658,38 @@
 
 				// heroes
 					if (creature.info.type == "hero") {
-						var creatureCount = Object.keys(chamber.creatures).length
-						var spawnCount = (Object.keys(chamber.items).filter(function(i) {
-							return chamber.items[i].info.type == "spawn"
-						}) || []).length
+						// get count of creatures & spawns
+							var creatureCount = Object.keys(chamber.creatures).length
+							var spawnCount = (Object.keys(chamber.items).filter(function(i) {
+								return chamber.items[i].info.type == "spawn"
+							}) || []).length
 						
-						if (creatureCount || spawnCount) {
-							creature.state.actions.a = main.rollRandom(CONSTANTS.monsterChanceA[0], CONSTANTS.monsterChanceA[1])
-							creature.state.actions.b = main.rollRandom(CONSTANTS.monsterChanceB[0], CONSTANTS.monsterChanceB[1])
-						}
+						// update attacks
+							if (creatureCount || spawnCount) {
+								creature.state.actions.a = main.rollRandom(CONSTANTS.monsterChanceA[0], CONSTANTS.monsterChanceA[1])
+								creature.state.actions.b = main.rollRandom(CONSTANTS.monsterChanceB[0], CONSTANTS.monsterChanceB[1])
+							}
 					}
 
 				// monsters
 					else {
-						creature.state.actions.a = main.rollRandom(CONSTANTS.monsterChanceA[0], CONSTANTS.monsterChanceA[1])
-						creature.state.actions.b = main.rollRandom(CONSTANTS.monsterChanceB[0], CONSTANTS.monsterChanceB[1])
+						// get distances of heroes within awareness
+							var heroCount = 0
+							for (var h in chamber.heroes) {
+								var hero = chamber.heroes[h]
+								if (hero.state.alive) {
+									var distance = main.getDistance(creature.state.position.x, creature.state.position.y, hero.state.position.x, hero.state.position.y)
+									if (distance <= CONSTANTS.monsterAwareness) {
+										heroCount++
+									}
+								}
+							}
+
+						// update attacks
+							if (heroCount) {
+								creature.state.actions.a = main.rollRandom(CONSTANTS.monsterChanceA[0], CONSTANTS.monsterChanceA[1])
+								creature.state.actions.b = main.rollRandom(CONSTANTS.monsterChanceB[0], CONSTANTS.monsterChanceB[1])
+							}
 					}
 			}
 			catch (error) {

@@ -134,6 +134,8 @@
 					// sprites
 						case "sprites":
 							return [
+								"temple_background",
+
 								"orb_rock_all_standing_inactive",			"orb_paper_all_standing_inactive",				"orb_scissors_all_standing_inactive",			"orb_rock_all_standing_active",					"orb_paper_all_standing_active",				"orb_scissors_all_standing_active",
 								
 								"hero_barbarian_up_moving_inactive", 		"hero_barbarian_down_moving_inactive", 			"hero_barbarian_left_moving_inactive", 			"hero_barbarian_right_moving_inactive", 		"hero_barbarian_up_standing_inactive", 			"hero_barbarian_down_standing_inactive", 		"hero_barbarian_left_standing_inactive", 		"hero_barbarian_right_standing_inactive", 
@@ -159,7 +161,12 @@
 								"monster_tatters_up_moving_inactive", 		"monster_tatters_down_moving_inactive", 		"monster_tatters_left_moving_inactive", 		"monster_tatters_right_moving_inactive", 		"monster_tatters_up_standing_inactive", 		"monster_tatters_down_standing_inactive", 		"monster_tatters_left_standing_inactive", 		"monster_tatters_right_standing_inactive",
 								"monster_tatters_up_moving_rangeAttack", 	"monster_tatters_down_moving_rangeAttack", 		"monster_tatters_left_moving_rangeAttack", 		"monster_tatters_right_moving_rangeAttack", 	"monster_tatters_up_standing_rangeAttack", 		"monster_tatters_down_standing_rangeAttack", 	"monster_tatters_left_standing_rangeAttack", 	"monster_tatters_right_standing_rangeAttack",
 								"monster_tatters_up_moving_areaAttack", 	"monster_tatters_down_moving_areaAttack", 		"monster_tatters_left_moving_areaAttack", 		"monster_tatters_right_moving_areaAttack", 		"monster_tatters_up_standing_areaAttack", 		"monster_tatters_down_standing_areaAttack", 	"monster_tatters_left_standing_areaAttack", 	"monster_tatters_right_standing_areaAttack",
-								"monster_tatters_up_moving_collision", 		"monster_tatters_down_moving_collision", 		"monster_tatters_left_moving_collision", 		"monster_tatters_right_moving_collision", 		"monster_tatters_up_standing_collision", 		"monster_tatters_down_standing_collision", 		"monster_tatters_left_standing_collision", 		"monster_tatters_right_standing_collision"
+								"monster_tatters_up_moving_collision", 		"monster_tatters_down_moving_collision", 		"monster_tatters_left_moving_collision", 		"monster_tatters_right_moving_collision", 		"monster_tatters_up_standing_collision", 		"monster_tatters_down_standing_collision", 		"monster_tatters_left_standing_collision", 		"monster_tatters_right_standing_collision",
+
+								"monster_obscuro_up_moving_inactive", 		"monster_obscuro_down_moving_inactive", 		"monster_obscuro_left_moving_inactive", 		"monster_obscuro_right_moving_inactive", 		"monster_obscuro_up_standing_inactive", 		"monster_obscuro_down_standing_inactive", 		"monster_obscuro_left_standing_inactive", 		"monster_obscuro_right_standing_inactive",
+								"monster_obscuro_up_moving_rangeAttack", 	"monster_obscuro_down_moving_rangeAttack", 		"monster_obscuro_left_moving_rangeAttack", 		"monster_obscuro_right_moving_rangeAttack", 	"monster_obscuro_up_standing_rangeAttack", 		"monster_obscuro_down_standing_rangeAttack", 	"monster_obscuro_left_standing_rangeAttack", 	"monster_obscuro_right_standing_rangeAttack",
+								"monster_obscuro_up_moving_areaAttack", 	"monster_obscuro_down_moving_areaAttack", 		"monster_obscuro_left_moving_areaAttack", 		"monster_obscuro_right_moving_areaAttack", 		"monster_obscuro_up_standing_areaAttack", 		"monster_obscuro_down_standing_areaAttack", 	"monster_obscuro_left_standing_areaAttack", 	"monster_obscuro_right_standing_areaAttack",
+								"monster_obscuro_up_moving_collision", 		"monster_obscuro_down_moving_collision", 		"monster_obscuro_left_moving_collision", 		"monster_obscuro_right_moving_collision", 		"monster_obscuro_up_standing_collision", 		"monster_obscuro_down_standing_collision", 		"monster_obscuro_left_standing_collision", 		"monster_obscuro_right_standing_collision"
 							]
 						break
 
@@ -185,6 +192,7 @@
 									timeHigh: 			90,
 									timeLow: 			45,
 									loadFade: 			4,
+									baseHealthOpacity: 	0.25,
 
 								// game loop
 									loopInterval: 		50,
@@ -204,7 +212,8 @@
 									spawnChance: 		[2,3],
 
 								// health
-									baseHealthPercent: 	1,
+									baseHealthFraction: 1,
+									reviveHealthFraction: 0.5,
 									baseHealth: 		128,
 									spawnHealth: 		1024,
 									heal: 				1,
@@ -222,9 +231,9 @@
 									deathFade: 			1,
 
 								// shrine effects
-									rockMultiplier: 	2,
-									paperMultiplier: 	4,
-									scissorsMultiplier: 2,
+									rockMultiplier: 	1.5,
+									paperMultiplier: 	3,
+									scissorsMultiplier: 1.5,
 
 								// lists
 									rps: 				["rock", "paper", "scissors"],
@@ -264,7 +273,7 @@
 								constants.spawnCooldown 	= Math.floor(second * 4)
 								constants.portalCooldown 	= Math.floor(second * 3)
 								constants.deathCooldown 	= Math.floor(second / 2)
-								constants.effectCooldown 	= Math.floor(second * 20)
+								constants.effectCooldown 	= Math.floor(second * 30)
 								constants.aCooldown 		= Math.floor(second / 4)
 								constants.bCooldown 		= Math.floor(second)
 
@@ -279,7 +288,7 @@
 								constants.bumpAcceleration	= Math.floor(constants.cellSize / 8)
 								constants.areaAttackRadius 	= Math.floor(constants.cellSize / 8)
 								constants.itemDropRadius 	= Math.floor(constants.cellSize / 4)
-								constants.monsterAwareness 	= Math.floor(constants.cellSize * constants.chamberSize / 4)
+								constants.monsterAwareness 	= Math.floor(constants.cellSize * constants.chamberSize / 2)
 
 							// chamber colors by layer
 								constants.chamberColors = [
@@ -888,12 +897,12 @@
 											rangeSpeed: sixteenthCell * 3,
 											rangePower: sixteenthHealth * 2,
 											meleePower:	sixteenthHealth * 5,
-											areaPower: 	sixteenthHealth * 2,
+											areaPower: 	sixteenthHealth * 3,
 											armorPower: sixteenthHealth * 2
 										}
 									},
 									state: {
-										health: CONSTANTS.baseHealth * CONSTANTS.baseHealthPercent,
+										health: CONSTANTS.baseHealth * CONSTANTS.baseHealthFraction,
 										healthMax: CONSTANTS.baseHealth,
 										position: {
 											x: 0,
@@ -915,12 +924,12 @@
 											rangeSpeed: sixteenthCell * 4,
 											rangePower: sixteenthHealth * 3,
 											meleePower:	sixteenthHealth,
-											areaPower: 	sixteenthHealth * 3,
+											areaPower: 	sixteenthHealth * 4,
 											armorPower: sixteenthHealth
 										}
 									},
 									state: {
-										health: CONSTANTS.baseHealth * CONSTANTS.baseHealthPercent,
+										health: CONSTANTS.baseHealth * CONSTANTS.baseHealthFraction,
 										healthMax: CONSTANTS.baseHealth,
 										position: {
 											x: -4 * sixteenthCell,
@@ -942,12 +951,12 @@
 											rangeSpeed: sixteenthCell * 4,
 											rangePower: sixteenthHealth * 4,
 											meleePower:	sixteenthHealth * 3,
-											areaPower: 	sixteenthHealth,
+											areaPower: 	sixteenthHealth * 2,
 											armorPower: sixteenthHealth
 										}
 									},
 									state: {
-										health: CONSTANTS.baseHealth * CONSTANTS.baseHealthPercent,
+										health: CONSTANTS.baseHealth * CONSTANTS.baseHealthFraction,
 										healthMax: CONSTANTS.baseHealth,
 										position: {
 											x:  4 * sixteenthCell,
@@ -982,21 +991,21 @@
 										}
 									},
 									state: {
-										health: CONSTANTS.baseHealth / 2 * CONSTANTS.baseHealthPercent,
+										health: CONSTANTS.baseHealth / 2 * CONSTANTS.baseHealthFraction,
 										healthMax: CONSTANTS.baseHealth / 2
 									}
 								},
-								"dendroid": {
+								"obscuro": {
 									info: {
 										rps: "paper",
 										type: "monster",
-										subtype: "dendroid",
+										subtype: "obscuro",
 										color: CONSTANTS.colors.wizard[0],
 										shape: "triangle",
 										pathing: "aggressive",
 										points: CONSTANTS.monsterPoints,
 										statistics: {
-											moveSpeed: 	sixteenthCell,
+											moveSpeed: 	sixteenthCell * 2,
 											rangeSpeed: sixteenthCell * 3,
 											rangePower: sixteenthHealth * 4,
 											meleePower:	sixteenthHealth * 2,
@@ -1005,7 +1014,7 @@
 										}
 									},
 									state: {
-										health: CONSTANTS.baseHealth / 2 * CONSTANTS.baseHealthPercent,
+										health: CONSTANTS.baseHealth / 2 * CONSTANTS.baseHealthFraction,
 										healthMax: CONSTANTS.baseHealth / 2
 									}
 								},
@@ -1028,7 +1037,7 @@
 										}
 									},
 									state: {
-										health: CONSTANTS.baseHealth / 2 * CONSTANTS.baseHealthPercent,
+										health: CONSTANTS.baseHealth / 2 * CONSTANTS.baseHealthFraction,
 										healthMax: CONSTANTS.baseHealth / 2									
 									}
 								}
@@ -1130,7 +1139,7 @@
 										maxX: Math.floor(CONSTANTS.cellSize / 8) * 7,
 										maxY: Math.floor(CONSTANTS.cellSize / 8) * 7
 									},
-									color: CONSTANTS.colors.green[1],
+									color: CONSTANTS.colors.white[3],
 									shape: "square",
 									style: "border"
 								},
@@ -1211,7 +1220,7 @@
 										activate: 0
 									},
 									alive: true,
-									health: CONSTANTS.spawnHealth * CONSTANTS.baseHealthPercent,
+									health: CONSTANTS.spawnHealth * CONSTANTS.baseHealthFraction,
 									healthMax: CONSTANTS.spawnHealth
 								}
 							}
@@ -1253,7 +1262,8 @@
 										minimap: {},
 										minimapColors: {
 											active: 	CONSTANTS.colors.black[3],
-											normal: 	CONSTANTS.colors.black[1],
+											inactive: 	CONSTANTS.colors.black[2],
+											unexplored: CONSTANTS.colors.black[1],
 											temple: 	getAsset("heal").info.color,
 											portal: 	getAsset("portal").info.color,
 											rock: 		CONSTANTS.colors.barbarian[0],
@@ -1290,6 +1300,10 @@
 							info: {
 								type: 			"chamber",
 								colors: 		{},
+								images: 		{
+									background: null,
+									wall: null
+								},
 								x: 				0,
 								y: 				0,
 								chamberSize: 	CONSTANTS.chamberSize,

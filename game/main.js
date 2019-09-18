@@ -11,14 +11,16 @@
 		var IMAGES = []
 		preloadImages()
 		function preloadImages() {
-			try {
-				for (var i in SPRITES) {
-					var img = document.createElement("img")
-						img.id = SPRITES[i]
-						img.src = SPRITES[i] + ".png"
-					IMAGES[SPRITES[i]] = img
-				}
-			} catch (error) {}
+			setTimeout(function() {
+				try {
+					for (var i in SPRITES) {
+						var img = document.createElement("img")
+							img.id = SPRITES[i]
+							img.src = SPRITES[i] + ".png"
+						IMAGES[SPRITES[i]] = img
+					}
+				} catch (error) {}
+			}, 0)
 		}
 
 	/* other */
@@ -101,7 +103,7 @@
 
 				// clear & background
 					clearCanvas(CANVAS, CONTEXT)
-					drawRectangle(CANVAS, CONTEXT, 0, 0, CANVAS.width, CANVAS.height, {color: chamber.info.colors.background})
+					drawBackground(chamber)
 
 				// minimap
 					drawMinimap(chamber)
@@ -194,17 +196,20 @@
 					for (var x = 1 - CONSTANTS.layers; x < CONSTANTS.layers; x++) {
 						for (var y = 1 - CONSTANTS.layers; y < CONSTANTS.layers; y++) {
 							if (Math.abs(x) + Math.abs(y) < CONSTANTS.layers) {
-								var positionX = (x * squareSize) - squareRadius + Math.ceil(CANVAS.width  / 2)
-								var positionY = (y * squareSize) - squareRadius + Math.ceil(CANVAS.height / 2)
+								var positionX = (x * squareSize) + Math.ceil(CANVAS.width  / 2) - squareRadius
+								var positionY = (y * squareSize) + Math.ceil(CANVAS.height / 2) - squareRadius
 
 								var chamberType = visitedKeys.includes(x + "," + y) ? chamber.state.overlay.minimap[x + "," + y] : null
 								var options = {
-									color: (x == chamber.info.x && y == chamber.info.y) ? chamber.state.overlay.minimapColors.active : (chamber.state.overlay.minimapColors[chamberType] || chamber.state.overlay.minimapColors.normal),
-									opacity: chamberType ? 1 : CONSTANTS.overlayOpacity,
+									color: (x == chamber.info.x && y == chamber.info.y) ? chamber.state.overlay.minimapColors.active : chamberType ? chamber.state.overlay.minimapColors.inactive : chamber.state.overlay.minimapColors.unexplored,
 									radii: radii
 								}
 
 								drawRectangle(CANVAS, CONTEXT, positionX, positionY, squareSize, squareSize, options)
+
+								if (chamberType && chamberType !== "normal") {
+									drawCircle(CANVAS, CONTEXT, positionX + squareRadius, positionY + squareRadius, squareRadius / 2, {color: chamber.state.overlay.minimapColors[chamberType]})
+								}
 							}
 						}
 					}
@@ -232,6 +237,21 @@
 		}
 
 /*** draws: in-game ***/
+	/* drawBackground */
+		function drawBackground(chamber) {
+			try {
+				// image
+					if (chamber.info.images.background && IMAGES[chamber.info.images.background]) {
+						drawImage(CANVAS, CONTEXT, Math.ceil(CANVAS.width / 2), Math.ceil(CANVAS.height / 2), CANVAS.width, CANVAS.height, {image: IMAGES[chamber.info.images.background]})
+					}
+
+				// color
+					else {
+						drawRectangle(CANVAS, CONTEXT, 0, 0, CANVAS.width, CANVAS.height, {color: chamber.info.colors.background})
+					}
+			} catch (error) {}
+		}
+
 	/* drawWalls */
 		function drawWalls(chamber) {
 			try {
@@ -265,8 +285,15 @@
 										bottomLeft: 	(!neighbors.down && !neighbors.left ) ? CONSTANTS.borderRadius : 0
 									}
 
-								// draw
-									drawRectangle(CANVAS, CONTEXT, wallX, wallY, wallWidth, wallHeight, {color: chamber.info.colors.wall, radii: radii})
+								// draw image
+									if (chamber.info.images.wall && IMAGES[chamber.info.images.wall]) {
+										drawImage(CANVAS, CONTEXT, wallX, wallY, wallWidth, wallHeight, {image: IMAGES[chamber.info.images.wall]})
+									}
+
+								// draw color
+									else {
+										drawRectangle(CANVAS, CONTEXT, wallX, wallY, wallWidth, wallHeight, {color: chamber.info.colors.wall, radii: radii})
+									}
 							}
 						}
 					}
@@ -283,7 +310,7 @@
 						image: IMAGES[creature.state.image] ? IMAGES[creature.state.image] : null,
 						color: creature.info.color,
 						shape: creature.info.shape,
-						opacity: Math.max(0, Math.min(1, 0.5 + (creature.state.health / creature.state.healthMax * 0.5)))
+						opacity: Math.max(0, Math.min(1, CONSTANTS.baseHealthOpacity + (creature.state.health / creature.state.healthMax * (1 - CONSTANTS.baseHealthOpacity))))
 					}
 
 				// draw
@@ -353,7 +380,7 @@
 					}
 
 					if (item.state.health) {
-						options.opacity = Math.max(0, Math.min(1, 0.5 + (item.state.health / item.state.healthMax * 0.5)))
+						options.opacity = Math.max(0, Math.min(1, CONSTANTS.baseHealthOpacity + (item.state.health / item.state.healthMax * (1 - CONSTANTS.baseHealthOpacity))))
 					}
 
 				// draw
