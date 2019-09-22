@@ -134,9 +134,9 @@
 					// sprites
 						case "sprites":
 							return [
-								"temple_background",
-
 								"orb_rock_all_standing_inactive",			"orb_paper_all_standing_inactive",				"orb_scissors_all_standing_inactive",			"orb_rock_all_standing_active",					"orb_paper_all_standing_active",				"orb_scissors_all_standing_active",
+
+								"layer_0_background", "layer_0_wall_0_", "layer_0_wall_1_up", "layer_0_wall_1_right", "layer_0_wall_1_down", "layer_0_wall_1_left", "layer_0_wall_2_upright", "layer_0_wall_2_rightdown", "layer_0_wall_2_downleft", "layer_0_wall_2_upleft", "layer_0_wall_2_updown", "layer_0_wall_2_rightleft", "layer_0_wall_3_uprightdown", "layer_0_wall_3_rightdownleft", "layer_0_wall_3_uprightleft", "layer_0_wall_3_updownleft", "layer_0_wall_4_uprightdownleft",
 								
 								"hero_barbarian_up_moving_inactive", 		"hero_barbarian_down_moving_inactive", 			"hero_barbarian_left_moving_inactive", 			"hero_barbarian_right_moving_inactive", 		"hero_barbarian_up_standing_inactive", 			"hero_barbarian_down_standing_inactive", 		"hero_barbarian_left_standing_inactive", 		"hero_barbarian_right_standing_inactive", 
 								"hero_barbarian_up_moving_rangeAttack", 	"hero_barbarian_down_moving_rangeAttack", 		"hero_barbarian_left_moving_rangeAttack", 		"hero_barbarian_right_moving_rangeAttack", 		"hero_barbarian_up_standing_rangeAttack", 		"hero_barbarian_down_standing_rangeAttack", 	"hero_barbarian_left_standing_rangeAttack", 	"hero_barbarian_right_standing_rangeAttack", 
@@ -193,6 +193,7 @@
 									timeLow: 			45,
 									loadFade: 			4,
 									baseHealthOpacity: 	0.25,
+									observerWidth: 		800,
 
 								// game loop
 									loopInterval: 		50,
@@ -237,7 +238,7 @@
 
 								// lists
 									rps: 				["rock", "paper", "scissors"],
-									directions: 		["up", "left", "right", "down"],
+									directions: 		["up", "right", "down", "left"],
 									actions: 			["a", "b"],
 
 								// colors
@@ -357,12 +358,6 @@
 										cells[x][maxY - 1].wall = true
 									}
 								},
-								function left(cells, minX, maxX, minY, maxY) {
-									for (var y = minY; y <= maxY; y++) {
-										cells[minX][y].wall = true
-										cells[minX + 1][y].wall = true
-									}
-								},
 								function right(cells, minX, maxX, minY, maxY) {
 									for (var y = minY; y <= maxY; y++) {
 										cells[maxX][y].wall = true
@@ -373,6 +368,12 @@
 									for (var x = minX; x <= maxX; x++) {
 										cells[x][minY].wall = true
 										cells[x][minY + 1].wall = true
+									}
+								},
+								function left(cells, minX, maxX, minY, maxY) {
+									for (var y = minY; y <= maxY; y++) {
+										cells[minX][y].wall = true
+										cells[minX + 1][y].wall = true
 									}
 								},
 								function upLeft(cells, minX, maxX, minY, maxY) {
@@ -387,17 +388,17 @@
 									cells[maxX - 1][maxY].wall = true
 									cells[maxX - 1][maxY - 1].wall = true
 								},
-								function downLeft(cells, minX, maxX, minY, maxY) {
-									cells[minX][minY].wall = true
-									cells[minX][minY + 1].wall = true
-									cells[minX + 1][minY].wall = true
-									cells[minX + 1][minY + 1].wall = true
-								},
 								function downRight(cells, minX, maxX, minY, maxY) {
 									cells[maxX][minY].wall = true
 									cells[maxX][minY + 1].wall = true
 									cells[maxX - 1][minY].wall = true
 									cells[maxX - 1][minY + 1].wall = true
+								},
+								function downLeft(cells, minX, maxX, minY, maxY) {
+									cells[minX][minY].wall = true
+									cells[minX][minY + 1].wall = true
+									cells[minX + 1][minY].wall = true
+									cells[minX + 1][minY + 1].wall = true
 								},
 								function diagonal(cells, minX, maxX, minY, maxY) {
 									if (minX < 0 && minY > 0) {
@@ -461,13 +462,13 @@
 												if ((monster.state.movement.direction == "up") && (!chamber.cells[x] || !chamber.cells[x][y + 1] || chamber.cells[x][y + 1].wall)) {
 													monster.state.movement.direction = null
 												}
+												else if ((monster.state.movement.direction == "right") && (!chamber.cells[x + 1] || !chamber.cells[x + 1][y] || chamber.cells[x + 1][y].wall)) {
+													monster.state.movement.direction = null
+												}
 												else if ((monster.state.movement.direction == "down") && (!chamber.cells[x] || !chamber.cells[x][y - 1] || chamber.cells[x][y - 1].wall)) {
 													monster.state.movement.direction = null
 												}
 												else if ((monster.state.movement.direction == "left") && (!chamber.cells[x - 1] || !chamber.cells[x - 1][y] || chamber.cells[x - 1][y].wall)) {
-													monster.state.movement.direction = null
-												}
-												else if ((monster.state.movement.direction == "right") && (!chamber.cells[x + 1] || !chamber.cells[x + 1][y] || chamber.cells[x + 1][y].wall)) {
 													monster.state.movement.direction = null
 												}
 											}
@@ -482,14 +483,14 @@
 											if ((monster.state.movement.direction == "up") && (chamber.cells[x] && chamber.cells[x][y + 1] && !chamber.cells[x][y + 1].wall)) {
 												targetCell = (x) + "," + (y + 1)
 											}
+											else if ((monster.state.movement.direction == "right") && (chamber.cells[x + 1] && chamber.cells[x + 1][y] && !chamber.cells[x + 1][y].wall)) {
+												targetCell = (x + 1) + "," + (y)
+											}
 											else if ((monster.state.movement.direction == "down") && (chamber.cells[x] && chamber.cells[x][y - 1] && !chamber.cells[x][y - 1].wall)) {
 												targetCell = (x) + "," + (y - 1)
 											}
 											else if ((monster.state.movement.direction == "left") && (chamber.cells[x - 1] && chamber.cells[x - 1][y] && !chamber.cells[x - 1][y].wall)) {
 												targetCell = (x - 1) + "," + (y)
-											}
-											else if ((monster.state.movement.direction == "right") && (chamber.cells[x + 1] && chamber.cells[x + 1][y] && !chamber.cells[x + 1][y].wall)) {
-												targetCell = (x + 1) + "," + (y)
 											}
 
 										// return path
@@ -1300,10 +1301,7 @@
 							info: {
 								type: 			"chamber",
 								colors: 		{},
-								images: 		{
-									background: null,
-									wall: null
-								},
+								image: 			null,
 								x: 				0,
 								y: 				0,
 								chamberSize: 	CONSTANTS.chamberSize,
@@ -1369,9 +1367,9 @@
 									direction: 	"down",
 									path: 		null,
 									up: 		false,
-									left: 		false,
 									right: 		false,
-									down: 		false
+									down: 		false,
+									left: 		false
 								},
 								actions: {
 									a: 			false,

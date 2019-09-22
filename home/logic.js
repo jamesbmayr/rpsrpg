@@ -40,11 +40,14 @@
 				if (request.game.data.state.end) {
 					callback({success: false, message: "game already ended"})
 				}
-				else if (!request.game.players[request.session.id] && (Object.keys(request.game.players).length >= 3)) {
-					callback({success: false, message: "game is at capacity"})
-				}
 				else if (request.game.players[request.session.id]) {
 					callback({success: true, message: "rejoining game", location: "../../game/" + request.game.id})
+				}
+				else if (request.post.observing) {
+					callback({success: true, message: "observing game", location: "../../game/" + request.game.id})
+				}
+				else if (!request.game.players[request.session.id] && (Object.keys(request.game.players).length >= 3)) {
+					callback({success: false, message: "game is at capacity"})
 				}
 				else {
 					// get remaining heroes

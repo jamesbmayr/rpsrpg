@@ -44,7 +44,8 @@
 				// data
 					var post = {
 						action: "joinGame",
-						gameid: gameCode
+						gameid: gameCode,
+						observing: (on.click == "click" && window.innerWidth >= CONSTANTS.observerWidth)
 					}
 
 				// submit

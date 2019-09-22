@@ -135,10 +135,10 @@
 									// connect hero <> player
 										var hero = request.game.data.heroes[heroKey]
 											hero.player = request.session.id
-											hero.state.movement.down 	= false
-											hero.state.movement.left 	= false
 											hero.state.movement.up 		= false
 											hero.state.movement.right 	= false
+											hero.state.movement.down 	= false
+											hero.state.movement.left 	= false
 											hero.state.actions.a 		= false
 											hero.state.actions.b 		= false
 										player.hero = hero.id
@@ -242,10 +242,6 @@
 							hero.state.movement.up    = true
 							hero.state.movement.down  = false
 						break
-						case "left":
-							hero.state.movement.left  = true
-							hero.state.movement.right = false
-						break
 						case "right":
 							hero.state.movement.right = true
 							hero.state.movement.left  = false
@@ -253,6 +249,10 @@
 						case "down":
 							hero.state.movement.down  = true
 							hero.state.movement.up    = false
+						break
+						case "left":
+							hero.state.movement.left  = true
+							hero.state.movement.right = false
 						break
 					}
 			}
@@ -270,14 +270,14 @@
 						case "up":
 							hero.state.movement.up    = false
 						break
-						case "left":
-							hero.state.movement.left  = false
-						break
 						case "right":
 							hero.state.movement.right = false
 						break
 						case "down":
 							hero.state.movement.down  = false
+						break
+						case "left":
+							hero.state.movement.left  = false
 						break
 					}
 			}
@@ -459,6 +459,13 @@
 							createChamber(request, Number(x), Number(y), options, callback)
 					}
 
+				// loop through chambers to assign wall images
+					for (var x in request.game.data.chambers) {
+						for (var y in request.game.data.chambers[x]) {
+							createWallImages(request, request.game.data.chambers[x][y], callback)
+						}
+					}
+
 				// loop through chambers to make nodemaps
 					for (var x in request.game.data.chambers) {
 						for (var y in request.game.data.chambers[x]) {
@@ -498,6 +505,7 @@
 							background: 	CONSTANTS.chamberColors[layer][0],
 							wall: 			CONSTANTS.chamberColors[layer][4]
 						}
+						chamber.info.image = "layer_" + layer + "_background"
 					
 				// attach heroes
 					chamber.heroes = request.game.data.heroes
@@ -586,11 +594,11 @@
 				// up-right
 					main.chooseRandom(WALLMAKERS)(chamber.cells, 1, cellMaxX, 1, cellMaxY)
 
-				// down-left
-					main.chooseRandom(WALLMAKERS)(chamber.cells, cellMinX, -1, cellMinY, -1)
-
 				// down-right
 					main.chooseRandom(WALLMAKERS)(chamber.cells, 1, cellMaxX, cellMinY, -1)
+
+				// down-left
+					main.chooseRandom(WALLMAKERS)(chamber.cells, cellMinX, -1, cellMinY, -1)
 
 			}
 			catch (error) {
@@ -613,11 +621,6 @@
 						var neighborUpMinY = Math.floor(neighborUp.info.chamberSize / 2) * -1
 					}
 
-					if (request.game.data.chambers[chamber.info.x - 1] && request.game.data.chambers[chamber.info.x - 1][chamber.info.y]) {
-						var neighborLeft = request.game.data.chambers[chamber.info.x - 1][chamber.info.y]
-						var neighborLeftMaxX = Math.floor(neighborLeft.info.chamberSize / 2)
-					}
-
 					if (request.game.data.chambers[chamber.info.x + 1] && request.game.data.chambers[chamber.info.x + 1][chamber.info.y]) {
 						var neighborRight = request.game.data.chambers[chamber.info.x + 1][chamber.info.y]
 						var neighborRightMinX = Math.floor(neighborRight.info.chamberSize / 2) * -1
@@ -628,6 +631,11 @@
 						var neighborDownMaxY = Math.floor(neighborDown.info.chamberSize / 2)
 					}
 
+					if (request.game.data.chambers[chamber.info.x - 1] && request.game.data.chambers[chamber.info.x - 1][chamber.info.y]) {
+						var neighborLeft = request.game.data.chambers[chamber.info.x - 1][chamber.info.y]
+						var neighborLeftMaxX = Math.floor(neighborLeft.info.chamberSize / 2)
+					}
+
 				// center chamber
 					if (chamber.info.x == 0 && chamber.info.y == 0) {
 						doors = main.duplicateArray(CONSTANTS.directions)
@@ -636,8 +644,8 @@
 				// point chamber
 					else if ((chamber.info.x == 0 && Math.abs(chamber.info.y) == layers - 1)
 						  || (chamber.info.y == 0 && Math.abs(chamber.info.x) == layers - 1)) {
-						if (chamber.info.x == (layers - 1)) {
-							doors = ["left"]
+						if (chamber.info.y == -1 * (layers - 1)) {
+							doors = ["up"]
 							possibleDoors = []
 						}
 						else if (chamber.info.x == -1 * (layers - 1)) {
@@ -648,20 +656,20 @@
 							doors = ["down"]
 							possibleDoors = []
 						}
-						else if (chamber.info.y == -1 * (layers - 1)) {
-							doors = ["up"]
+						else if (chamber.info.x == (layers - 1)) {
+							doors = ["left"]
 							possibleDoors = []
 						}
 					}
 
 				// edge chamber
 					else if (Math.abs(chamber.info.x) + Math.abs(chamber.info.y) == layers - 1) {
-						if (chamber.info.x < 0 && chamber.info.y < 0) {
-							doors = ["up", "right"]
+						if (chamber.info.x > 0 && chamber.info.y < 0) {
+							doors = ["up", "left"]
 							possibleDoors = []
 						}
-						else if (chamber.info.x > 0 && chamber.info.y < 0) {
-							doors = ["up", "left"]
+						else if (chamber.info.x < 0 && chamber.info.y < 0) {
+							doors = ["up", "right"]
 							possibleDoors = []
 						}
 						else if (chamber.info.x < 0 && chamber.info.y > 0) {
@@ -681,11 +689,6 @@
 								doors.push("up")
 							}
 
-						// left (check left's right)
-							if (neighborLeft && neighborLeft.cells[neighborLeftMaxX] && neighborLeft.cells[neighborLeftMaxX][0] && !neighborLeft.cells[neighborLeftMaxX][0].wall) {
-								doors.push("left")
-							}
-
 						// right (check right's left)
 							if (neighborRight && neighborRight.cells[neighborRightMinX] && neighborRight.cells[neighborRightMinX][0] && !neighborRight.cells[neighborRightMinX][0].wall) {
 								doors.push("right")
@@ -694,6 +697,11 @@
 						// down (check down's up)
 							if (neighborDown && neighborDown.cells[0] && neighborDown.cells[0][neighborDownMaxY] && !neighborDown.cells[0][neighborDownMaxY].wall) {
 								doors.push("down")
+							}
+
+						// left (check left's right)
+							if (neighborLeft && neighborLeft.cells[neighborLeftMaxX] && neighborLeft.cells[neighborLeftMaxX][0] && !neighborLeft.cells[neighborLeftMaxX][0].wall) {
+								doors.push("left")
 							}
 					}
 
@@ -717,19 +725,6 @@
 								neighborUp.cells["-1"][neighborUpMinY].wall = false
 								neighborUp.cells[ "0"][neighborUpMinY].wall = false
 								neighborUp.cells[ "1"][neighborUpMinY].wall = false
-							}
-						}
-
-					// left
-						if (doors.includes("left")) {
-							chamber.cells[cellMinX]["-1"].wall = false
-							chamber.cells[cellMinX][ "0"].wall = false
-							chamber.cells[cellMinX][ "1"].wall = false
-
-							if (neighborLeft) {
-								neighborLeft.cells[neighborLeftMaxX]["-1"].wall = false
-								neighborLeft.cells[neighborLeftMaxX][ "0"].wall = false
-								neighborLeft.cells[neighborLeftMaxX][ "1"].wall = false
 							}
 						}
 
@@ -758,6 +753,55 @@
 								neighborDown.cells[ "1"][neighborDownMaxY].wall = false
 							}
 						}
+
+					// left
+						if (doors.includes("left")) {
+							chamber.cells[cellMinX]["-1"].wall = false
+							chamber.cells[cellMinX][ "0"].wall = false
+							chamber.cells[cellMinX][ "1"].wall = false
+
+							if (neighborLeft) {
+								neighborLeft.cells[neighborLeftMaxX]["-1"].wall = false
+								neighborLeft.cells[neighborLeftMaxX][ "0"].wall = false
+								neighborLeft.cells[neighborLeftMaxX][ "1"].wall = false
+							}
+						}
+			}
+			catch (error) {
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
+			}
+		}
+
+	/* createWallImages */
+		module.createWallImages = createWallImages
+		function createWallImages(request, chamber, callback) {
+			try {
+				// get layer
+					var layer = Math.abs(chamber.info.x) + Math.abs(chamber.info.y)
+
+				// loop through cells to find walls
+					for (var x in chamber.cells) {
+						x = Number(x)
+						for (var y in chamber.cells[x]) {
+							y = Number(y)
+							if (chamber.cells[x][y].wall) {
+								// get neighbors
+									var neighbors = {
+										up: 	!(chamber.cells[x]     && chamber.cells[x][y + 1] && chamber.cells[x][y + 1].wall),
+										right: 	!(chamber.cells[x + 1] && chamber.cells[x + 1][y] && chamber.cells[x + 1][y].wall),
+										down: 	!(chamber.cells[x]     && chamber.cells[x][y - 1] && chamber.cells[x][y - 1].wall),
+										left: 	!(chamber.cells[x - 1] && chamber.cells[x - 1][y] && chamber.cells[x - 1][y].wall)
+									}
+
+								// get images
+									var directions = Object.keys(neighbors).filter(function(k) {
+										return neighbors[k]
+									}) || []
+									
+									chamber.cells[x][y].wall = "layer_" + layer + "_wall_" + directions.length + "_" + directions.join("")
+							}
+						}
+					}
 			}
 			catch (error) {
 				main.logError(error, arguments.callee.name, [request.session.id], callback)
@@ -781,14 +825,6 @@
 						createConnectionPaths(request, chamber, nodemap, x, y, x, y + 1, callback)
 					}
 
-				// left
-					if (chamber.cells[x - 1] && chamber.cells[x - 1][y] && !chamber.cells[x - 1][y].wall) {
-						if (!connectedCells.includes((x - 1) + "," + (y))) {
-							connectedCells.push((x - 1) + "," + (y))
-						}
-						createConnectionPaths(request, chamber, nodemap, x, y, x - 1, y, callback)
-					}
-
 				// right
 					if (chamber.cells[x + 1] && chamber.cells[x + 1][y] && !chamber.cells[x + 1][y].wall) {
 						if (!connectedCells.includes((x + 1) + "," + (y))) {
@@ -803,6 +839,14 @@
 							connectedCells.push((x) + "," + (y - 1))
 						}
 						createConnectionPaths(request, chamber, nodemap, x, y, x, y - 1, callback)
+					}
+
+				// left
+					if (chamber.cells[x - 1] && chamber.cells[x - 1][y] && !chamber.cells[x - 1][y].wall) {
+						if (!connectedCells.includes((x - 1) + "," + (y))) {
+							connectedCells.push((x - 1) + "," + (y))
+						}
+						createConnectionPaths(request, chamber, nodemap, x, y, x - 1, y, callback)
 					}
 			}
 			catch (error) {
@@ -913,9 +957,6 @@
 						var pedestal = createItem(request, pedestals[p], callback)
 						chamber.items[pedestal.id] = pedestal
 					}
-
-				// add background
-					chamber.info.images.background = "temple_background"
 
 				// set fade-in
 					chamber.state.cooldowns.activate = CONSTANTS.chamberCooldown * CONSTANTS.loadFade
@@ -1390,23 +1431,23 @@
 
 				// sides
 					var thingUp    = positionY + radiusY
-					var thingLeft  = positionX - radiusX
 					var thingRight = positionX + radiusX
 					var thingDown  = positionY - radiusY
+					var thingLeft  = positionX - radiusX
 				
 				// collision?
 					if ((thingUp    > targetCoordinates.y - targetCoordinates.radiusY)
-					 && (thingLeft  < targetCoordinates.x + targetCoordinates.radiusX)
 					 && (thingRight > targetCoordinates.x - targetCoordinates.radiusX)
-					 && (thingDown  < targetCoordinates.y + targetCoordinates.radiusY)) {
+					 && (thingDown  < targetCoordinates.y + targetCoordinates.radiusY)
+					 && (thingLeft  < targetCoordinates.x + targetCoordinates.radiusX)) {
 						// get deltas
 							var deltaUp    = Math.abs(targetCoordinates.y + targetCoordinates.radiusY - thingDown )
-							var deltaLeft  = Math.abs(targetCoordinates.x - targetCoordinates.radiusX - thingRight)
 							var deltaRight = Math.abs(targetCoordinates.x + targetCoordinates.radiusX - thingLeft )
 							var deltaDown  = Math.abs(targetCoordinates.y - targetCoordinates.radiusY - thingUp   )
+							var deltaLeft  = Math.abs(targetCoordinates.x - targetCoordinates.radiusX - thingRight)
 
 						// get side
-							var delta = Math.min(deltaUp, deltaLeft, deltaRight, deltaDown)
+							var delta = Math.min(deltaUp, deltaRight, deltaDown, deltaLeft)
 							return (delta == deltaUp) ? "up" : (delta == deltaLeft) ? "left" : (delta == deltaRight) ? "right" : "down"
 					}
 					else {
@@ -1426,9 +1467,9 @@
 				// get edges
 					var quarterCell	 = Math.ceil(CONSTANTS.cellSize / 4)
 					var chamberUp    =  chamber.info.chamberSize * quarterCell * 2
-					var chamberLeft  = -chamber.info.chamberSize * quarterCell * 2
 					var chamberRight =  chamber.info.chamberSize * quarterCell * 2
 					var chamberDown  = -chamber.info.chamberSize * quarterCell * 2
+					var chamberLeft  = -chamber.info.chamberSize * quarterCell * 2
 					var collision 	 = {
 						side: null
 					}
@@ -1438,12 +1479,6 @@
 						var edge = "up"
 						if (targetCoordinates.y + targetCoordinates.radiusY > chamberUp) {
 							collision.side = "up"
-						}
-					}
-					else if (targetCoordinates.x - targetCoordinates.radiusX < chamberLeft + quarterCell) {
-						var edge = "left"
-						if (targetCoordinates.x - targetCoordinates.radiusX < chamberLeft) {
-							collision.side = "left"
 						}
 					}
 					else if (targetCoordinates.x + targetCoordinates.radiusX > chamberRight - quarterCell) {
@@ -1456,6 +1491,12 @@
 						var edge = "down"
 						if (targetCoordinates.y - targetCoordinates.radiusY < chamberDown) {
 							collision.side = "down"
+						}
+					}
+					else if (targetCoordinates.x - targetCoordinates.radiusX < chamberLeft + quarterCell) {
+						var edge = "left"
+						if (targetCoordinates.x - targetCoordinates.radiusX < chamberLeft) {
+							collision.side = "left"
 						}
 					}
 					else {
@@ -1840,21 +1881,21 @@
 		function resolveStop(request, targetCoordinates, collision, obstacle, callback) {
 			try {
 				// directions
-					if (collision.side == "left") {
-						targetCoordinates.x = Math.round(Math.max(targetCoordinates.x, obstacle.state.position.x + (obstacle.info.size.x / 2) + targetCoordinates.radiusX))
-						targetCoordinates.collisionX = true
+					if (collision.side == "up") {
+						targetCoordinates.y = Math.round(Math.min(targetCoordinates.y, obstacle.state.position.y - (obstacle.info.size.y / 2) - targetCoordinates.radiusY))
+						targetCoordinates.collisionY = true
 					}
 					else if (collision.side == "right") {
 						targetCoordinates.x = Math.round(Math.min(targetCoordinates.x, obstacle.state.position.x - (obstacle.info.size.x / 2) - targetCoordinates.radiusX))
 						targetCoordinates.collisionX = true
 					}
-					else if (collision.side == "up") {
-						targetCoordinates.y = Math.round(Math.min(targetCoordinates.y, obstacle.state.position.y - (obstacle.info.size.y / 2) - targetCoordinates.radiusY))
-						targetCoordinates.collisionY = true
-					}
 					else if (collision.side == "down") {
 						targetCoordinates.y = Math.round(Math.max(targetCoordinates.y, obstacle.state.position.y + (obstacle.info.size.y / 2) + targetCoordinates.radiusY))
 						targetCoordinates.collisionY = true
+					}
+					else if (collision.side == "left") {
+						targetCoordinates.x = Math.round(Math.max(targetCoordinates.x, obstacle.state.position.x + (obstacle.info.size.x / 2) + targetCoordinates.radiusX))
+						targetCoordinates.collisionX = true
 					}
 
 				// return
@@ -2705,19 +2746,25 @@
 					var maxSpeed = creature.info.statistics.moveSpeed * (creature.state.effects.scissors ? CONSTANTS.scissorsMultiplier : 1)
 
 				// x
-					if (Math.abs(creature.state.position.vx) > maxSpeed) {
-						creature.state.position.vx = (Math.abs(creature.state.position.vx) - CONSTANTS.acceleration) * Math.sign(creature.state.position.vx)
+					if (creature.state.movement.right) {
+						creature.state.position.vx = Math.max(-maxSpeed, Math.min(maxSpeed, creature.state.position.vx + CONSTANTS.acceleration))
+					}
+					else if (creature.state.movement.left) {
+						creature.state.position.vx = Math.max(-maxSpeed, Math.min(maxSpeed, creature.state.position.vx - CONSTANTS.acceleration))
 					}
 					else {
-						creature.state.position.vx = Math.max(-maxSpeed, Math.min(maxSpeed, creature.state.position.vx + (creature.state.movement.left ? -CONSTANTS.acceleration : creature.state.movement.right ? CONSTANTS.acceleration : -CONSTANTS.acceleration * Math.sign(creature.state.position.vx))))
+						creature.state.position.vx = Math.max(-maxSpeed, Math.min(maxSpeed, Math.max(0, Math.abs(creature.state.position.vx) - CONSTANTS.acceleration) * Math.sign(creature.state.position.vx)))
 					}
 
 				// y
-					if (Math.abs(creature.state.position.vy) > maxSpeed) {
-						creature.state.position.vy = (Math.abs(creature.state.position.vy) - CONSTANTS.acceleration) * Math.sign(creature.state.position.vy)
+					if (creature.state.movement.up) {
+						creature.state.position.vy = Math.max(-maxSpeed, Math.min(maxSpeed, creature.state.position.vy + CONSTANTS.acceleration))
+					}
+					else if (creature.state.movement.down) {
+						creature.state.position.vy = Math.max(-maxSpeed, Math.min(maxSpeed, creature.state.position.vy - CONSTANTS.acceleration))
 					}
 					else {
-						creature.state.position.vy = Math.max(-maxSpeed, Math.min(maxSpeed, creature.state.position.vy + (creature.state.movement.down ? -CONSTANTS.acceleration : creature.state.movement.up    ? CONSTANTS.acceleration : -CONSTANTS.acceleration * Math.sign(creature.state.position.vy))))
+						creature.state.position.vy = Math.max(-maxSpeed, Math.min(maxSpeed, Math.max(0, Math.abs(creature.state.position.vy) - CONSTANTS.acceleration) * Math.sign(creature.state.position.vy)))
 					}
 			}
 			catch (error) {

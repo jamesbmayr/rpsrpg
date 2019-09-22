@@ -165,8 +165,8 @@
 						radii: {
 							topLeft: CONSTANTS.borderRadius,
 							topRight: CONSTANTS.borderRadius,
-							bottomLeft: CONSTANTS.borderRadius,
-							bottomRight: CONSTANTS.borderRadius
+							bottomRight: CONSTANTS.borderRadius,
+							bottomLeft: CONSTANTS.borderRadius
 						}
 					}
 					drawRectangle(CANVAS, CONTEXT, CONSTANTS.borderRadius, CANVAS.height * 3 / 8, CANVAS.width - CONSTANTS.borderRadius * 2, CANVAS.height / 4, options)
@@ -185,8 +185,8 @@
 					var radii = {
 						topLeft: CONSTANTS.borderRadius / 4,
 						topRight: CONSTANTS.borderRadius / 4,
-						bottomLeft: CONSTANTS.borderRadius / 4,
-						bottomRight: CONSTANTS.borderRadius / 4
+						bottomRight: CONSTANTS.borderRadius / 4,
+						bottomLeft: CONSTANTS.borderRadius / 4
 					}
 
 				// visited
@@ -241,8 +241,8 @@
 		function drawBackground(chamber) {
 			try {
 				// image
-					if (chamber.info.images.background && IMAGES[chamber.info.images.background]) {
-						drawImage(CANVAS, CONTEXT, Math.ceil(CANVAS.width / 2), Math.ceil(CANVAS.height / 2), CANVAS.width, CANVAS.height, {image: IMAGES[chamber.info.images.background]})
+					if (chamber.info.image && IMAGES[chamber.info.image]) {
+						drawImage(CANVAS, CONTEXT, Math.ceil(CANVAS.width / 2), Math.ceil(CANVAS.height / 2), CANVAS.width, CANVAS.height, {image: IMAGES[chamber.info.image]})
 					}
 
 				// color
@@ -264,35 +264,17 @@
 						for (var y in chamber.cells[x]) {
 							if (chamber.cells[x][y].wall) {
 								// get coordinates
-									x = Number(x)
-									y = Number(y)
-									var wallX = x * wallWidth  + Math.ceil(CANVAS.width  / 2) - (wallWidth / 2)
-									var wallY = y * wallHeight + Math.ceil(CANVAS.height / 2) - (wallHeight / 2)
-
-								// get neighbors
-									var neighbors = {
-										up: 	(chamber.cells[x]     && chamber.cells[x][y + 1] && chamber.cells[x][y + 1].wall),
-										left: 	(chamber.cells[x - 1] && chamber.cells[x - 1][y] && chamber.cells[x - 1][y].wall),
-										right: 	(chamber.cells[x + 1] && chamber.cells[x + 1][y] && chamber.cells[x + 1][y].wall),
-										down: 	(chamber.cells[x]     && chamber.cells[x][y - 1] && chamber.cells[x][y - 1].wall)
-									}
-
-								// get radii
-									var radii = {
-										topRight: 		(!neighbors.up   && !neighbors.right) ? CONSTANTS.borderRadius : 0,
-										topLeft: 		(!neighbors.up   && !neighbors.left ) ? CONSTANTS.borderRadius : 0,
-										bottomRight: 	(!neighbors.down && !neighbors.right) ? CONSTANTS.borderRadius : 0,
-										bottomLeft: 	(!neighbors.down && !neighbors.left ) ? CONSTANTS.borderRadius : 0
-									}
+									var wallX = x * wallWidth  + Math.ceil(CANVAS.width  / 2)
+									var wallY = y * wallHeight + Math.ceil(CANVAS.height / 2)
 
 								// draw image
-									if (chamber.info.images.wall && IMAGES[chamber.info.images.wall]) {
-										drawImage(CANVAS, CONTEXT, wallX, wallY, wallWidth, wallHeight, {image: IMAGES[chamber.info.images.wall]})
+									if (IMAGES[chamber.cells[x][y].wall]) {
+										drawImage(CANVAS, CONTEXT, wallX, wallY, wallWidth, wallHeight, {image: IMAGES[chamber.cells[x][y].wall]})
 									}
 
-								// draw color
+								// draw square
 									else {
-										drawRectangle(CANVAS, CONTEXT, wallX, wallY, wallWidth, wallHeight, {color: chamber.info.colors.wall, radii: radii})
+										drawRectangle(CANVAS, CONTEXT, wallX - (wallWidth / 2), wallY - (wallWidth / 2), wallWidth, wallHeight, {color: chamber.info.colors.wall})
 									}
 							}
 						}
