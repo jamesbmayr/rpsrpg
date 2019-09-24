@@ -24,6 +24,7 @@
 		}
 
 	/* other */
+		var ENDLINK = document.getElementById("play-again")
 		var RADIANS = (Math.PI / 180)
 
 /*** websocket ***/
@@ -83,6 +84,11 @@
 				// info
 					if (data.chamber) {
 						drawChamber(data.chamber)
+					}
+
+				// end?
+					if (data.end) {
+						ENDLINK.removeAttribute("hidden")
 					}
 			} catch (error) {}
 		}

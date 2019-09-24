@@ -7,16 +7,17 @@
 		var DPAD 		= document.getElementById("d-pad")
 		var MIDDLE 		= document.getElementById("middle")
 		var ACTIONS 	= document.getElementById("actions")
-		var HEALTHBAR 	= document.querySelector("#health-inner")
+		var HEALTHBAR 	= document.getElementById("health-inner")
 		var INPUTS = {
-			up: 	document.querySelector("#up"),
-			down: 	document.querySelector("#down"),
-			left: 	document.querySelector("#left"),
-			right: 	document.querySelector("#right"),
-			start: 	document.querySelector("#start"),
-			a: 		document.querySelector("#a"),
-			b: 		document.querySelector("#b")
+			up: 	document.getElementById("up"),
+			down: 	document.getElementById("down"),
+			left: 	document.getElementById("left"),
+			right: 	document.getElementById("right"),
+			start: 	document.getElementById("start"),
+			a: 		document.getElementById("a"),
+			b: 		document.getElementById("b")
 		}
+		var ENDLINK 	= document.getElementById("play-again")
 
 	/* booleans */
 		var SELECTED = false
@@ -159,6 +160,11 @@
 				// info
 					if (data.hero) {
 						displayInfo(data.hero)
+					}
+
+				// end?
+					if (data.end) {
+						ENDLINK.removeAttribute("hidden")
 					}
 			} catch (error) {}
 		}

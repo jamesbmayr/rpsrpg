@@ -244,3 +244,18 @@
 		#b {
 			margin-right: calc(100% / 2);
 		}
+
+/*** end ***/
+	#play-again {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translateX(-50%) translateY(-50%);
+		height: 100%;
+		width: 100%;
+		background-color: var(--black-3);
+		border-radius: 0px;
+		color: var(--white-4);
+		font-size: 200%;
+		text-align: center;
+	}

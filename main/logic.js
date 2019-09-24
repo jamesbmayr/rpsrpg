@@ -174,6 +174,7 @@
 						case "constants":
 							var constants = {
 								// messages
+									joinMessage: 		"JOIN: ",
 									startMessage: 		"FIND THE ORBS!",
 									pauseMessage: 		"PAUSED",
 									victoryMessage: 	"VICTORY!",
@@ -217,7 +218,7 @@
 									reviveHealthFraction: 0.5,
 									baseHealth: 		128,
 									spawnHealth: 		1024,
-									heal: 				1,
+									heal: 				2,
 									rpsMultiplier: 		2,
 
 								// AI
@@ -898,13 +899,16 @@
 											rangeSpeed: sixteenthCell * 3,
 											rangePower: sixteenthHealth * 2,
 											meleePower:	sixteenthHealth * 5,
-											areaPower: 	sixteenthHealth * 3,
-											armorPower: sixteenthHealth * 2
+											areaPower: 	sixteenthHealth * 2,
+											bumpMove:   sixteenthCell * 4,
+											armorPower: sixteenthHealth * 6,
+											armorRegen: sixteenthHealth * 3
 										}
 									},
 									state: {
 										health: CONSTANTS.baseHealth * CONSTANTS.baseHealthFraction,
 										healthMax: CONSTANTS.baseHealth,
+										armor: sixteenthHealth,
 										position: {
 											x: 0,
 											y: 4 * sixteenthCell
@@ -925,13 +929,16 @@
 											rangeSpeed: sixteenthCell * 4,
 											rangePower: sixteenthHealth * 3,
 											meleePower:	sixteenthHealth,
-											areaPower: 	sixteenthHealth * 4,
-											armorPower: sixteenthHealth
+											areaPower: 	sixteenthHealth * 3,
+											bumpMove:   sixteenthCell * 2,
+											armorPower: sixteenthHealth * 3,
+											armorRegen: sixteenthHealth * 3
 										}
 									},
 									state: {
 										health: CONSTANTS.baseHealth * CONSTANTS.baseHealthFraction,
 										healthMax: CONSTANTS.baseHealth,
+										armor: sixteenthHealth,
 										position: {
 											x: -4 * sixteenthCell,
 											y: -4 * sixteenthCell
@@ -951,14 +958,17 @@
 											moveSpeed: 	sixteenthCell * 3,
 											rangeSpeed: sixteenthCell * 4,
 											rangePower: sixteenthHealth * 4,
-											meleePower:	sixteenthHealth * 3,
+											meleePower:	sixteenthHealth * 2,
 											areaPower: 	sixteenthHealth * 2,
-											armorPower: sixteenthHealth
+											bumpMove:   sixteenthCell * 3,
+											armorPower: sixteenthHealth * 4,
+											armorRegen: sixteenthHealth * 2
 										}
 									},
 									state: {
 										health: CONSTANTS.baseHealth * CONSTANTS.baseHealthFraction,
 										healthMax: CONSTANTS.baseHealth,
+										armor: sixteenthHealth,
 										position: {
 											x:  4 * sixteenthCell,
 											y: -4 * sixteenthCell
@@ -986,14 +996,17 @@
 											moveSpeed: 	sixteenthCell,
 											rangeSpeed: sixteenthCell * 3,
 											rangePower: sixteenthHealth * 2,
-											meleePower:	sixteenthHealth * 4,
+											meleePower:	sixteenthHealth * 3,
 											areaPower: 	sixteenthHealth,
-											armorPower: sixteenthHealth
+											bumpMove:   sixteenthCell * 2,
+											armorPower: sixteenthHealth * 3,
+											armorRegen: sixteenthHealth * 2
 										}
 									},
 									state: {
 										health: CONSTANTS.baseHealth / 2 * CONSTANTS.baseHealthFraction,
-										healthMax: CONSTANTS.baseHealth / 2
+										healthMax: CONSTANTS.baseHealth / 2,
+										armor: sixteenthHealth * 2
 									}
 								},
 								"obscuro": {
@@ -1006,17 +1019,20 @@
 										pathing: "aggressive",
 										points: CONSTANTS.monsterPoints,
 										statistics: {
-											moveSpeed: 	sixteenthCell * 2,
+											moveSpeed: 	sixteenthCell * 3,
 											rangeSpeed: sixteenthCell * 3,
 											rangePower: sixteenthHealth * 4,
 											meleePower:	sixteenthHealth * 2,
 											areaPower: 	sixteenthHealth,
-											armorPower: sixteenthHealth
+											bumpMove:   sixteenthCell,
+											armorPower: sixteenthHealth * 2,
+											armorRegen: sixteenthHealth * 2
 										}
 									},
 									state: {
 										health: CONSTANTS.baseHealth / 2 * CONSTANTS.baseHealthFraction,
-										healthMax: CONSTANTS.baseHealth / 2
+										healthMax: CONSTANTS.baseHealth / 2,
+										armor: sixteenthHealth
 									}
 								},
 								"tatters": {
@@ -1030,16 +1046,19 @@
 										points: CONSTANTS.monsterPoints,
 										statistics: {
 											moveSpeed: 	sixteenthCell * 2,
-											rangeSpeed: sixteenthCell * 2,
+											rangeSpeed: sixteenthCell * 3,
 											rangePower: sixteenthHealth,
-											meleePower:	sixteenthHealth * 3,
+											meleePower:	sixteenthHealth * 2,
 											areaPower: 	sixteenthHealth * 2,
-											armorPower: sixteenthHealth
+											bumpMove:   sixteenthCell,
+											armorPower: sixteenthHealth * 2,
+											armorRegen: sixteenthHealth * 2
 										}
 									},
 									state: {
 										health: CONSTANTS.baseHealth / 2 * CONSTANTS.baseHealthFraction,
-										healthMax: CONSTANTS.baseHealth / 2									
+										healthMax: CONSTANTS.baseHealth / 2,
+										armor: sixteenthHealth									
 									}
 								}
 							}
@@ -1343,13 +1362,15 @@
 									rangePower: 0,
 									meleePower:	0,
 									areaPower: 	0,
-									armorPower: 0
+									armorPower: 0,
+									armorRegen: 0
 								}
 							},
 							state: {
 								alive: 			true,
 								health: 		0,
 								healthMax: 		0,
+								armor: 			0,
 								effects: {
 									heal: 		false,
 									rock: 		false,

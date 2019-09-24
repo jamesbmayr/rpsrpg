@@ -1859,10 +1859,10 @@
 
 								// bump
 									if (recipient.state.alive && (collision.supertype == "creature" || collision.supertype == "hero")) {
-										if (attacker && attacker.info.type == "hero" && !attacker.player && recipient.info.type == "hero") { }
-										else {
-											recipient.state.position.vx = recipient.state.position.vx + (collision.side == "right" ? CONSTANTS.bumpAcceleration : collision.side == "left" ? -CONSTANTS.bumpAcceleration : 0)
-											recipient.state.position.vy = recipient.state.position.vy + (collision.side == "up"    ? CONSTANTS.bumpAcceleration : collision.side == "down" ? -CONSTANTS.bumpAcceleration : 0)
+										if (attacker && (attacker.info.type !== "hero" || attacker.player || recipient.info.type !== "hero")) {
+											var acceleration = attacker.info.statistics.bumpMove
+											recipient.state.position.vx = recipient.state.position.vx + (collision.side == "right" ? acceleration : collision.side == "left" ? -acceleration : 0)
+											recipient.state.position.vy = recipient.state.position.vy + (collision.side == "up"    ? acceleration : collision.side == "down" ? -acceleration : 0)
 										}
 									}
 							}
@@ -1928,29 +1928,35 @@
 				// enemy fire
 					else {
 						// multipliers
-							var attackMultiplier = 1
-							var armorMultiplier  = 1
+							var multiplier = 1
 							switch (damage.rps) {
 								case "rock":
-									attackMultiplier = recipient.info.rps == "scissors" ? CONSTANTS.rpsMultiplier : 1
-									armorMultiplier  = recipient.info.rps == "paper"    ? CONSTANTS.rpsMultiplier : 1
+									multiplier = (recipient.info.rps == "scissors") ? CONSTANTS.rpsMultiplier : (recipient.info.rps == "paper")    ? (1 / CONSTANTS.rpsMultiplier) : 1
 								break
 								case "paper":
-									attackMultiplier = recipient.info.rps == "rock"     ? CONSTANTS.rpsMultiplier : 1
-									armorMultiplier  = recipient.info.rps == "scissors" ? CONSTANTS.rpsMultiplier : 1
+									multiplier = (recipient.info.rps == "rock")     ? CONSTANTS.rpsMultiplier : (recipient.info.rps == "scissors") ? (1 / CONSTANTS.rpsMultiplier) : 1
 								break
 								case "scissors":
-									attackMultiplier = recipient.info.rps == "paper"    ? CONSTANTS.rpsMultiplier : 1
-									armorMultiplier  = recipient.info.rps == "rock"     ? CONSTANTS.rpsMultiplier : 1
+									multiplier = (recipient.info.rps == "paper")    ? CONSTANTS.rpsMultiplier : (recipient.info.rps == "rock")     ? (1 / CONSTANTS.rpsMultiplier) : 1
 								break
 							}
 
 						// damage
-							var armor = recipient.info.statistics.armorPower * (recipient.state.effects && recipient.state.effects.paper ? CONSTANTS.paperMultiplier : 1)
-							var finalDamage = Math.max(0, Math.floor((damage.power * attackMultiplier) - (armor * armorMultiplier)))
+							var totalDamage = Math.max(0, Math.floor(damage.power * multiplier))
+
+						// reduce armor
+							if (recipient.state.armor) {
+								var inflictedDamage = totalDamage - recipient.state.armor
+								recipient.state.armor = Math.max(0, Math.min(recipient.state.armor, recipient.state.armor - totalDamage))
+							}
+							else {
+								var inflictedDamage = totalDamage
+							}
 
 						// reduce health
-							recipient.state.health = Math.max(0, Math.min(recipient.state.healthMax, recipient.state.health - finalDamage))
+							if (inflictedDamage > 0) {
+								recipient.state.health = Math.max(0, Math.min(recipient.state.healthMax, recipient.state.health - inflictedDamage))
+							}
 
 						// dead?
 							if (recipient.state.health <= 0) {
@@ -2046,7 +2052,8 @@
 
 			// game over
 				else if (request.game.data.state.end) {
-					callback(Object.keys(request.game.observers), {success: true, chamber: chamber})	
+					callback(Object.keys(request.game.observers), {success: true, chamber: chamber, end: true})	
+					callback(Object.keys(request.game.players), {success: true, end: true})
 				}
 
 			// play
@@ -2092,7 +2099,12 @@
 						else {
 							// started?
 								if (!request.game.data.state.start) {
-									request.game.data.state.overlay.message = CONSTANTS.startMessage
+									if (Object.keys(request.game.players).length < 3) {
+										request.game.data.state.overlay.message = CONSTANTS.joinMessage + request.game.id
+									}
+									else {
+										request.game.data.state.overlay.message = CONSTANTS.startMessage
+									}
 								}
 								else {
 									request.game.data.state.overlay.message = null
@@ -2360,6 +2372,7 @@
 											creature.info.size.y = creature.info.size.maxY
 											creature.state.alive = true
 											creature.state.health = creature.state.healthMax * CONSTANTS.reviveHealthFraction
+											creature.state.armor = creature.info.statistics.armorPower
 										}
 									}
 
@@ -2374,6 +2387,9 @@
 					else {
 						// resets
 							creature.state.position.edge = null
+							
+							var multiplier  = (creature.state.effects && creature.state.effects.paper) ? CONSTANTS.paperMultiplier : 1
+							creature.state.armor = Math.max(0, Math.min(creature.info.statistics.armorPower * multiplier, creature.state.armor + creature.info.statistics.armorRegen * multiplier))
 
 						// no player? --> AI
 							if (!creature.player) {

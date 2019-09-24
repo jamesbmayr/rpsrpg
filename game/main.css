@@ -25,11 +25,6 @@
 			padding: 50px;
 		}
 
-/*** start ***/
-	#container[gameplay] #start {
-		display: none;
-	}
-
 /*** canvas ***/
 	#canvas {
 		position: absolute;
@@ -59,4 +54,21 @@
 		max-width: 95vh;
 		background-color: transparent;
 		border-radius: calc(2 * var(--borderRadius));
+	}
+
+/*** end ***/
+	#play-again {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translateX(-50%) translateY(100%);
+		height: auto;
+		width: auto;
+		background-color: var(--black-3);
+		border-radius: var(--borderRadius);
+		color: var(--white-4);
+		font-size: 200%;
+		text-align: center;
+		z-index: 2;
+		padding: 4px;
 	}
