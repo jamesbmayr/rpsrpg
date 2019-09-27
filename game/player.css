@@ -248,14 +248,22 @@
 /*** end ***/
 	#play-again {
 		position: absolute;
-		top: 50%;
-		left: 50%;
-		transform: translateX(-50%) translateY(-50%);
+		top: 0px;
+		left: 0px;
 		height: 100%;
 		width: 100%;
 		background-color: var(--black-3);
 		border-radius: 0px;
+		text-align: center;
+	}
+
+	#play-again-inner {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translateX(-50%) translateY(-50%);
+		width: auto;
+		height: auto;
 		color: var(--white-4);
 		font-size: 200%;
-		text-align: center;
 	}

@@ -2827,11 +2827,12 @@
 			try {
 				// heroes && creatures
 					if (thing.info.type == "hero" || thing.info.type == "creature" || thing.info.type == "monster") {
+						var moving = thing.state.image && thing.state.image.includes("moving") || false
 						var imageName = []
 							imageName.push(thing.info.type)
 							imageName.push(thing.info.subtype)
 							imageName.push(thing.state.movement ? thing.state.movement.direction : "all")
-							imageName.push(thing.state.movement && thing.state.movement[thing.state.movement.direction] ? "moving" : "standing")
+							imageName.push(thing.state.movement && thing.state.movement[thing.state.movement.direction] && !moving ? "moving" : "standing")
 							imageName.push(thing.state.actions.a ? "rangeAttack" : thing.state.actions.b ? "areaAttack" : (targetCoordinates.collisionX || targetCoordinates.collisionY) ? "collision" : Object.keys(thing.items).length ? "holding" : "inactive")
 						thing.state.image = imageName.join("_")
 					}
@@ -2843,7 +2844,7 @@
 							imageName.push(thing.info.subtype)
 							imageName.push(thing.state.movement ? thing.state.movement.direction : "all")
 							imageName.push((thing.state.movement && thing.state.movement[thing.state.movement.direction]) ? "moving" : "standing")
-							imageName.push((thing.state.active || !thing.state.cooldowns || !thing.state.cooldowns.activate) ? "active" : "inactive")
+							imageName.push((thing.state.active || (thing.state.cooldowns && !thing.state.cooldowns.activate)) ? "active" : "inactive")
 						thing.state.image = imageName.join("_")
 					}
 			}

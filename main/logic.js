@@ -135,6 +135,7 @@
 						case "sprites":
 							return [
 								"orb_rock_all_standing_inactive",			"orb_paper_all_standing_inactive",				"orb_scissors_all_standing_inactive",			"orb_rock_all_standing_active",					"orb_paper_all_standing_active",				"orb_scissors_all_standing_active",
+								"pedestal_rock_all_standing_inactive",		"pedestal_paper_all_standing_inactive",			"pedestal_scissors_all_standing_inactive",		"pedestal_rock_all_standing_active",			"pedestal_paper_all_standing_active",			"pedestal_scissors_all_standing_active",
 
 								"layer_0_background", "layer_0_wall_0_", "layer_0_wall_1_up", "layer_0_wall_1_right", "layer_0_wall_1_down", "layer_0_wall_1_left", "layer_0_wall_2_upright", "layer_0_wall_2_rightdown", "layer_0_wall_2_downleft", "layer_0_wall_2_upleft", "layer_0_wall_2_updown", "layer_0_wall_2_rightleft", "layer_0_wall_3_uprightdown", "layer_0_wall_3_rightdownleft", "layer_0_wall_3_uprightleft", "layer_0_wall_3_updownleft", "layer_0_wall_4_uprightdownleft",
 								
@@ -166,7 +167,11 @@
 								"monster_obscuro_up_moving_inactive", 		"monster_obscuro_down_moving_inactive", 		"monster_obscuro_left_moving_inactive", 		"monster_obscuro_right_moving_inactive", 		"monster_obscuro_up_standing_inactive", 		"monster_obscuro_down_standing_inactive", 		"monster_obscuro_left_standing_inactive", 		"monster_obscuro_right_standing_inactive",
 								"monster_obscuro_up_moving_rangeAttack", 	"monster_obscuro_down_moving_rangeAttack", 		"monster_obscuro_left_moving_rangeAttack", 		"monster_obscuro_right_moving_rangeAttack", 	"monster_obscuro_up_standing_rangeAttack", 		"monster_obscuro_down_standing_rangeAttack", 	"monster_obscuro_left_standing_rangeAttack", 	"monster_obscuro_right_standing_rangeAttack",
 								"monster_obscuro_up_moving_areaAttack", 	"monster_obscuro_down_moving_areaAttack", 		"monster_obscuro_left_moving_areaAttack", 		"monster_obscuro_right_moving_areaAttack", 		"monster_obscuro_up_standing_areaAttack", 		"monster_obscuro_down_standing_areaAttack", 	"monster_obscuro_left_standing_areaAttack", 	"monster_obscuro_right_standing_areaAttack",
-								"monster_obscuro_up_moving_collision", 		"monster_obscuro_down_moving_collision", 		"monster_obscuro_left_moving_collision", 		"monster_obscuro_right_moving_collision", 		"monster_obscuro_up_standing_collision", 		"monster_obscuro_down_standing_collision", 		"monster_obscuro_left_standing_collision", 		"monster_obscuro_right_standing_collision"
+								"monster_obscuro_up_moving_collision", 		"monster_obscuro_down_moving_collision", 		"monster_obscuro_left_moving_collision", 		"monster_obscuro_right_moving_collision", 		"monster_obscuro_up_standing_collision", 		"monster_obscuro_down_standing_collision", 		"monster_obscuro_left_standing_collision", 		"monster_obscuro_right_standing_collision",
+
+								"rangeAttack_barbarian_up_moving_active", 	"rangeAttack_barbarian_down_moving_active", 	"rangeAttack_barbarian_left_moving_active", 	"rangeAttack_barbarian_right_moving_active",
+								"rangeAttack_ranger_up_moving_active", 		"rangeAttack_ranger_down_moving_active", 		"rangeAttack_ranger_left_moving_active", 		"rangeAttack_ranger_right_moving_active",
+								"rangeAttack_wizard_up_moving_active", 		"rangeAttack_wizard_down_moving_active", 		"rangeAttack_wizard_left_moving_active", 		"rangeAttack_wizard_right_moving_active"
 							]
 						break
 
@@ -999,7 +1004,7 @@
 											meleePower:	sixteenthHealth * 3,
 											areaPower: 	sixteenthHealth,
 											bumpMove:   sixteenthCell * 2,
-											armorPower: sixteenthHealth * 3,
+											armorPower: sixteenthHealth * 2,
 											armorRegen: sixteenthHealth * 2
 										}
 									},

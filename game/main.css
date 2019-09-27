@@ -66,9 +66,12 @@
 		width: auto;
 		background-color: var(--black-3);
 		border-radius: var(--borderRadius);
-		color: var(--white-4);
-		font-size: 200%;
 		text-align: center;
 		z-index: 2;
 		padding: 4px;
+	}
+
+	#play-again-inner {
+		color: var(--white-4);
+		font-size: 200%;
 	}
