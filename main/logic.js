@@ -169,9 +169,9 @@
 								"monster_obscuro_up_moving_areaAttack", 	"monster_obscuro_down_moving_areaAttack", 		"monster_obscuro_left_moving_areaAttack", 		"monster_obscuro_right_moving_areaAttack", 		"monster_obscuro_up_standing_areaAttack", 		"monster_obscuro_down_standing_areaAttack", 	"monster_obscuro_left_standing_areaAttack", 	"monster_obscuro_right_standing_areaAttack",
 								"monster_obscuro_up_moving_collision", 		"monster_obscuro_down_moving_collision", 		"monster_obscuro_left_moving_collision", 		"monster_obscuro_right_moving_collision", 		"monster_obscuro_up_standing_collision", 		"monster_obscuro_down_standing_collision", 		"monster_obscuro_left_standing_collision", 		"monster_obscuro_right_standing_collision",
 
-								"rangeAttack_barbarian_up_moving_active", 	"rangeAttack_barbarian_down_moving_active", 	"rangeAttack_barbarian_left_moving_active", 	"rangeAttack_barbarian_right_moving_active",
-								"rangeAttack_ranger_up_moving_active", 		"rangeAttack_ranger_down_moving_active", 		"rangeAttack_ranger_left_moving_active", 		"rangeAttack_ranger_right_moving_active",
-								"rangeAttack_wizard_up_moving_active", 		"rangeAttack_wizard_down_moving_active", 		"rangeAttack_wizard_left_moving_active", 		"rangeAttack_wizard_right_moving_active"
+								"rangeAttack_barbarian_up_moving_inactive", "rangeAttack_barbarian_down_moving_inactive", 	"rangeAttack_barbarian_left_moving_inactive", 	"rangeAttack_barbarian_right_moving_inactive",
+								"rangeAttack_ranger_up_moving_inactive", 	"rangeAttack_ranger_down_moving_inactive", 		"rangeAttack_ranger_left_moving_inactive", 		"rangeAttack_ranger_right_moving_inactive",
+								"rangeAttack_wizard_up_moving_inactive", 	"rangeAttack_wizard_down_moving_inactive", 		"rangeAttack_wizard_left_moving_inactive", 		"rangeAttack_wizard_right_moving_inactive"
 							]
 						break
 

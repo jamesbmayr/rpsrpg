@@ -2843,7 +2843,7 @@
 							imageName.push(thing.info.type)
 							imageName.push(thing.info.subtype)
 							imageName.push(thing.state.movement ? thing.state.movement.direction : "all")
-							imageName.push((thing.state.movement && thing.state.movement[thing.state.movement.direction]) ? "moving" : "standing")
+							imageName.push((thing.state.movement && thing.state.movement.direction) ? "moving" : "standing")
 							imageName.push((thing.state.active || (thing.state.cooldowns && !thing.state.cooldowns.activate)) ? "active" : "inactive")
 						thing.state.image = imageName.join("_")
 					}
