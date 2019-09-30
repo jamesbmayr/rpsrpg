@@ -1051,7 +1051,7 @@
 							var spawnX = main.rangeRandom(-chamberRadius + CONSTANTS.edgeBuffer, chamberRadius - CONSTANTS.edgeBuffer)
 							var spawnY = main.rangeRandom(-chamberRadius + CONSTANTS.edgeBuffer, chamberRadius - CONSTANTS.edgeBuffer)
 						} while (Object.keys(chamber.items).filter(function(i) {
-							return (chamber.items[i] && chamber.items[i].state.position.x == spawnX && chamber.items[i].state.position.y == spawnY)
+							return (chamber.items[i] && chamber.items[i].state.position.x == spawnX * CONSTANTS.cellSize && chamber.items[i].state.position.y == spawnY * CONSTANTS.cellSize)
 						}).length)
 
 					// clear 3x3 area
@@ -1186,6 +1186,9 @@
 
 				// add to items
 					chamber.items[attack.id] = attack
+
+				// sound
+					creature.state.sound = "blip"
 			}
 			catch (error) {
 				main.logError(error, arguments.callee.name, [request.session.id], callback)
@@ -1863,6 +1866,8 @@
 											var acceleration = attacker.info.statistics.bumpMove
 											recipient.state.position.vx = recipient.state.position.vx + (collision.side == "right" ? acceleration : collision.side == "left" ? -acceleration : 0)
 											recipient.state.position.vy = recipient.state.position.vy + (collision.side == "up"    ? acceleration : collision.side == "down" ? -acceleration : 0)
+											recipient.state.movement.bumped = true
+											recipient.state.vibration = [50]
 										}
 									}
 							}
@@ -1946,8 +1951,8 @@
 
 						// reduce armor
 							if (recipient.state.armor) {
-								var inflictedDamage = totalDamage - recipient.state.armor
-								recipient.state.armor = Math.max(0, Math.min(recipient.state.armor, recipient.state.armor - totalDamage))
+								var inflictedDamage = Math.round(totalDamage * (1 - recipient.info.statistics.armorPower))
+								recipient.state.armor = Math.max(0, recipient.state.armor - 1)
 							}
 							else {
 								var inflictedDamage = totalDamage
@@ -1955,7 +1960,7 @@
 
 						// reduce health
 							if (inflictedDamage > 0) {
-								recipient.state.health = Math.max(0, Math.min(recipient.state.healthMax, recipient.state.health - inflictedDamage))
+								recipient.state.health = Math.max(0, Math.min(recipient.info.statistics.healthMax, recipient.state.health - inflictedDamage))
 							}
 
 						// dead?
@@ -2300,7 +2305,7 @@
 									hero.info.size.x = hero.info.size.maxX
 									hero.info.size.y = hero.info.size.maxY
 									hero.state.alive = true
-									hero.state.health = hero.state.healthMax * CONSTANTS.reviveHealthFraction
+									hero.state.health = hero.info.statistics.healthMax * CONSTANTS.reviveHealthFraction
 							}
 						}
 
@@ -2371,8 +2376,9 @@
 											creature.info.size.x = creature.info.size.maxX
 											creature.info.size.y = creature.info.size.maxY
 											creature.state.alive = true
-											creature.state.health = creature.state.healthMax * CONSTANTS.reviveHealthFraction
-											creature.state.armor = creature.info.statistics.armorPower
+											creature.state.health = creature.info.statistics.healthMax * CONSTANTS.reviveHealthFraction
+											creature.state.armor = creature.info.statistics.armorMax
+											creature.state.vibration = [10,0,10,0,10]
 										}
 									}
 
@@ -2387,9 +2393,8 @@
 					else {
 						// resets
 							creature.state.position.edge = null
-							
-							var multiplier  = (creature.state.effects && creature.state.effects.paper) ? CONSTANTS.paperMultiplier : 1
-							creature.state.armor = Math.max(0, Math.min(creature.info.statistics.armorPower * multiplier, creature.state.armor + creature.info.statistics.armorRegen * multiplier))
+							creature.state.sound = null
+							creature.state.vibration = null
 
 						// no player? --> AI
 							if (!creature.player) {
@@ -2440,11 +2445,20 @@
 
 						// healing
 							if (creature.state.effects.heal) {
-								creature.state.health = Math.min(creature.state.healthMax, creature.state.health + CONSTANTS.heal)
+								creature.state.health = Math.min(creature.info.statistics.healthMax, creature.state.health + CONSTANTS.heal)
+							}
+
+						// armor
+							var multiplier  = (creature.state.effects && creature.state.effects.paper) ? CONSTANTS.paperMultiplier : 1
+							creature.state.armor = Math.max(0, Math.min(creature.info.statistics.armorMax * multiplier, creature.state.armor + multiplier))
+
+						// bumped
+							if (creature.state.movement.bumped) {
+								creature.state.movement.bumped = false
 							}
 
 						// attacks
-							if (!Object.keys(creature.items).length) {
+							else if (!Object.keys(creature.items).length) {
 								// a
 									if (creature.state.actions.a && !creature.state.cooldowns.a) {
 										creature.state.cooldowns.a = CONSTANTS.aCooldown
@@ -2482,6 +2496,9 @@
 		module.exports.updateItem = updateItem
 		function updateItem(request, chamber, item, callback) {
 			try {
+				// reset
+					item.state.sound = null
+
 				// targetCoordinates
 					var targetCoordinates = {
 						id: 		item.id,
@@ -2762,7 +2779,10 @@
 					var maxSpeed = creature.info.statistics.moveSpeed * (creature.state.effects.scissors ? CONSTANTS.scissorsMultiplier : 1)
 
 				// x
-					if (creature.state.movement.right) {
+					if (creature.state.movement.bumped) {
+						creature.state.position.vx = creature.state.position.vx
+					}
+					else if (creature.state.movement.right) {
 						creature.state.position.vx = Math.max(-maxSpeed, Math.min(maxSpeed, creature.state.position.vx + CONSTANTS.acceleration))
 					}
 					else if (creature.state.movement.left) {
@@ -2773,7 +2793,10 @@
 					}
 
 				// y
-					if (creature.state.movement.up) {
+					if (creature.state.movement.bumped) {
+						creature.state.position.vy = creature.state.position.vy
+					}
+					else if (creature.state.movement.up) {
 						creature.state.position.vy = Math.max(-maxSpeed, Math.min(maxSpeed, creature.state.position.vy + CONSTANTS.acceleration))
 					}
 					else if (creature.state.movement.down) {

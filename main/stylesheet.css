@@ -15,6 +15,7 @@
 			font-weight: bold;
 			font-size: 30px;
 			box-shadow: 0px 0px 25px var(--black-4) inset;
+			touch-action: none;
 		}
 
 		a, a:visited, a:hover, a:focus {
@@ -65,6 +66,18 @@
 		select:-moz-focusring {
 			color: transparent;
 			text-shadow: 0 0 0 var(--black-4);
+		}
+
+		audio {
+			display: none;
+			height: 0px;
+			width: 0px;
+			padding: 0px;
+			margin: 0px;
+			position: absolute;
+			background: transparent;
+			color: transparent;
+			z-index: -1;
 		}
 
 	/* conditions */

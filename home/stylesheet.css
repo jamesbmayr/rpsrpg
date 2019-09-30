@@ -128,30 +128,13 @@
 	}
 
 	#images #rock {
-		background-image: url(orb_rock_all_standing_active.png);
+		background-image: url(/sprites/orb_rock_all_standing_active.png);
 	}
 
 	#images #paper {
-		background-image: url(orb_paper_all_standing_active.png);
+		background-image: url(/sprites/orb_paper_all_standing_active.png);
 	}
 
 	#images #scissors {
-		background-image: url(orb_scissors_all_standing_active.png);
+		background-image: url(/sprites/orb_scissors_all_standing_active.png);
 	}
-
-/*** mobile ***/
-	/*@media screen and (max-width: 800px) {
-		#creator-outer {
-			top: 10px;
-			right: 90px;
-		}
-
-		#new-outer {
-			top: 50vh;
-		}
-
-		#join-outer {
-			top: calc(50vh - 65px);
-			right: 42vw;
-		}
-	}*/

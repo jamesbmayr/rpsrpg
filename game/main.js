@@ -16,11 +16,28 @@
 					for (var i in SPRITES) {
 						var img = document.createElement("img")
 							img.id = SPRITES[i]
-							img.src = SPRITES[i] + ".png"
+							img.src = "/sprites/" + SPRITES[i] + ".png"
 						IMAGES[SPRITES[i]] = img
 					}
 				} catch (error) {}
 			}, 0)
+		}
+
+	/* preloadSounds */
+		var SOUNDS = []
+		preloadSounds()
+		function preloadSounds() {
+			setTimeout(function() {
+				try {
+					for (var i in SFX.player) {
+						var audio = new Audio()
+							audio.id = SFX.player[i]
+							audio.src = "/sfx/" + SFX.player[i] + ".mp3"
+							audio.load()
+						SOUNDS[SFX.player[i]] = audio
+					}
+				} catch (error) {}
+			})
 		}
 
 	/* other */
@@ -248,7 +265,7 @@
 			try {
 				// image
 					if (chamber.info.image && IMAGES[chamber.info.image]) {
-						drawImage(CANVAS, CONTEXT, Math.ceil(CANVAS.width / 2), Math.ceil(CANVAS.height / 2), CANVAS.width, CANVAS.height, {image: IMAGES[chamber.info.image]})
+						drawImage(CANVAS, CONTEXT, Math.ceil(CANVAS.width / 2), Math.ceil(CANVAS.height / 2), CANVAS.width, CANVAS.height, {image: IMAGES[chamber.info.image], opacity: 1})
 					}
 
 				// color
@@ -275,7 +292,7 @@
 
 								// draw image
 									if (IMAGES[chamber.cells[x][y].wall]) {
-										drawImage(CANVAS, CONTEXT, wallX, wallY, wallWidth, wallHeight, {image: IMAGES[chamber.cells[x][y].wall]})
+										drawImage(CANVAS, CONTEXT, wallX, wallY, wallWidth, wallHeight, {image: IMAGES[chamber.cells[x][y].wall], opacity: 1})
 									}
 
 								// draw square
@@ -298,7 +315,7 @@
 						image: IMAGES[creature.state.image] ? IMAGES[creature.state.image] : null,
 						color: creature.info.color,
 						shape: creature.info.shape,
-						opacity: Math.max(0, Math.min(1, CONSTANTS.baseHealthOpacity + (creature.state.health / creature.state.healthMax * (1 - CONSTANTS.baseHealthOpacity))))
+						opacity: Math.max(0, Math.min(1, CONSTANTS.baseHealthOpacity + (creature.state.health / creature.info.statistics.healthMax * (1 - CONSTANTS.baseHealthOpacity))))
 					}
 
 				// draw
@@ -326,6 +343,11 @@
 							bottomLeft: 	CONSTANTS.borderRadius
 						}
 						drawRectangle(CANVAS, CONTEXT, creatureX - (creature.info.size.x / 2), creatureY - (creature.info.size.y / 2), creature.info.size.x, creature.info.size.y, options)
+					}
+
+				// sounds
+					if (creature.state.sound) {
+						playAudio(creature.state.sound)
 					}
 
 				// items
@@ -368,7 +390,7 @@
 					}
 
 					if (item.state.health) {
-						options.opacity = Math.max(0, Math.min(1, CONSTANTS.baseHealthOpacity + (item.state.health / item.state.healthMax * (1 - CONSTANTS.baseHealthOpacity))))
+						options.opacity = Math.max(0, Math.min(1, CONSTANTS.baseHealthOpacity + (item.state.health / item.info.statistics.healthMax * (1 - CONSTANTS.baseHealthOpacity))))
 					}
 
 				// draw
@@ -397,5 +419,23 @@
 						}
 						drawRectangle(CANVAS, CONTEXT, itemX - (item.info.size.x / 2), itemY - (item.info.size.y / 2), item.info.size.x, item.info.size.y, options)
 					}
+
+				// sounds
+					if (item.state.sound) {
+						playAudio(item.state.sound)
+					}
+			} catch (error) {}
+		}
+
+/*** audio ***/
+	/* playAudio */
+		function playAudio(soundEffect) {
+			try {
+				if (soundEffect && SOUNDS[soundEffect]) {
+					var audio = SOUNDS[soundEffect]
+						audio.pause()
+						audio.currentTime = 0
+						audio.play()
+				}
 			} catch (error) {}
 		}

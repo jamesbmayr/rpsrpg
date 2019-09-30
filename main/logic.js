@@ -126,8 +126,9 @@
 						break
 						case "js variables":
 							return ('/*** superglobals ***/\n' +
-									'	var CONSTANTS = ' + JSON.stringify(CONSTANTS) + '\n' +
-									'	var SPRITES = ' + JSON.stringify(getAsset("sprites")) + '\n' +
+									'	var CONSTANTS = ' 	+ JSON.stringify(CONSTANTS) + '\n' +
+									'	var SPRITES = ' 	+ JSON.stringify(getAsset("sprites")) + '\n' +
+									'	var SFX = ' 		+ JSON.stringify(getAsset("sfx")) + '\n' +
 									'')
 						break
 
@@ -175,6 +176,18 @@
 							]
 						break
 
+					// sfx
+						case "sfx":
+							return {
+								main: [
+									"blip"
+								],
+								player: [
+									"blip"
+								]
+							}
+						break
+
 					// game parameters
 						case "constants":
 							var constants = {
@@ -200,6 +213,7 @@
 									loadFade: 			4,
 									baseHealthOpacity: 	0.25,
 									observerWidth: 		800,
+									audioRemoval: 		1000 * 5,
 
 								// game loop
 									loopInterval: 		50,
@@ -212,16 +226,17 @@
 									portalPairs: 		2,
 									shrineSets: 		2,
 									monsterCountMin:	2,
-									monsterCountMax:	5,
-									monsterChance: 		[1,1],
+									monsterCountMax:	7,
+									monsterChance: 		[9,10],
 									spawnCountMin: 		1,
 									spawnCountMax: 		3,
-									spawnChance: 		[2,3],
+									spawnChance: 		[7,10],
 
 								// health
 									baseHealthFraction: 1,
-									reviveHealthFraction: 0.5,
-									baseHealth: 		128,
+									reviveHealthFraction: 0.25,
+									heroHealth: 		128,
+									monsterHealth: 		32,
 									spawnHealth: 		1024,
 									heal: 				2,
 									rpsMultiplier: 		2,
@@ -239,7 +254,7 @@
 
 								// shrine effects
 									rockMultiplier: 	1.5,
-									paperMultiplier: 	3,
+									paperMultiplier: 	2,
 									scissorsMultiplier: 1.5,
 
 								// lists
@@ -279,9 +294,9 @@
 								constants.shrineCooldown 	= Math.floor(second)
 								constants.spawnCooldown 	= Math.floor(second * 4)
 								constants.portalCooldown 	= Math.floor(second * 3)
-								constants.deathCooldown 	= Math.floor(second / 2)
+								constants.deathCooldown 	= Math.floor(second)
 								constants.effectCooldown 	= Math.floor(second * 30)
-								constants.aCooldown 		= Math.floor(second / 4)
+								constants.aCooldown 		= Math.floor(second / 2)
 								constants.bCooldown 		= Math.floor(second)
 
 							// points
@@ -292,10 +307,9 @@
 
 							// distance derivatives
 								constants.acceleration 		= Math.floor(constants.cellSize / 16)
-								constants.bumpAcceleration	= Math.floor(constants.cellSize / 8)
 								constants.areaAttackRadius 	= Math.floor(constants.cellSize / 8)
 								constants.itemDropRadius 	= Math.floor(constants.cellSize / 4)
-								constants.monsterAwareness 	= Math.floor(constants.cellSize * constants.chamberSize / 2)
+								constants.monsterAwareness 	= Math.floor(constants.cellSize * 4)
 
 							// chamber colors by layer
 								constants.chamberColors = [
@@ -763,10 +777,10 @@
 													else if (chamber.heroes[h].player && Object.keys(chamber.heroes[h].items).length) {
 														targets["6"] = chamber.heroes[h]
 													}
-													else if (chamber.heroes[h].player && chamber.heroes[h].state.alive && chamber.heroes[h].state.health < CONSTANTS.baseHealth / 4) {
+													else if (chamber.heroes[h].player && chamber.heroes[h].state.alive && chamber.heroes[h].state.health < CONSTANTS.heroHealth / 4) {
 														targets["7"] = chamber.heroes[h]
 													}
-													else if (chamber.heroes[h].player && chamber.heroes[h].state.alive && chamber.heroes[h].state.health < CONSTANTS.baseHealth / 2) {
+													else if (chamber.heroes[h].player && chamber.heroes[h].state.alive && chamber.heroes[h].state.health < CONSTANTS.heroHealth / 2) {
 														targets["8"] = chamber.heroes[h]
 													}
 													else if (chamber.heroes[h].player && chamber.heroes[h].state.alive) {
@@ -887,7 +901,7 @@
 					// creatures
 						case "heroes":
 							var sixteenthCell = Math.floor(CONSTANTS.cellSize / 16)
-							var sixteenthHealth = Math.floor(CONSTANTS.baseHealth / 16)
+							var sixteenthHealth = Math.floor(CONSTANTS.heroHealth / 16)
 
 							return {
 								"barbarian": {
@@ -900,20 +914,20 @@
 										shape: "circle",
 										pathing: "hero",
 										statistics: {
-											moveSpeed: 	sixteenthCell * 2,
-											rangeSpeed: sixteenthCell * 3,
+											moveSpeed: 	sixteenthCell * 1,
+											rangeSpeed: sixteenthCell * 2,
 											rangePower: sixteenthHealth * 2,
 											meleePower:	sixteenthHealth * 5,
 											areaPower: 	sixteenthHealth * 2,
-											bumpMove:   sixteenthCell * 4,
-											armorPower: sixteenthHealth * 6,
-											armorRegen: sixteenthHealth * 3
+											bumpMove: 	sixteenthCell * 4,
+											armorPower:	0.5,
+											armorMax: 	4,
+											healthMax: CONSTANTS.heroHealth
 										}
 									},
 									state: {
-										health: CONSTANTS.baseHealth * CONSTANTS.baseHealthFraction,
-										healthMax: CONSTANTS.baseHealth,
-										armor: sixteenthHealth,
+										health: CONSTANTS.heroHealth * CONSTANTS.baseHealthFraction,
+										armor: 4,
 										position: {
 											x: 0,
 											y: 4 * sixteenthCell
@@ -930,20 +944,20 @@
 										shape: "circle",
 										pathing: "hero",
 										statistics: {
-											moveSpeed: 	sixteenthCell * 2,
-											rangeSpeed: sixteenthCell * 4,
+											moveSpeed: 	sixteenthCell * 1,
+											rangeSpeed: sixteenthCell * 3,
 											rangePower: sixteenthHealth * 3,
 											meleePower:	sixteenthHealth,
 											areaPower: 	sixteenthHealth * 3,
-											bumpMove:   sixteenthCell * 2,
-											armorPower: sixteenthHealth * 3,
-											armorRegen: sixteenthHealth * 3
+											bumpMove: 	sixteenthCell * 2,
+											armorPower:	0.25,
+											armorMax: 	3,
+											healthMax: CONSTANTS.heroHealth
 										}
 									},
 									state: {
-										health: CONSTANTS.baseHealth * CONSTANTS.baseHealthFraction,
-										healthMax: CONSTANTS.baseHealth,
-										armor: sixteenthHealth,
+										health: CONSTANTS.heroHealth * CONSTANTS.baseHealthFraction,
+										armor: 2,
 										position: {
 											x: -4 * sixteenthCell,
 											y: -4 * sixteenthCell
@@ -960,20 +974,20 @@
 										shape: "circle",
 										pathing: "hero",
 										statistics: {
-											moveSpeed: 	sixteenthCell * 3,
-											rangeSpeed: sixteenthCell * 4,
+											moveSpeed: 	sixteenthCell * 1.5,
+											rangeSpeed: sixteenthCell * 3,
 											rangePower: sixteenthHealth * 4,
 											meleePower:	sixteenthHealth * 2,
 											areaPower: 	sixteenthHealth * 2,
-											bumpMove:   sixteenthCell * 3,
-											armorPower: sixteenthHealth * 4,
-											armorRegen: sixteenthHealth * 2
+											bumpMove: 	sixteenthCell * 3,
+											armorPower:	0.25,
+											armorMax: 	5,
+											healthMax: CONSTANTS.heroHealth
 										}
 									},
 									state: {
-										health: CONSTANTS.baseHealth * CONSTANTS.baseHealthFraction,
-										healthMax: CONSTANTS.baseHealth,
-										armor: sixteenthHealth,
+										health: CONSTANTS.heroHealth * CONSTANTS.baseHealthFraction,
+										armor: 2,
 										position: {
 											x:  4 * sixteenthCell,
 											y: -4 * sixteenthCell
@@ -985,7 +999,7 @@
 
 						case "monsters":
 							var sixteenthCell = Math.floor(CONSTANTS.cellSize / 16)
-							var sixteenthHealth = Math.floor(CONSTANTS.baseHealth / 16)
+							var sixteenthHealth = Math.floor(CONSTANTS.monsterHealth / 16)
 
 							return {
 								"avalanche": {
@@ -998,20 +1012,20 @@
 										pathing: "aggressive",
 										points: CONSTANTS.monsterPoints,
 										statistics: {
-											moveSpeed: 	sixteenthCell,
-											rangeSpeed: sixteenthCell * 3,
+											moveSpeed: 	sixteenthCell * 1,
+											rangeSpeed: sixteenthCell * 1.5,
 											rangePower: sixteenthHealth * 2,
 											meleePower:	sixteenthHealth * 3,
 											areaPower: 	sixteenthHealth,
-											bumpMove:   sixteenthCell * 2,
-											armorPower: sixteenthHealth * 2,
-											armorRegen: sixteenthHealth * 2
+											bumpMove:   sixteenthCell * 3,
+											armorPower:	0.25,
+											armorMax: 	4,
+											healthMax: CONSTANTS.monsterHealth
 										}
 									},
 									state: {
-										health: CONSTANTS.baseHealth / 2 * CONSTANTS.baseHealthFraction,
-										healthMax: CONSTANTS.baseHealth / 2,
-										armor: sixteenthHealth * 2
+										health: CONSTANTS.monsterHealth * CONSTANTS.baseHealthFraction,
+										armor: 2
 									}
 								},
 								"obscuro": {
@@ -1024,20 +1038,20 @@
 										pathing: "aggressive",
 										points: CONSTANTS.monsterPoints,
 										statistics: {
-											moveSpeed: 	sixteenthCell * 3,
+											moveSpeed: 	sixteenthCell * 1.5,
 											rangeSpeed: sixteenthCell * 3,
 											rangePower: sixteenthHealth * 4,
 											meleePower:	sixteenthHealth * 2,
 											areaPower: 	sixteenthHealth,
-											bumpMove:   sixteenthCell,
-											armorPower: sixteenthHealth * 2,
-											armorRegen: sixteenthHealth * 2
+											bumpMove:   sixteenthCell * 1,
+											armorPower:	0.125,
+											armorMax: 	3,
+											healthMax: CONSTANTS.monsterHealth
 										}
 									},
 									state: {
-										health: CONSTANTS.baseHealth / 2 * CONSTANTS.baseHealthFraction,
-										healthMax: CONSTANTS.baseHealth / 2,
-										armor: sixteenthHealth
+										health: CONSTANTS.monsterHealth * CONSTANTS.baseHealthFraction,
+										armor: 2
 									}
 								},
 								"tatters": {
@@ -1050,20 +1064,20 @@
 										pathing: "aggressive",
 										points: CONSTANTS.monsterPoints,
 										statistics: {
-											moveSpeed: 	sixteenthCell * 2,
-											rangeSpeed: sixteenthCell * 3,
+											moveSpeed: 	sixteenthCell * 1,
+											rangeSpeed: sixteenthCell * 2,
 											rangePower: sixteenthHealth,
 											meleePower:	sixteenthHealth * 2,
 											areaPower: 	sixteenthHealth * 2,
-											bumpMove:   sixteenthCell,
-											armorPower: sixteenthHealth * 2,
-											armorRegen: sixteenthHealth * 2
+											bumpMove:   sixteenthCell * 2,
+											armorPower:	0.25,
+											armorMax: 	2,
+											healthMax: CONSTANTS.monsterHealth
 										}
 									},
 									state: {
-										health: CONSTANTS.baseHealth / 2 * CONSTANTS.baseHealthFraction,
-										healthMax: CONSTANTS.baseHealth / 2,
-										armor: sixteenthHealth									
+										health: CONSTANTS.monsterHealth * CONSTANTS.baseHealthFraction,
+										armor: 2
 									}
 								}
 							}
@@ -1236,7 +1250,9 @@
 									shape: "triangle",
 									style: "border",
 									statistics: {
-										armorPower: 0
+										armorPower: 0,
+										armorMax:  	0,
+										healthMax: CONSTANTS.spawnHealth
 									},
 									monsterTypes: []
 								},
@@ -1246,7 +1262,7 @@
 									},
 									alive: true,
 									health: CONSTANTS.spawnHealth * CONSTANTS.baseHealthFraction,
-									healthMax: CONSTANTS.spawnHealth
+									armor: 0
 								}
 							}
 						break
@@ -1367,20 +1383,21 @@
 									rangePower: 0,
 									meleePower:	0,
 									areaPower: 	0,
+									bumpMove: 	0,
 									armorPower: 0,
-									armorRegen: 0
+									armorMax: 	0,
+									healthMax: 	0
 								}
 							},
 							state: {
 								alive: 			true,
 								health: 		0,
-								healthMax: 		0,
 								armor: 			0,
 								effects: {
 									heal: 		false,
 									rock: 		false,
 									paper: 		false,
-									scissors: 	false	
+									scissors: 	false
 								},
 								position: {
 									vx: 		0,
@@ -1391,6 +1408,7 @@
 								},
 								movement: {
 									direction: 	"down",
+									bumped: 	false,
 									path: 		null,
 									up: 		false,
 									right: 		false,
@@ -1405,7 +1423,9 @@
 									a: 			0,
 									b: 			0
 								},
-								image: 			null
+								image: 			null,
+								sound: 			null,
+								vibration: 		false
 							},
 							items: 				{}
 						}
@@ -1430,7 +1450,9 @@
 								position: {
 									x: 		0,
 									y: 		0
-								}
+								},
+								image: 		null,
+								sound: 		null
 							}
 						}
 					break

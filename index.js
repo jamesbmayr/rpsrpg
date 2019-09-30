@@ -56,7 +56,7 @@
 						}
 
 					// where next ?
-						if ((/[.](ico|png|jpg|jpeg|gif|svg|pdf|txt|css|js)$/).test(request.url)) { // serve asset
+						if ((/[.](ico|png|jpg|jpeg|gif|svg|pdf|txt|css|js|mp3|wav)$/).test(request.url)) { // serve asset
 							routeRequest()
 						}
 						else { // get session and serve html
@@ -132,13 +132,27 @@
 									break
 
 								// sprites
-									case (/[.]png$/).test(request.url):
+									case (/\/sprites\/([a-zA-Z0-9_])+[.]png$/).test(request.url):
 										try {
 											response.writeHead(200, {"Content-Type": "image/png"})
 											fs.readFile("./main/sprites/" + request.path[request.path.length - 1], function (error, file) {
 												if (error) {_404(error)}
 												else {
 													response.end(file, "binary")
+												}
+											})
+										}
+										catch (error) {_404(error)}
+									break
+
+								// sfx
+									case (/\/sfx\/([a-zA-Z0-9_])+[.]mp3$/).test(request.url):
+										try {
+											response.writeHead(200, {"Content-Type": "audio/mpeg"})
+											fs.readFile("./main/sfx/" + request.path[request.path.length - 1], function (error, file) {
+												if (error) {_404(error)}
+												else {
+													response.end(file)
 												}
 											})
 										}

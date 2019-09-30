@@ -22,6 +22,23 @@
 	/* booleans */
 		var SELECTED = false
 
+	/* preloadSounds */
+		var SOUNDS = []
+		preloadSounds()
+		function preloadSounds() {
+			setTimeout(function() {
+				try {
+					for (var i in SFX.player) {
+						var audio = new Audio()
+							audio.id = SFX.player[i]
+							audio.src = "/sfx/" + SFX.player[i] + ".mp3"
+							audio.load()
+						SOUNDS[SFX.player[i]] = audio
+					}
+				} catch (error) {}
+			})
+		}
+
 /*** websocket ***/
 	/* socket */
 		var socket = null
@@ -180,7 +197,7 @@
 					for (var h in heroOptions) {
 						var button = document.createElement("button")
 							button.className = "selection-option"
-							button.style.backgroundImage = "url(selection_" + heroOptions[h].info.subtype + ".png)"
+							button.style.backgroundImage = "url(/sprites/selection_" + heroOptions[h].info.subtype + ".png)"
 							button.value = heroOptions[h].info.subtype
 							button.addEventListener(on.click, selectHero)
 						SELECTION.appendChild(button)
@@ -223,6 +240,16 @@
 
 				// dpad & actions
 					displayButtons(hero)
+
+				// sounds
+					if (hero.state.sound) {
+						playAudio(hero.state.sound)
+					}
+
+				// vibration
+					if (hero.state.vibration) {
+						playVibration(hero.state.vibration)
+					}
 			} catch (error) {}
 		}
 
@@ -230,7 +257,7 @@
 		function displayHealthbar(hero) {
 			try {
 				// width
-					var healthPercentage = Math.round(hero.state.health / hero.state.healthMax * 100)
+					var healthPercentage = Math.round(hero.state.health / hero.info.statistics.healthMax * 100)
 					HEALTHBAR.style.width = Math.min(100, Math.max(0, healthPercentage)) + "%"
 
 				// color
@@ -295,5 +322,25 @@
 							INPUTS[CONSTANTS.directions[d]].removeAttribute("effect")
 						}
 					}
+			} catch (error) {}
+		}
+
+/*** audio ***/
+	/* playAudio */
+		function playAudio(soundEffect) {
+			try {
+				if (soundEffect && SOUNDS[soundEffect]) {
+					var audio = SOUNDS[soundEffect]
+						audio.pause()
+						audio.currentTime = 0
+						audio.play()
+				}
+			} catch (error) {}
+		}
+
+	/* playVibration */
+		function playVibration(vibrationArray) {
+			try {
+				navigator.vibrate(vibrationArray)
 			} catch (error) {}
 		}

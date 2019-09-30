@@ -53,6 +53,7 @@
 		height: auto;
 		max-height: 100%;
 		width: 100%;
+		min-width: calc(100% - 64px);
 		overflow: hidden;
 	}
 
@@ -70,7 +71,7 @@
 		background-size: contain;
 		background-position: center center;
 		background-repeat: no-repeat;
-		margin: 5vw;
+		margin: var(--borderRadius);
 		display: inline-block;
 	}
 
