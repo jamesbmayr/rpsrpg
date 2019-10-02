@@ -1164,8 +1164,8 @@
 							rps: creature.info.rps,
 							subtype: creature.info.subtype,
 							size: {
-								x: power,
-								y: power
+								x: CONSTANTS.rangeAttackRadius * power,
+								y: CONSTANTS.rangeAttackRadius * power
 							},
 							color: creature.info.color,
 							statistics: {
@@ -2550,8 +2550,8 @@
 									item.state.position.x = Math.round(targetCoordinates.x)
 									item.state.position.y = Math.round(targetCoordinates.y)
 									item.info.statistics.power = Math.max(0, item.info.statistics.power - CONSTANTS.rangeAttackFade)
-									item.info.size.x = Math.max(0, item.info.size.x - CONSTANTS.rangeAttackFade)
-									item.info.size.y = Math.max(0, item.info.size.y - CONSTANTS.rangeAttackFade)
+									item.info.size.x = Math.max(0, item.info.statistics.power * CONSTANTS.rangeAttackRadius)
+									item.info.size.y = Math.max(0, item.info.statistics.power * CONSTANTS.rangeAttackRadius)
 							}
 					}
 

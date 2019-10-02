@@ -341,6 +341,7 @@
 	/* playVibration */
 		function playVibration(vibrationArray) {
 			try {
+				console.log(vibrationArray)
 				navigator.vibrate(vibrationArray)
 			} catch (error) {}
 		}

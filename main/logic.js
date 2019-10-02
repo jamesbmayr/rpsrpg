@@ -307,7 +307,8 @@
 
 							// distance derivatives
 								constants.acceleration 		= Math.floor(constants.cellSize / 16)
-								constants.areaAttackRadius 	= Math.floor(constants.cellSize / 8)
+								constants.rangeAttackRadius = Math.floor(constants.cellSize / 32)
+								constants.areaAttackRadius 	= Math.floor(constants.cellSize / 16)
 								constants.itemDropRadius 	= Math.floor(constants.cellSize / 4)
 								constants.monsterAwareness 	= Math.floor(constants.cellSize * 4)
 
@@ -917,7 +918,7 @@
 											moveSpeed: 	sixteenthCell * 1,
 											rangeSpeed: sixteenthCell * 2,
 											rangePower: sixteenthHealth * 2,
-											meleePower:	sixteenthHealth * 5,
+											meleePower:	sixteenthHealth * 3,
 											areaPower: 	sixteenthHealth * 2,
 											bumpMove: 	sixteenthCell * 4,
 											armorPower:	0.5,
@@ -944,10 +945,10 @@
 										shape: "circle",
 										pathing: "hero",
 										statistics: {
-											moveSpeed: 	sixteenthCell * 1,
+											moveSpeed: 	sixteenthCell * 1.25,
 											rangeSpeed: sixteenthCell * 3,
-											rangePower: sixteenthHealth * 3,
-											meleePower:	sixteenthHealth,
+											rangePower: sixteenthHealth * 2.5,
+											meleePower:	sixteenthHealth * 1.5,
 											areaPower: 	sixteenthHealth * 3,
 											bumpMove: 	sixteenthCell * 2,
 											armorPower:	0.25,
@@ -976,7 +977,7 @@
 										statistics: {
 											moveSpeed: 	sixteenthCell * 1.5,
 											rangeSpeed: sixteenthCell * 3,
-											rangePower: sixteenthHealth * 4,
+											rangePower: sixteenthHealth * 3,
 											meleePower:	sixteenthHealth * 2,
 											areaPower: 	sixteenthHealth * 2,
 											bumpMove: 	sixteenthCell * 3,
@@ -1016,7 +1017,7 @@
 											rangeSpeed: sixteenthCell * 1.5,
 											rangePower: sixteenthHealth * 2,
 											meleePower:	sixteenthHealth * 3,
-											areaPower: 	sixteenthHealth,
+											areaPower: 	sixteenthHealth * 1.5,
 											bumpMove:   sixteenthCell * 3,
 											armorPower:	0.25,
 											armorMax: 	4,
@@ -1040,10 +1041,10 @@
 										statistics: {
 											moveSpeed: 	sixteenthCell * 1.5,
 											rangeSpeed: sixteenthCell * 3,
-											rangePower: sixteenthHealth * 4,
+											rangePower: sixteenthHealth * 3,
 											meleePower:	sixteenthHealth * 2,
-											areaPower: 	sixteenthHealth,
-											bumpMove:   sixteenthCell * 1,
+											areaPower: 	sixteenthHealth * 2,
+											bumpMove:   sixteenthCell * 2,
 											armorPower:	0.125,
 											armorMax: 	3,
 											healthMax: CONSTANTS.monsterHealth
@@ -1066,10 +1067,10 @@
 										statistics: {
 											moveSpeed: 	sixteenthCell * 1,
 											rangeSpeed: sixteenthCell * 2,
-											rangePower: sixteenthHealth,
-											meleePower:	sixteenthHealth * 2,
-											areaPower: 	sixteenthHealth * 2,
-											bumpMove:   sixteenthCell * 2,
+											rangePower: sixteenthHealth * 1.5,
+											meleePower:	sixteenthHealth * 2.5,
+											areaPower: 	sixteenthHealth * 2.5,
+											bumpMove:   sixteenthCell * 2.5,
 											armorPower:	0.25,
 											armorMax: 	2,
 											healthMax: CONSTANTS.monsterHealth
