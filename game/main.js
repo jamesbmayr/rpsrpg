@@ -24,17 +24,18 @@
 		}
 
 	/* preloadSounds */
+		var MUSIC = false
 		var SOUNDS = []
 		preloadSounds()
 		function preloadSounds() {
 			setTimeout(function() {
 				try {
-					for (var i in SFX.player) {
+					for (var i in SFX.main) {
 						var audio = new Audio()
-							audio.id = SFX.player[i]
-							audio.src = "/sfx/" + SFX.player[i] + ".mp3"
+							audio.id = SFX.main[i]
+							audio.src = "/sfx/" + SFX.main[i] + ".mp3"
 							audio.load()
-						SOUNDS[SFX.player[i]] = audio
+						SOUNDS[SFX.main[i]] = audio
 					}
 				} catch (error) {}
 			})
@@ -106,6 +107,15 @@
 				// end?
 					if (data.end) {
 						ENDLINK.removeAttribute("hidden")
+					}
+
+				// music
+					if (!MUSIC) {
+						MUSIC = SOUNDS["soundtrack"]
+						MUSIC.loop = true
+						MUSIC.pause()
+						MUSIC.currentTime = 0
+						MUSIC.play()
 					}
 			} catch (error) {}
 		}

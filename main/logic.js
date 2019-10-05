@@ -137,6 +137,7 @@
 							return [
 								"orb_rock_all_standing_inactive",			"orb_paper_all_standing_inactive",				"orb_scissors_all_standing_inactive",			"orb_rock_all_standing_active",					"orb_paper_all_standing_active",				"orb_scissors_all_standing_active",
 								"pedestal_rock_all_standing_inactive",		"pedestal_paper_all_standing_inactive",			"pedestal_scissors_all_standing_inactive",		"pedestal_rock_all_standing_active",			"pedestal_paper_all_standing_active",			"pedestal_scissors_all_standing_active",
+								"spawn_rock_all_standing_inactive",			"spawn_paper_all_standing_inactive",			"spawn_scissors_all_standing_inactive",			"spawn_rock_all_standing_active",				"spawn_paper_all_standing_active",				"spawn_scissors_all_standing_active",
 
 								"layer_0_background", "layer_0_wall_0_", "layer_0_wall_1_up", "layer_0_wall_1_right", "layer_0_wall_1_down", "layer_0_wall_1_left", "layer_0_wall_2_upright", "layer_0_wall_2_rightdown", "layer_0_wall_2_downleft", "layer_0_wall_2_upleft", "layer_0_wall_2_updown", "layer_0_wall_2_rightleft", "layer_0_wall_3_uprightdown", "layer_0_wall_3_rightdownleft", "layer_0_wall_3_uprightleft", "layer_0_wall_3_updownleft", "layer_0_wall_4_uprightdownleft",
 								
@@ -170,9 +171,9 @@
 								"monster_obscuro_up_moving_areaAttack", 	"monster_obscuro_down_moving_areaAttack", 		"monster_obscuro_left_moving_areaAttack", 		"monster_obscuro_right_moving_areaAttack", 		"monster_obscuro_up_standing_areaAttack", 		"monster_obscuro_down_standing_areaAttack", 	"monster_obscuro_left_standing_areaAttack", 	"monster_obscuro_right_standing_areaAttack",
 								"monster_obscuro_up_moving_collision", 		"monster_obscuro_down_moving_collision", 		"monster_obscuro_left_moving_collision", 		"monster_obscuro_right_moving_collision", 		"monster_obscuro_up_standing_collision", 		"monster_obscuro_down_standing_collision", 		"monster_obscuro_left_standing_collision", 		"monster_obscuro_right_standing_collision",
 
-								"rangeAttack_barbarian_up_moving_inactive", "rangeAttack_barbarian_down_moving_inactive", 	"rangeAttack_barbarian_left_moving_inactive", 	"rangeAttack_barbarian_right_moving_inactive",
-								"rangeAttack_ranger_up_moving_inactive", 	"rangeAttack_ranger_down_moving_inactive", 		"rangeAttack_ranger_left_moving_inactive", 		"rangeAttack_ranger_right_moving_inactive",
-								"rangeAttack_wizard_up_moving_inactive", 	"rangeAttack_wizard_down_moving_inactive", 		"rangeAttack_wizard_left_moving_inactive", 		"rangeAttack_wizard_right_moving_inactive"
+								"rangeAttack_barbarian_up_moving_active", 	"rangeAttack_barbarian_down_moving_active", 	"rangeAttack_barbarian_left_moving_active", 	"rangeAttack_barbarian_right_moving_active",
+								"rangeAttack_ranger_up_moving_active", 		"rangeAttack_ranger_down_moving_active", 		"rangeAttack_ranger_left_moving_active", 		"rangeAttack_ranger_right_moving_active",
+								"rangeAttack_wizard_up_moving_active", 		"rangeAttack_wizard_down_moving_active", 		"rangeAttack_wizard_left_moving_active", 		"rangeAttack_wizard_right_moving_active"
 							]
 						break
 
@@ -180,10 +181,10 @@
 						case "sfx":
 							return {
 								main: [
-									"blip"
+									"soundtrack", "blip"
 								],
 								player: [
-									"blip"
+
 								]
 							}
 						break
@@ -225,8 +226,8 @@
 									cellSize: 			128,
 									portalPairs: 		2,
 									shrineSets: 		2,
-									monsterCountMin:	2,
-									monsterCountMax:	7,
+									monsterCountMin:	3,
+									monsterCountMax:	10,
 									monsterChance: 		[9,10],
 									spawnCountMin: 		1,
 									spawnCountMax: 		3,
@@ -291,13 +292,13 @@
 								constants.gameCooldown 		= Math.floor(second * 60 * 2)
 								constants.chamberCooldown 	= Math.floor(second / 4)
 								constants.edgeCooldown 		= Math.floor(second * 2)
-								constants.shrineCooldown 	= Math.floor(second)
 								constants.spawnCooldown 	= Math.floor(second * 4)
 								constants.portalCooldown 	= Math.floor(second * 3)
 								constants.deathCooldown 	= Math.floor(second)
 								constants.effectCooldown 	= Math.floor(second * 30)
 								constants.aCooldown 		= Math.floor(second / 2)
 								constants.bCooldown 		= Math.floor(second)
+								constants.imageFlip 		= constants.loopInterval * 4
 
 							// points
 								constants.monsterPoints 	= Math.floor(second * 5)
@@ -1475,6 +1476,7 @@
 								}
 							},
 							state: {
+								active: true,
 								movement: {
 									direction: 	null
 								}

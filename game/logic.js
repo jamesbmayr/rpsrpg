@@ -1129,6 +1129,7 @@
 					var orb = createItem(request, main.getAsset("orbs")[orbType], callback)
 					main.overwriteObject(orb, {
 						state: {
+							active: true,
 							position: {
 								x: orbX * CONSTANTS.cellSize,
 								y: orbY * CONSTANTS.cellSize
@@ -1726,8 +1727,6 @@
 							else if (item.info.type == "shrine" && thing.info.type == "hero") {
 								if (!item.state.cooldowns.activate) {
 									thing.state.effects[item.info.subtype] = CONSTANTS.effectCooldown
-									item.state.cooldowns.activate = CONSTANTS.shrineCooldown
-									item.info.size.x = item.info.size.y = 0
 								}
 							}
 
@@ -2588,8 +2587,8 @@
 							}
 					}
 
-				// shrine / portal
-					else if (item.info.type == "shrine" || item.info.type == "portal" || item.info.type == "spawn") {
+				// spawn / portal
+					else if (item.info.type == "portal" || item.info.type == "spawn") {
 						// get max cooldown
 							var cooldownMax = CONSTANTS[item.info.type + "Cooldown"]
 
@@ -2848,26 +2847,29 @@
 		module.exports.updateImage = updateImage
 		function updateImage(request, thing, targetCoordinates, callback) {
 			try {
+				// flip?
+					var flip = (request.game.data.state.time % CONSTANTS.imageFlip >= CONSTANTS.imageFlip / 2)
+
 				// heroes && creatures
 					if (thing.info.type == "hero" || thing.info.type == "creature" || thing.info.type == "monster") {
-						var moving = thing.state.image && thing.state.image.includes("moving") || false
 						var imageName = []
 							imageName.push(thing.info.type)
 							imageName.push(thing.info.subtype)
 							imageName.push(thing.state.movement ? thing.state.movement.direction : "all")
-							imageName.push(thing.state.movement && thing.state.movement[thing.state.movement.direction] && !moving ? "moving" : "standing")
+							imageName.push(thing.state.movement && thing.state.movement[thing.state.movement.direction] ? (flip ? "standing" : "moving") : "standing")
 							imageName.push(thing.state.actions.a ? "rangeAttack" : thing.state.actions.b ? "areaAttack" : (targetCoordinates.collisionX || targetCoordinates.collisionY) ? "collision" : Object.keys(thing.items).length ? "holding" : "inactive")
 						thing.state.image = imageName.join("_")
 					}
 
 				// items
 					else {
+						var active = thing.state.image && thing.state.image.includes("active") || false
 						var imageName = []
 							imageName.push(thing.info.type)
 							imageName.push(thing.info.subtype)
 							imageName.push(thing.state.movement ? thing.state.movement.direction : "all")
 							imageName.push((thing.state.movement && thing.state.movement.direction) ? "moving" : "standing")
-							imageName.push((thing.state.active || (thing.state.cooldowns && !thing.state.cooldowns.activate)) ? "active" : "inactive")
+							imageName.push(thing.state.active || (thing.state.cooldowns && !thing.state.cooldowns.activate) ? "active" : (flip ? "active" : "inactive"))
 						thing.state.image = imageName.join("_")
 					}
 			}
