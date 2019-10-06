@@ -298,7 +298,11 @@
 								constants.effectCooldown 	= Math.floor(second * 30)
 								constants.aCooldown 		= Math.floor(second / 4)
 								constants.bCooldown 		= Math.floor(second)
+
+							// interval derivatives
 								constants.imageFlip 		= constants.loopInterval * 4
+								constants.collisionVibration = [constants.loopInterval]
+								constants.healVibration 	= [constants.loopInterval / 2, constants.loopInterval / 2]
 
 							// points
 								constants.monsterPoints 	= Math.floor(second * 5)
