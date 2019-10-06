@@ -445,7 +445,7 @@
 					var audio = SOUNDS[soundEffect]
 						audio.pause()
 						audio.currentTime = 0
-						audio.play()
+						audio.play().catch(function(error) {})
 				}
 			} catch (error) {}
 		}

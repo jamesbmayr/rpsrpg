@@ -1,6 +1,7 @@
 /*** page ***/
 	body {
 		background-color: var(--bluegray-2);
+		overflow: hidden;
 	}
 
 	/* wire */
@@ -59,10 +60,8 @@
 
 	#selection-inner button {
 		border-radius: var(--borderRadius);
-		height: 25vw;
-		max-height: 25vh;
-		width: 25vw;
-		max-width: 25vh;
+		height: 20vw;
+		width: 20vw;
 		outline: none;
 		border: 0px;
 		user-select: none;

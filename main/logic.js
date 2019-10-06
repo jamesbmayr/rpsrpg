@@ -296,7 +296,7 @@
 								constants.portalCooldown 	= Math.floor(second * 3)
 								constants.deathCooldown 	= Math.floor(second)
 								constants.effectCooldown 	= Math.floor(second * 30)
-								constants.aCooldown 		= Math.floor(second / 2)
+								constants.aCooldown 		= Math.floor(second / 4)
 								constants.bCooldown 		= Math.floor(second)
 								constants.imageFlip 		= constants.loopInterval * 4
 
@@ -918,12 +918,12 @@
 										statistics: {
 											moveSpeed: 	sixteenthCell * 1,
 											rangeSpeed: sixteenthCell * 2,
-											rangePower: sixteenthHealth * 2,
-											meleePower:	sixteenthHealth * 3,
+											rangePower: sixteenthHealth * 1.5,
+											meleePower:	sixteenthHealth * 2.5,
 											areaPower: 	sixteenthHealth * 2,
 											bumpMove: 	sixteenthCell * 4,
-											armorPower:	0.5,
-											armorMax: 	4,
+											armorPower:	0.25,
+											armorMax: 	5,
 											healthMax: CONSTANTS.heroHealth
 										}
 									},
@@ -948,9 +948,9 @@
 										statistics: {
 											moveSpeed: 	sixteenthCell * 1.25,
 											rangeSpeed: sixteenthCell * 3,
-											rangePower: sixteenthHealth * 2.5,
+											rangePower: sixteenthHealth * 2,
 											meleePower:	sixteenthHealth * 1.5,
-											areaPower: 	sixteenthHealth * 3,
+											areaPower: 	sixteenthHealth * 2.5,
 											bumpMove: 	sixteenthCell * 2,
 											armorPower:	0.25,
 											armorMax: 	3,
@@ -978,12 +978,12 @@
 										statistics: {
 											moveSpeed: 	sixteenthCell * 1.5,
 											rangeSpeed: sixteenthCell * 3,
-											rangePower: sixteenthHealth * 3,
+											rangePower: sixteenthHealth * 2.5,
 											meleePower:	sixteenthHealth * 2,
-											areaPower: 	sixteenthHealth * 2,
+											areaPower: 	sixteenthHealth * 1.5,
 											bumpMove: 	sixteenthCell * 3,
 											armorPower:	0.25,
-											armorMax: 	5,
+											armorMax: 	4,
 											healthMax: CONSTANTS.heroHealth
 										}
 									},
@@ -1017,7 +1017,7 @@
 											moveSpeed: 	sixteenthCell * 1,
 											rangeSpeed: sixteenthCell * 1.5,
 											rangePower: sixteenthHealth * 2,
-											meleePower:	sixteenthHealth * 3,
+											meleePower:	sixteenthHealth * 2.5,
 											areaPower: 	sixteenthHealth * 1.5,
 											bumpMove:   sixteenthCell * 3,
 											armorPower:	0.25,
@@ -1042,12 +1042,12 @@
 										statistics: {
 											moveSpeed: 	sixteenthCell * 1.5,
 											rangeSpeed: sixteenthCell * 3,
-											rangePower: sixteenthHealth * 3,
-											meleePower:	sixteenthHealth * 2,
+											rangePower: sixteenthHealth * 2.5,
+											meleePower:	sixteenthHealth * 1.5,
 											areaPower: 	sixteenthHealth * 2,
 											bumpMove:   sixteenthCell * 2,
-											armorPower:	0.125,
-											armorMax: 	3,
+											armorPower:	0.25,
+											armorMax: 	2,
 											healthMax: CONSTANTS.monsterHealth
 										}
 									},
@@ -1066,14 +1066,14 @@
 										pathing: "aggressive",
 										points: CONSTANTS.monsterPoints,
 										statistics: {
-											moveSpeed: 	sixteenthCell * 1,
+											moveSpeed: 	sixteenthCell * 1.25,
 											rangeSpeed: sixteenthCell * 2,
 											rangePower: sixteenthHealth * 1.5,
-											meleePower:	sixteenthHealth * 2.5,
+											meleePower:	sixteenthHealth * 2,
 											areaPower: 	sixteenthHealth * 2.5,
 											bumpMove:   sixteenthCell * 2.5,
 											armorPower:	0.25,
-											armorMax: 	2,
+											armorMax: 	3,
 											healthMax: CONSTANTS.monsterHealth
 										}
 									},

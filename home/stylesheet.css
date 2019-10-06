@@ -57,9 +57,21 @@
 		padding: 2.5% 5%;
 	}
 
-	#createGame {
+	#form-left {
 		float: left;
 		width: 50%;
+		height: 100%;
+	}
+
+	#form-right {
+		float: right;
+		width: 50%;
+		height: 100%;
+	}
+
+	#createGame {
+		float: left;
+		width: 100%;
 		height: 100%;
 		text-align: center;
 		line-height: 1;
@@ -76,7 +88,7 @@
 	
 	#gameCode {
 		float: left;
-		width: calc(50% - 30px);
+		width: calc(100% - 30px);
 		height: calc(50% - 30px);
 		padding: 10px;
 		text-align: center;
@@ -95,7 +107,7 @@
 
 	#joinGame {
 		float: left;
-		width: 50%;
+		width: 100%;
 		height: 50%;
 		text-align: center;
 		line-height: 1;

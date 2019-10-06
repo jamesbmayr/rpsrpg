@@ -333,7 +333,7 @@
 					var audio = SOUNDS[soundEffect]
 						audio.pause()
 						audio.currentTime = 0
-						audio.play()
+						audio.play().catch(function(error) {})
 				}
 			} catch (error) {}
 		}
@@ -341,7 +341,6 @@
 	/* playVibration */
 		function playVibration(vibrationArray) {
 			try {
-				console.log(vibrationArray)
 				navigator.vibrate(vibrationArray)
 			} catch (error) {}
 		}

@@ -2305,6 +2305,7 @@
 									hero.info.size.y = hero.info.size.maxY
 									hero.state.alive = true
 									hero.state.health = hero.info.statistics.healthMax * CONSTANTS.reviveHealthFraction
+									hero.state.vibration = [10,10,10,10,10]
 							}
 						}
 
@@ -2377,7 +2378,7 @@
 											creature.state.alive = true
 											creature.state.health = creature.info.statistics.healthMax * CONSTANTS.reviveHealthFraction
 											creature.state.armor = creature.info.statistics.armorMax
-											creature.state.vibration = [10,0,10,0,10]
+											creature.state.vibration = [10,10,10,10,10]
 										}
 									}
 
@@ -2393,7 +2394,6 @@
 						// resets
 							creature.state.position.edge = null
 							creature.state.sound = null
-							creature.state.vibration = null
 
 						// no player? --> AI
 							if (!creature.player) {
@@ -2454,20 +2454,24 @@
 						// bumped
 							if (creature.state.movement.bumped) {
 								creature.state.movement.bumped = false
+								creature.state.vibration = [50]
 							}
+							else {
+								creature.state.vibration = null
 
-						// attacks
-							else if (!Object.keys(creature.items).length) {
-								// a
-									if (creature.state.actions.a && !creature.state.cooldowns.a) {
-										creature.state.cooldowns.a = CONSTANTS.aCooldown
-										createRangeAttack(request, chamber, creature, callback)
-									}
+								// attacks
+									if (!Object.keys(creature.items).length) {
+										// a
+											if (creature.state.actions.a && !creature.state.cooldowns.a) {
+												creature.state.cooldowns.a = CONSTANTS.aCooldown
+												createRangeAttack(request, chamber, creature, callback)
+											}
 
-								// b
-									if (creature.state.actions.b && !creature.state.cooldowns.b) {
-										creature.state.cooldowns.b = CONSTANTS.bCooldown
-										createAreaAttack(request, chamber, creature, callback)
+										// b
+											if (creature.state.actions.b && !creature.state.cooldowns.b) {
+												creature.state.cooldowns.b = CONSTANTS.bCooldown
+												createAreaAttack(request, chamber, creature, callback)
+											}
 									}
 							}
 
