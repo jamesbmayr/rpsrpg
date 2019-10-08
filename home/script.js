@@ -8,54 +8,60 @@
 	/* createGame */
 		document.getElementById("createGame").addEventListener(on.click, createGame)
 		function createGame() {
-			// data
-				var post = {
-					action: "createGame"
-				}
-
-			// loading messages
-				displayMessage("creating game...")
-
-			// submit
-				sendPost(post, function(data) {
-					if (!data.success) {
-						displayMessage(data.message || "Unable to create a game...")
+			try {
+				// data
+					var post = {
+						action: "createGame"
 					}
-					else {
-						window.location = data.location
-					}
-				})
+
+				// loading messages
+					displayMessage("creating game...")
+					document.getElementById("images").setAttribute("animation", true)
+
+				// submit
+					sendPost(post, function(data) {
+						if (!data.success) {
+							displayMessage(data.message || "Unable to create a game...")
+							document.getElementById("images").removeAttribute("animation")
+						}
+						else {
+							window.location = data.location
+						}
+					})
+			} catch (error) {}
 		}
 
 	/* joinGame */
 		document.getElementById("joinGame").addEventListener(on.click, joinGame)
 		document.getElementById("gameCode").addEventListener(on.keyup, function (event) { if (event.which == 13) { joinGame() } })
 		function joinGame() {
-			// get values
-				var gameCode = document.getElementById("gameCode").value.replace(" ","").trim().toLowerCase() || false
+			try {
+				// get values
+					var gameCode = document.getElementById("gameCode").value.replace(" ","").trim().toLowerCase() || false
 
-			if (gameCode.length !== 4) {
-				displayMessage("The game code must be 4 characters.")
-			}
-			else if (!isNumLet(gameCode)) {
-				displayMessage("The game code can be letters only.")
-			}
-			else {
-				// data
-					var post = {
-						action: "joinGame",
-						gameid: gameCode,
-						observing: (on.click == "click" && window.innerWidth >= CONSTANTS.observerWidth)
-					}
+				if (gameCode.length !== 4) {
+					displayMessage("The game code must be 4 characters.")
+				}
+				else if (!isNumLet(gameCode)) {
+					displayMessage("The game code can be letters only.")
+				}
+				else {
+					// data
+						var post = {
+							action: "joinGame",
+							gameid: gameCode,
+							observing: (on.click == "click" && window.innerWidth >= CONSTANTS.observerWidth)
+						}
 
-				// submit
-					sendPost(post, function(data) {
-						if (!data.success) {
-							displayMessage(data.message || "Unable to join this game...")
-						}
-						else {
-							window.location = data.location
-						}
-					})
-			}
+					// submit
+						sendPost(post, function(data) {
+							if (!data.success) {
+								displayMessage(data.message || "Unable to join this game...")
+							}
+							else {
+								window.location = data.location
+							}
+						})
+				}
+			} catch (error) {}
 		}

@@ -1189,7 +1189,7 @@
 					chamber.items[attack.id] = attack
 
 				// sound
-					creature.state.sound = "blip"
+					creature.state.sound = "rangeAttack_" + creature.info.subtype
 			}
 			catch (error) {
 				main.logError(error, arguments.callee.name, [request.session.id], callback)
@@ -1841,22 +1841,28 @@
 
 								// damage
 									if ((attack.info.type == "rangeAttack" || attack.info.type == "areaAttack") || !Object.keys(attacker.items).length) {
-										if (attack.info.type == "rangeAttack" || attack.info.type == "areaAttack") {
-											var power = attack.info.statistics.power
-										}
-										else {
-											var power = attacker.info.statistics.meleePower * (attacker.state.effects.rock ? CONSTANTS.rockMultiplier : 1)
-										}
+										// sound
+											attack.state.sound = "collision_" + attack.info.type + "_" + recipient.info.type
 
-										var alive = resolveDamage(request, chamber, recipient, {
-											power: 	power,
-											rps: 	attacker ? attacker.info.rps  : attack.info.rps,
-											type: 	attacker ? attacker.info.type : attack.info.type
-										}, callback)
+										// power
+											if (attack.info.type == "rangeAttack" || attack.info.type == "areaAttack") {
+												var power = attack.info.statistics.power
+											}
+											else {
+												var power = attacker.info.statistics.meleePower * (attacker.state.effects.rock ? CONSTANTS.rockMultiplier : 1)
+											}
 
-										if (!alive && attacker.info.type == "hero") {
-											resolvePoints(request, recipient, callback)
-										}
+										// damage
+											var alive = resolveDamage(request, chamber, recipient, {
+												power: 	power,
+												rps: 	attacker ? attacker.info.rps  : attack.info.rps,
+												type: 	attacker ? attacker.info.type : attack.info.type
+											}, callback)
+
+										// kill
+											if (!alive && attacker.info.type == "hero") {
+												resolvePoints(request, recipient, callback)
+											}
 									}									
 
 								// bump
@@ -1976,6 +1982,7 @@
 								// recipients shrink
 									if (!recipient.state.cooldowns.death) {
 										recipient.state.cooldowns.death = CONSTANTS.deathCooldown
+										recipient.state.sound = "death_" + recipient.info.subtype
 									}
 
 								// drop items
@@ -2351,6 +2358,11 @@
 		module.exports.updateCreature = updateCreature
 		function updateCreature(request, chamber, creature, callback) {
 			try {
+				// resets
+					creature.state.position.edge = null
+					creature.state.sound = null
+					creature.state.vibration = null
+							
 				// dead creature (not hero)
 					if (!creature.state.alive) {
 						// reduce cooldown
@@ -2389,11 +2401,6 @@
 
 				// alive
 					else {
-						// resets
-							creature.state.position.edge = null
-							creature.state.sound = null
-							creature.state.vibration = null
-
 						// no player? --> AI
 							if (!creature.player) {
 								// get path
@@ -2543,15 +2550,19 @@
 								// resolve collisions
 									targetCoordinates = resolveCollisions(request, chamber, item, targetCoordinates, callback)
 									if (targetCoordinates.collisionX || targetCoordinates.collisionY) {
-										delete chamber.items[item.id]
+										item.info.statistics.power = 0
+										item.info.size.x = 0
+										item.info.size.y = 0
 									}
 
 								// move & shrink item
-									item.state.position.x = Math.round(targetCoordinates.x)
-									item.state.position.y = Math.round(targetCoordinates.y)
-									item.info.statistics.power = Math.max(0, item.info.statistics.power - CONSTANTS.rangeAttackFade)
-									item.info.size.x = Math.max(0, item.info.statistics.power * CONSTANTS.rangeAttackRadius)
-									item.info.size.y = Math.max(0, item.info.statistics.power * CONSTANTS.rangeAttackRadius)
+									else {
+										item.state.position.x = Math.round(targetCoordinates.x)
+										item.state.position.y = Math.round(targetCoordinates.y)
+										item.info.statistics.power = Math.max(0, item.info.statistics.power - CONSTANTS.rangeAttackFade)
+										item.info.size.x = Math.max(0, item.info.statistics.power * CONSTANTS.rangeAttackRadius)
+										item.info.size.y = Math.max(0, item.info.statistics.power * CONSTANTS.rangeAttackRadius)
+									}
 							}
 					}
 

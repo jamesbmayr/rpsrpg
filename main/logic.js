@@ -140,6 +140,9 @@
 								"spawn_rock_all_standing_inactive",			"spawn_paper_all_standing_inactive",			"spawn_scissors_all_standing_inactive",			"spawn_rock_all_standing_active",				"spawn_paper_all_standing_active",				"spawn_scissors_all_standing_active",
 
 								"layer_0_background", "layer_0_wall_0_", "layer_0_wall_1_up", "layer_0_wall_1_right", "layer_0_wall_1_down", "layer_0_wall_1_left", "layer_0_wall_2_upright", "layer_0_wall_2_rightdown", "layer_0_wall_2_downleft", "layer_0_wall_2_upleft", "layer_0_wall_2_updown", "layer_0_wall_2_rightleft", "layer_0_wall_3_uprightdown", "layer_0_wall_3_rightdownleft", "layer_0_wall_3_uprightleft", "layer_0_wall_3_updownleft", "layer_0_wall_4_uprightdownleft",
+								/*"layer_1_background",*/ "layer_1_wall_0_", "layer_1_wall_1_up", "layer_1_wall_1_right", "layer_1_wall_1_down", "layer_1_wall_1_left", "layer_1_wall_2_upright", "layer_1_wall_2_rightdown", "layer_1_wall_2_downleft", "layer_1_wall_2_upleft", "layer_1_wall_2_updown", "layer_1_wall_2_rightleft", "layer_1_wall_3_uprightdown", "layer_1_wall_3_rightdownleft", "layer_1_wall_3_uprightleft", "layer_1_wall_3_updownleft", "layer_1_wall_4_uprightdownleft",
+								/*"layer_2_background",*/ "layer_2_wall_0_", "layer_2_wall_1_up", "layer_2_wall_1_right", "layer_2_wall_1_down", "layer_2_wall_1_left", "layer_2_wall_2_upright", "layer_2_wall_2_rightdown", "layer_2_wall_2_downleft", "layer_2_wall_2_upleft", "layer_2_wall_2_updown", "layer_2_wall_2_rightleft", "layer_2_wall_3_uprightdown", "layer_2_wall_3_rightdownleft", "layer_2_wall_3_uprightleft", "layer_2_wall_3_updownleft", "layer_2_wall_4_uprightdownleft",
+								/*"layer_3_background",*/ "layer_3_wall_0_", "layer_3_wall_1_up", "layer_3_wall_1_right", "layer_3_wall_1_down", "layer_3_wall_1_left", "layer_3_wall_2_upright", "layer_3_wall_2_rightdown", "layer_3_wall_2_downleft", "layer_3_wall_2_upleft", "layer_3_wall_2_updown", "layer_3_wall_2_rightleft", "layer_3_wall_3_uprightdown", "layer_3_wall_3_rightdownleft", "layer_3_wall_3_uprightleft", "layer_3_wall_3_updownleft", "layer_3_wall_4_uprightdownleft",
 								
 								"hero_barbarian_up_moving_inactive", 		"hero_barbarian_down_moving_inactive", 			"hero_barbarian_left_moving_inactive", 			"hero_barbarian_right_moving_inactive", 		"hero_barbarian_up_standing_inactive", 			"hero_barbarian_down_standing_inactive", 		"hero_barbarian_left_standing_inactive", 		"hero_barbarian_right_standing_inactive", 
 								"hero_barbarian_up_moving_rangeAttack", 	"hero_barbarian_down_moving_rangeAttack", 		"hero_barbarian_left_moving_rangeAttack", 		"hero_barbarian_right_moving_rangeAttack", 		"hero_barbarian_up_standing_rangeAttack", 		"hero_barbarian_down_standing_rangeAttack", 	"hero_barbarian_left_standing_rangeAttack", 	"hero_barbarian_right_standing_rangeAttack", 
@@ -181,7 +184,10 @@
 						case "sfx":
 							return {
 								main: [
-									"soundtrack", "blip"
+									"soundtrack",
+									"rangeAttack_barbarian", "rangeAttack_wizard", "rangeAttack_ranger",
+									"death_avalanche",
+									"collision_rangeAttack_monster"
 								],
 								player: [
 
@@ -300,7 +306,7 @@
 								constants.bCooldown 		= Math.floor(second)
 
 							// interval derivatives
-								constants.imageFlip 		= constants.loopInterval * 4
+								constants.imageFlip 		= constants.loopInterval * 6
 								constants.collisionVibration = [constants.loopInterval]
 								constants.healVibration 	= [constants.loopInterval / 2, constants.loopInterval / 2]
 
