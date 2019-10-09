@@ -5,6 +5,13 @@
 		background-color: var(--bluegray-2);
 	}
 
+	body {
+		background-image: url(/sprites/layer_1_background.png);
+		background-size: cover;
+		background-repeat: no-repeat;
+		background-position: center;
+	}
+
 	/* container */
 		#container {
 			position: fixed;
