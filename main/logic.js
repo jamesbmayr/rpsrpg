@@ -186,8 +186,8 @@
 								main: [
 									"soundtrack",
 									"rangeAttack_barbarian", "rangeAttack_wizard", "rangeAttack_ranger",
-									"death_avalanche",
-									"collision_rangeAttack_monster"
+									"death_avalanche", "death_obscuro", "death_tatters",
+									"collision_rangeAttack_monster", "collision_hero_monster"
 								],
 								player: [
 

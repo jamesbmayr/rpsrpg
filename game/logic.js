@@ -2461,7 +2461,11 @@
 						// bumped
 							if (creature.state.movement.bumped) {
 								creature.state.movement.bumped = false
-								creature.state.vibration = CONSTANTS.collisionVibration
+
+								if (creature.info.type == "hero") {
+									creature.state.vibration = CONSTANTS.collisionVibration
+									creature.state.sound = "collision_hero_object"
+								}
 							}
 
 						// attacks

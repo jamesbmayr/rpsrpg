@@ -44,10 +44,12 @@
 
 	/* setVolume */
 		window.setVolume = setVolume
-		function setVolume(name, percentage) {
-			if (SOUNDS[name]) {
-				SOUNDS[name].volume = Math.max(0, Math.min(1, Math.round(percentage / 100)))
-			}
+		function setVolume(name, volume) {
+			try {
+				if (SOUNDS[name]) {
+					SOUNDS[name].volume = volume
+				}
+			} catch (error) { console.log(error) }
 		}
 
 	/* other */
