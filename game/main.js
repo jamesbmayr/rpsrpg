@@ -43,7 +43,7 @@
 		}
 
 	/* setVolume */
-		window.setVolume = setVolume()
+		window.setVolume = setVolume
 		function setVolume(name, percentage) {
 			if (SOUNDS[name]) {
 				SOUNDS[name].volume = Math.max(0, Math.min(1, Math.round(percentage / 100)))
