@@ -25,6 +25,7 @@
 
 	/* preloadSounds */
 		var MUSIC = false
+		window.SOUNDS = SOUNDS
 		var SOUNDS = []
 		preloadSounds()
 		function preloadSounds() {
@@ -39,6 +40,14 @@
 					}
 				} catch (error) {}
 			})
+		}
+
+	/* setVolume */
+		window.setVolume = setVolume()
+		function setVolume(name, percentage) {
+			if (SOUNDS[name]) {
+				SOUNDS[name].volume = Math.max(0, Math.min(1, Math.round(percentage / 100)))
+			}
 		}
 
 	/* other */
