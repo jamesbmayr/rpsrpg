@@ -302,7 +302,7 @@
 								constants.portalCooldown 	= Math.floor(second * 3)
 								constants.deathCooldown 	= Math.floor(second)
 								constants.effectCooldown 	= Math.floor(second * 30)
-								constants.aCooldown 		= Math.floor(second / 4)
+								constants.aCooldown 		= Math.floor(second / 2)
 								constants.bCooldown 		= Math.floor(second)
 
 							// interval derivatives
