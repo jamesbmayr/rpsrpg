@@ -155,11 +155,6 @@
 				// draw walls
 					drawWalls(chamber)
 
-				// draw items
-					for (var i in chamber.items) {
-						drawItem(chamber.items[i])
-					}
-
 				// draw creatures
 					for (var c in chamber.creatures) {
 						drawCreature(chamber.creatures[c])
@@ -168,6 +163,11 @@
 				// draw heroes
 					for (var h in chamber.heroes) {
 						drawCreature(chamber.heroes[h])
+					}
+
+				// draw items
+					for (var i in chamber.items) {
+						drawItem(chamber.items[i])
 					}
 
 				// overlay
@@ -330,13 +330,17 @@
 		function drawCreature(creature) {
 			try {
 				// variables
+					var healthPercentage = Math.round(creature.state.health / creature.info.statistics.healthMax * 100)
+					var healthColor = healthPercentage > CONSTANTS.healthHigh ? CONSTANTS.colors.green[2] : healthPercentage > CONSTANTS.healthLow ? CONSTANTS.colors.yellow[2] : CONSTANTS.colors.red[2]
 					var creatureX = creature.state.position.x + Math.ceil(CANVAS.width  / 2)
 					var creatureY = creature.state.position.y + Math.ceil(CANVAS.height / 2)
 					var options = {
 						image: IMAGES[creature.state.image] ? IMAGES[creature.state.image] : null,
 						color: creature.info.color,
 						shape: creature.info.shape,
-						opacity: Math.max(0, Math.min(1, CONSTANTS.baseHealthOpacity + (creature.state.health / creature.info.statistics.healthMax * (1 - CONSTANTS.baseHealthOpacity))))
+						opacity: creature.info.opacity || 1,
+						shadow: healthColor,
+						blur: CONSTANTS.borderRadius
 					}
 
 				// draw
@@ -411,7 +415,10 @@
 					}
 
 					if (item.state.health) {
-						options.opacity = Math.max(0, Math.min(1, CONSTANTS.baseHealthOpacity + (item.state.health / item.info.statistics.healthMax * (1 - CONSTANTS.baseHealthOpacity))))
+						var healthPercentage = Math.round(item.state.health / item.info.statistics.healthMax * 100)
+						var healthColor = healthPercentage > CONSTANTS.healthHigh ? CONSTANTS.colors.green[2] : healthPercentage > CONSTANTS.healthLow ? CONSTANTS.colors.yellow[2] : CONSTANTS.colors.red[2]
+						options.shadow = healthColor
+						options.blur = CONSTANTS.borderRadius
 					}
 
 				// draw

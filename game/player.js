@@ -197,7 +197,6 @@
 					for (var h in heroOptions) {
 						var button = document.createElement("button")
 							button.className = "selection-option"
-							button.style.backgroundImage = "url(/sprites/selection_" + heroOptions[h].info.subtype + ".png)"
 							button.value = heroOptions[h].info.subtype
 							button.addEventListener(on.click, selectHero)
 						SELECTION.appendChild(button)

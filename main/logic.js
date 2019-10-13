@@ -121,6 +121,7 @@
 										'	:root {\n' +
 										'		--font: ' + CONSTANTS.font + ';\n' +
 										'		--borderRadius: ' + CONSTANTS.borderRadius + 'px;\n' +
+										'		--animationTime: ' + CONSTANTS.animationTime + 's;\n' +
 												cssColors +
 										'	}')
 						break
@@ -135,9 +136,11 @@
 					// sprites
 						case "sprites":
 							return [
-								"orb_rock_all_standing_inactive",			"orb_paper_all_standing_inactive",				"orb_scissors_all_standing_inactive",			"orb_rock_all_standing_active",					"orb_paper_all_standing_active",				"orb_scissors_all_standing_active",
-								"pedestal_rock_all_standing_inactive",		"pedestal_paper_all_standing_inactive",			"pedestal_scissors_all_standing_inactive",		"pedestal_rock_all_standing_active",			"pedestal_paper_all_standing_active",			"pedestal_scissors_all_standing_active",
-								"spawn_rock_all_standing_inactive",			"spawn_paper_all_standing_inactive",			"spawn_scissors_all_standing_inactive",			"spawn_rock_all_standing_active",				"spawn_paper_all_standing_active",				"spawn_scissors_all_standing_active",
+								"orb_rock_all_standing_default",			"orb_paper_all_standing_default",				"orb_scissors_all_standing_default",			
+								"pedestal_rock_all_standing_default",		"pedestal_paper_all_standing_default",			"pedestal_scissors_all_standing_default",		"pedestal_rock_all_standing_active",			"pedestal_paper_all_standing_active",			"pedestal_scissors_all_standing_active",
+								"spawn_rock_all_standing_default",			"spawn_paper_all_standing_default",				"spawn_scissors_all_standing_default",			"spawn_rock_all_standing_active",				"spawn_paper_all_standing_active",				"spawn_scissors_all_standing_active",
+								"shrine_rock_all_standing_default",			"shrine_paper_all_standing_default",			"shrine_scissors_all_standing_default",			"shrine_rock_all_standing_active",				"shrine_paper_all_standing_active",				"shrine_scissors_all_standing_active",
+								"portal_portal_all_standing_default", 		"portal_portal_all_standing_active",
 
 								"layer_0_background", "layer_0_wall_0_", "layer_0_wall_1_up", "layer_0_wall_1_right", "layer_0_wall_1_down", "layer_0_wall_1_left", "layer_0_wall_2_upright", "layer_0_wall_2_rightdown", "layer_0_wall_2_downleft", "layer_0_wall_2_upleft", "layer_0_wall_2_updown", "layer_0_wall_2_rightleft", "layer_0_wall_3_uprightdown", "layer_0_wall_3_rightdownleft", "layer_0_wall_3_uprightleft", "layer_0_wall_3_updownleft", "layer_0_wall_4_uprightdownleft",
 								"layer_1_background", "layer_1_wall_0_", "layer_1_wall_1_up", "layer_1_wall_1_right", "layer_1_wall_1_down", "layer_1_wall_1_left", "layer_1_wall_2_upright", "layer_1_wall_2_rightdown", "layer_1_wall_2_downleft", "layer_1_wall_2_upleft", "layer_1_wall_2_updown", "layer_1_wall_2_rightleft", "layer_1_wall_3_uprightdown", "layer_1_wall_3_rightdownleft", "layer_1_wall_3_uprightleft", "layer_1_wall_3_updownleft", "layer_1_wall_4_uprightdownleft",
@@ -174,9 +177,9 @@
 								"monster_obscuro_up_moving_areaAttack", 	"monster_obscuro_down_moving_areaAttack", 		"monster_obscuro_left_moving_areaAttack", 		"monster_obscuro_right_moving_areaAttack", 		"monster_obscuro_up_standing_areaAttack", 		"monster_obscuro_down_standing_areaAttack", 	"monster_obscuro_left_standing_areaAttack", 	"monster_obscuro_right_standing_areaAttack",
 								"monster_obscuro_up_moving_collision", 		"monster_obscuro_down_moving_collision", 		"monster_obscuro_left_moving_collision", 		"monster_obscuro_right_moving_collision", 		"monster_obscuro_up_standing_collision", 		"monster_obscuro_down_standing_collision", 		"monster_obscuro_left_standing_collision", 		"monster_obscuro_right_standing_collision",
 
-								"rangeAttack_barbarian_up_moving_active", 	"rangeAttack_barbarian_down_moving_active", 	"rangeAttack_barbarian_left_moving_active", 	"rangeAttack_barbarian_right_moving_active",
-								"rangeAttack_ranger_up_moving_active", 		"rangeAttack_ranger_down_moving_active", 		"rangeAttack_ranger_left_moving_active", 		"rangeAttack_ranger_right_moving_active",
-								"rangeAttack_wizard_up_moving_active", 		"rangeAttack_wizard_down_moving_active", 		"rangeAttack_wizard_left_moving_active", 		"rangeAttack_wizard_right_moving_active"
+								"rangeAttack_barbarian_up_moving_default", 	"rangeAttack_barbarian_down_moving_default", 	"rangeAttack_barbarian_left_moving_default", 	"rangeAttack_barbarian_right_moving_default",
+								"rangeAttack_ranger_up_moving_default", 	"rangeAttack_ranger_down_moving_default", 		"rangeAttack_ranger_left_moving_default", 		"rangeAttack_ranger_right_moving_default",
+								"rangeAttack_wizard_up_moving_default", 	"rangeAttack_wizard_down_moving_default", 		"rangeAttack_wizard_left_moving_default", 		"rangeAttack_wizard_right_moving_default"
 							]
 						break
 
@@ -186,7 +189,8 @@
 								main: [
 									"soundtrack",
 									"rangeAttack_barbarian", "rangeAttack_wizard", "rangeAttack_ranger",
-									"death_avalanche", "death_obscuro", "death_tatters",
+									"death_monster_avalanche", "death_monster_obscuro", "death_monster_tatters",
+									"death_spawn_rock", "death_spawn_paper", "death_spawn_scissors",
 									"collision_rangeAttack_monster", "collision_hero_object"
 								],
 								player: [
@@ -212,15 +216,15 @@
 									borderRadius: 		16,
 									borderThickness: 	8,
 									overlayOpacity: 	0.5,
-									deadOpacity: 		0.5,
+									deathOpacity: 		0.5,
 									healthHigh: 		60,
 									healthLow: 			30,
 									timeHigh: 			90,
 									timeLow: 			45,
 									loadFade: 			4,
-									baseHealthOpacity: 	0.25,
 									observerWidth: 		800,
 									audioRemoval: 		1000 * 5,
+									animationTime: 		2,
 
 								// game loop
 									loopInterval: 		50,
@@ -256,7 +260,7 @@
 
 								// fades
 									rangeAttackFade: 	1,
-									areaAttackFade: 	2,
+									areaAttackFade: 	3,
 									deathFade: 			1,
 
 								// shrine effects
@@ -319,7 +323,7 @@
 							// distance derivatives
 								constants.acceleration 		= Math.floor(constants.cellSize / 16)
 								constants.rangeAttackRadius = Math.floor(constants.cellSize / 32)
-								constants.areaAttackRadius 	= Math.floor(constants.cellSize / 16)
+								constants.areaAttackRadius 	= Math.floor(constants.cellSize / 8)
 								constants.itemDropRadius 	= Math.floor(constants.cellSize / 4)
 								constants.monsterAwareness 	= Math.floor(constants.cellSize * 4)
 
@@ -931,7 +935,7 @@
 											rangePower: sixteenthHealth * 1.5,
 											meleePower:	sixteenthHealth * 2.5,
 											areaPower: 	sixteenthHealth * 2,
-											bumpMove: 	sixteenthCell * 4,
+											bumpMove: 	sixteenthCell * 3,
 											armorPower:	0.25,
 											armorMax: 	5,
 											healthMax: CONSTANTS.heroHealth
@@ -991,7 +995,7 @@
 											rangePower: sixteenthHealth * 2.5,
 											meleePower:	sixteenthHealth * 2,
 											areaPower: 	sixteenthHealth * 1.5,
-											bumpMove: 	sixteenthCell * 3,
+											bumpMove: 	sixteenthCell * 2.5,
 											armorPower:	0.25,
 											armorMax: 	4,
 											healthMax: CONSTANTS.heroHealth
@@ -1164,6 +1168,7 @@
 										style: "border"
 									},
 									state: {
+										flip: true,
 										active: false
 									}
 								})
@@ -1241,6 +1246,7 @@
 									style: "border"
 								},
 								state: {
+									flip: true,
 									cooldowns: {
 										activate: 0
 									}
@@ -1269,6 +1275,7 @@
 									monsterTypes: []
 								},
 								state: {
+									flip: true,
 									cooldowns: {
 										activate: 0
 									},
@@ -1479,14 +1486,12 @@
 								},
 								shape: 			"circle",
 								style: 			"fill",
-								opacity: 		0.5,
 								statistics: {
 									speed: 		0,
 									power: 		0
 								}
 							},
 							state: {
-								active: true,
 								movement: {
 									direction: 	null
 								}

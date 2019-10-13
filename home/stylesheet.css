@@ -157,32 +157,32 @@
 		#images #rock {
 			left: 25%;
 			transform: translateX(-50%) translateY(-50%);
-			background-image: url(/sprites/orb_rock_all_standing_active.png);
+			background-image: url(/sprites/orb_rock_all_standing_default.png);
 		}
 
 		#images #paper {
 			left: 50%;
 			transform: translateX(-50%) translateY(-50%);
-			background-image: url(/sprites/orb_paper_all_standing_active.png);
+			background-image: url(/sprites/orb_paper_all_standing_default.png);
 		}
 
 		#images #scissors {
 			left: 75%;
 			transform: translateX(-50%) translateY(-50%);
-			background-image: url(/sprites/orb_scissors_all_standing_active.png);
+			background-image: url(/sprites/orb_scissors_all_standing_default.png);
 		}
 
 	/* animation */
 		#images[animation] #rock {
-			animation: rock_loading linear 2s infinite;
+			animation: rock_loading linear var(--animationTime) infinite;
 		}
 
 		#images[animation] #paper {
-			animation: paper_loading linear 2s infinite;
+			animation: paper_loading linear var(--animationTime) infinite;
 		}
 
 		#images[animation] #scissors {
-			animation: scissors_loading linear 2s infinite;
+			animation: scissors_loading linear var(--animationTime) infinite;
 		}
 
 		@keyframes rock_loading {
@@ -214,4 +214,3 @@
 			83%  {height: 75%;  }
 			100% {height: 50%;  }
 		}
-

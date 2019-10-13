@@ -1220,6 +1220,7 @@
 								y: CONSTANTS.areaAttackRadius * power
 							},
 							color: creature.info.color,
+							opacity: 0.5,
 							statistics: {
 								power: power
 							}
@@ -1763,6 +1764,7 @@
 										if (orbKey) {
 											request.game.data.state.orbs++
 											chamber.items[item.id].state.active = true
+											chamber.items[item.id].state.flip = false
 											chamber.items[item.id].info.style = "filled"
 											resolvePoints(request, item, callback)
 
@@ -1982,7 +1984,6 @@
 								// recipients shrink
 									if (!recipient.state.cooldowns.death) {
 										recipient.state.cooldowns.death = CONSTANTS.deathCooldown
-										recipient.state.sound = "death_" + recipient.info.subtype
 									}
 
 								// drop items
@@ -2310,6 +2311,7 @@
 									hero.state.position.y = clone.state.position.y
 									hero.info.size.x = hero.info.size.maxX
 									hero.info.size.y = hero.info.size.maxY
+									hero.info.opacity = 1
 									hero.state.alive = true
 									hero.state.health = hero.info.statistics.healthMax * CONSTANTS.reviveHealthFraction
 							}
@@ -2365,6 +2367,12 @@
 							
 				// dead creature (not hero)
 					if (!creature.state.alive) {
+						// first time? sound / opacity
+							if (creature.state.cooldowns.death == CONSTANTS.deathCooldown) {
+								creature.info.opacity = CONSTANTS.deathOpacity
+								creature.state.sound = "death_" + creature.info.type + "_" + creature.info.subtype
+							}
+
 						// reduce cooldown
 							creature.state.cooldowns.death = Math.max(0, creature.state.cooldowns.death - CONSTANTS.deathFade)
 
@@ -2386,6 +2394,7 @@
 											creature.state.position.y = clone.state.position.y
 											creature.info.size.x = creature.info.size.maxX
 											creature.info.size.y = creature.info.size.maxY
+											creature.info.opacity = 1
 											creature.state.alive = true
 											creature.state.health = creature.info.statistics.healthMax * CONSTANTS.reviveHealthFraction
 											creature.state.armor = creature.info.statistics.armorMax
@@ -2610,11 +2619,13 @@
 
 						// reduce cooldown
 							item.state.cooldowns.activate = Math.max(0, item.state.cooldowns.activate - 1)
-							item.info.size.x = item.info.size.maxX * ((cooldownMax - item.state.cooldowns.activate) / cooldownMax)
-							item.info.size.y = item.info.size.maxY * ((cooldownMax - item.state.cooldowns.activate) / cooldownMax)
 
 						// portal
 							if (item.info.type == "portal") {
+								// size
+									item.info.size.x = item.info.size.maxX * ((cooldownMax - item.state.cooldowns.activate) / cooldownMax)
+									item.info.size.y = item.info.size.maxY * ((cooldownMax - item.state.cooldowns.activate) / cooldownMax)
+
 								// get destination chamber
 									var coords = item.state.link.split(",")
 									var cellX = Number(coords[0])
@@ -2639,6 +2650,12 @@
 							if (item.info.type == "spawn") {
 								// dead?
 									if (!item.state.alive) {
+										// first time? sound
+											if (item.state.cooldowns.death == CONSTANTS.deathCooldown) {
+												item.info.opacity = CONSTANTS.deathOpacity
+												item.state.sound = "death_" + item.info.type + "_" + item.info.subtype
+											}
+
 										// reduce cooldown
 											item.state.cooldowns.death = Math.max(0, item.state.cooldowns.death - CONSTANTS.deathFade)
 
@@ -2656,7 +2673,6 @@
 									else if (!item.state.cooldowns.activate && Object.keys(chamber.creatures).length < CONSTANTS.monsterCountMax) {
 										// deactivate
 											item.state.cooldowns.activate = CONSTANTS.spawnCooldown
-											item.info.size.x = item.info.size.y = 0
 
 										// create creature
 											var monster = createCreature(request, main.duplicateObject(MONSTERS[main.chooseRandom(item.info.monsterTypes)]), callback)
@@ -2885,7 +2901,7 @@
 							imageName.push(thing.info.subtype)
 							imageName.push(thing.state.movement ? thing.state.movement.direction : "all")
 							imageName.push((thing.state.movement && thing.state.movement.direction) ? "moving" : "standing")
-							imageName.push(thing.state.active || (thing.state.cooldowns && !thing.state.cooldowns.activate) ? "active" : (flip ? "active" : "inactive"))
+							imageName.push((thing.state.flip) ? (flip ? "active" : "default") : thing.state.active ? "active" : "default")
 						thing.state.image = imageName.join("_")
 					}
 			}

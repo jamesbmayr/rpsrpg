@@ -74,9 +74,46 @@
 		display: inline-block;
 	}
 
-	#selection-inner button:hover {
-		box-shadow: 0px 0px var(--borderRadius) var(--white-4);
-	}
+	/* selection sprites */
+		#selection-inner button:hover {
+			box-shadow: 0px 0px var(--borderRadius) var(--white-4);
+		}
+
+		#selection-inner button[value="barbarian"] {
+			animation: rock_selection step-start var(--animationTime) infinite;
+		}
+
+		#selection-inner button[value="wizard"] {
+			animation: paper_selection step-start var(--animationTime) infinite;
+		}
+
+		#selection-inner button[value="ranger"] {
+			animation: scissors_selection step-start var(--animationTime) infinite;
+		}
+
+		@keyframes rock_selection {
+			0%   {background-image: url("/sprites/hero_barbarian_up_standing_inactive.png");}
+			25%  {background-image: url("/sprites/hero_barbarian_right_standing_inactive.png");}
+			50%  {background-image: url("/sprites/hero_barbarian_down_standing_inactive.png");}
+			75%  {background-image: url("/sprites/hero_barbarian_left_standing_inactive.png");}
+			100% {background-image: url("/sprites/hero_barbarian_up_standing_inactive.png");}
+		}
+
+		@keyframes paper_selection {
+			0%   {background-image: url("/sprites/hero_wizard_up_standing_inactive.png");}
+			25%  {background-image: url("/sprites/hero_wizard_right_standing_inactive.png");}
+			50%  {background-image: url("/sprites/hero_wizard_down_standing_inactive.png");}
+			75%  {background-image: url("/sprites/hero_wizard_left_standing_inactive.png");}
+			100% {background-image: url("/sprites/hero_wizard_up_standing_inactive.png");}
+		}
+
+		@keyframes scissors_selection {
+			0%   {background-image: url("/sprites/hero_ranger_up_standing_inactive.png");}
+			25%  {background-image: url("/sprites/hero_ranger_right_standing_inactive.png");}
+			50%  {background-image: url("/sprites/hero_ranger_down_standing_inactive.png");}
+			75%  {background-image: url("/sprites/hero_ranger_left_standing_inactive.png");}
+			100% {background-image: url("/sprites/hero_ranger_up_standing_inactive.png");}
+		}
 
 /*** info ***/
 	#info {
