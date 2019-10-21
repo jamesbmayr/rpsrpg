@@ -13,6 +13,10 @@
 			down: 	document.getElementById("down"),
 			left: 	document.getElementById("left"),
 			right: 	document.getElementById("right"),
+			upLeft: 	document.getElementById("up-left"),
+			upRight: 	document.getElementById("up-right"),
+			downLeft: 	document.getElementById("down-left"),
+			downRight: 	document.getElementById("down-right"),
 			start: 	document.getElementById("start"),
 			a: 		document.getElementById("a"),
 			b: 		document.getElementById("b")
@@ -127,11 +131,26 @@
 					case "s":
 						input = "down"
 					break
+					case "x":
+						input = "down"
+					break
 					case "d":
 						input = "right"
 					break
 					case "w":
 						input = "up"
+					break
+					case "q":
+						input = "upLeft"
+					break
+					case "e":
+						input = "upRight"
+					break
+					case "z":
+						input = "downLeft"
+					break
+					case "c":
+						input = "downRight"
 					break
 					case "Escape":
 						input = "start"

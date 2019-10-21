@@ -187,6 +187,10 @@
 							case (request.post.input == "start"):
 								triggerPause(request, hero, callback)
 							break
+
+							case (request.post.input.split("-").length && CONSTANTS.directions.includes(request.post.input.split("-")[0]) && CONSTANTS.directions.includes(request.post.input.split("-")[1])):
+								triggerMove(request, hero, callback)
+							break
 						}
 					}
 				}
@@ -219,6 +223,10 @@
 							case (CONSTANTS.actions.includes(request.post.input)):
 								untriggerAction(request, hero, callback)
 							break
+
+							case (request.post.input.split("-").length && CONSTANTS.directions.includes(request.post.input.split("-")[0]) && CONSTANTS.directions.includes(request.post.input.split("-")[1])):
+								untriggerMove(request, hero, callback)
+							break
 						}
 					}
 				}
@@ -234,7 +242,7 @@
 		function triggerMove(request, hero, callback) {
 			try {
 				// change direction
-					hero.state.movement.direction = request.post.input
+					hero.state.movement.direction = request.post.input.includes("-") ? request.post.input.split("-")[1] : request.post.input
 
 				// set movements
 					switch (request.post.input) {
@@ -253,6 +261,31 @@
 						case "left":
 							hero.state.movement.left  = true
 							hero.state.movement.right = false
+						break
+
+						case "up-left":
+							hero.state.movement.up    = true
+							hero.state.movement.down  = false
+							hero.state.movement.left  = true
+							hero.state.movement.right = false
+						break
+						case "up-right":
+							hero.state.movement.up    = true
+							hero.state.movement.down  = false
+							hero.state.movement.right = true
+							hero.state.movement.left  = false
+						break
+						case "down-right":
+							hero.state.movement.down  = true
+							hero.state.movement.up    = false
+							hero.state.movement.right = true
+							hero.state.movement.left  = false
+						break
+						case "down-left":
+							hero.state.movement.left  = true
+							hero.state.movement.right = false
+							hero.state.movement.down  = true
+							hero.state.movement.up    = false
 						break
 					}
 			}
@@ -277,6 +310,23 @@
 							hero.state.movement.down  = false
 						break
 						case "left":
+							hero.state.movement.left  = false
+						break
+
+						case "up-left":
+							hero.state.movement.up    = false
+							hero.state.movement.left  = false
+						break
+						case "up-right":
+							hero.state.movement.up    = false
+							hero.state.movement.right = false
+						break
+						case "down-right":
+							hero.state.movement.down  = false
+							hero.state.movement.right = false
+						break
+						case "down-left":
+							hero.state.movement.down  = false
 							hero.state.movement.left  = false
 						break
 					}
@@ -549,7 +599,7 @@
 							createPortal(request, chamber, options.portal, callback)
 						}
 						else if (options.spawns) {
-							createSpawns(request, chamber, options.spawns, callback)
+							createSpawns(request, chamber, options.spawns, false, callback)
 						}
 
 						if (options.monsters) {
@@ -947,10 +997,6 @@
 						}
 					}
 
-				// add heal
-					var heal = createItem(request, main.getAsset("heal"), callback)
-					chamber.items[heal.id] = heal
-
 				// set pedestals
 					var pedestals = main.getAsset("pedestals")
 					for (var p in pedestals) {
@@ -1041,23 +1087,31 @@
 
 	/* createSpawns */
 		module.exports.createSpawns = createSpawns
-		function createSpawns(request, chamber, spawnTypes, callback) {
+		function createSpawns(request, chamber, spawnTypes, temporary, callback) {
 			try {
 				var chamberRadius = Math.floor(chamber.info.chamberSize / 2)
 
 				for (var s in spawnTypes) {
 					// get spawnX & spawnY
-						do {
-							var spawnX = main.rangeRandom(-chamberRadius + CONSTANTS.edgeBuffer, chamberRadius - CONSTANTS.edgeBuffer)
-							var spawnY = main.rangeRandom(-chamberRadius + CONSTANTS.edgeBuffer, chamberRadius - CONSTANTS.edgeBuffer)
-						} while (Object.keys(chamber.items).filter(function(i) {
-							return (chamber.items[i] && chamber.items[i].state.position.x == spawnX * CONSTANTS.cellSize && chamber.items[i].state.position.y == spawnY * CONSTANTS.cellSize)
-						}).length)
+						if (temporary) {
+							var spawnX = 0
+							var spawnY = 0
+						}
+						else {
+							do {
+								var spawnX = main.rangeRandom(-chamberRadius + CONSTANTS.edgeBuffer, chamberRadius - CONSTANTS.edgeBuffer)
+								var spawnY = main.rangeRandom(-chamberRadius + CONSTANTS.edgeBuffer, chamberRadius - CONSTANTS.edgeBuffer)
+							} while (Object.keys(chamber.items).filter(function(i) {
+								return (chamber.items[i] && chamber.items[i].state.position.x == spawnX * CONSTANTS.cellSize && chamber.items[i].state.position.y == spawnY * CONSTANTS.cellSize)
+							}).length)
+						}
 
 					// clear 3x3 area
-						for (var x = spawnX - 1; x <= spawnX + 1; x++) {
-							for (var y = spawnY - 1; y <= spawnY + 1; y++) {
-								chamber.cells[x][y].wall = false
+						if (!temporary) {
+							for (var x = spawnX - 1; x <= spawnX + 1; x++) {
+								for (var y = spawnY - 1; y <= spawnY + 1; y++) {
+									chamber.cells[x][y].wall = false
+								}
 							}
 						}
 
@@ -1076,7 +1130,8 @@
 								rps: spawnTypes[s],
 								subtype: spawnTypes[s],
 								color: main.getAsset("orbs")[spawnTypes[s]].info.color,
-								monsterTypes: monsterTypes
+								monsterTypes: monsterTypes,
+								temporary: temporary || false
 							},
 							state: {
 								position: {
@@ -1235,6 +1290,9 @@
 
 				// add to items
 					chamber.items[attack.id] = attack
+
+				// sound
+					creature.state.sound = "areaAttack_" + creature.info.subtype
 			}
 			catch (error) {
 				main.logError(error, arguments.callee.name, [request.session.id], callback)
@@ -1718,14 +1776,9 @@
 				// items
 					if (collision.supertype == "item" && chamber.items[collision.id]) {
 						var item = chamber.items[collision.id]
-						
-						// heal
-							if (item.info.type == "heal" && thing.info.type == "hero") {
-								thing.state.effects.heal = true
-							}
 
 						// shrine
-							else if (item.info.type == "shrine" && thing.info.type == "hero") {
+							if (item.info.type == "shrine" && thing.info.type == "hero") {
 								if (!item.state.cooldowns.activate) {
 									thing.state.effects[item.info.subtype] = CONSTANTS.effectCooldown
 								}
@@ -1739,11 +1792,13 @@
 							}
 
 						// orbs
-							else if (item.info.type == "orb" && ["hero", "monster", "creature"].includes(thing.info.type)) {
+							else if (item.info.type == "orb" && item.state.active && ["hero", "monster", "creature"].includes(thing.info.type)) {
 								// collect orb
 									if (thing.info.type == "hero" && thing.info.rps == chamber.items[item.id].info.rps) {
 										thing.items[item.id] = main.duplicateObject(chamber.items[item.id])
 										delete chamber.items[item.id]
+
+										chamber.state.overlay.orb = thing.info.rps
 									}
 
 								// stop movement
@@ -1769,6 +1824,8 @@
 											resolvePoints(request, item, callback)
 
 											delete thing.items[orbKey]
+
+											chamber.state.overlay.orb = null
 										}
 									}
 
@@ -1997,6 +2054,10 @@
 												item.state.position.y = Math.round(y + Number(Math.floor(Math.random() * 2 * CONSTANTS.itemDropRadius) - CONSTANTS.itemDropRadius))
 											chamber.items[i] = item
 
+											if (item.info.type == "orb") {
+												chamber.state.overlay.orb = null
+											}
+
 											delete recipient.items[i]
 										}
 									}
@@ -2053,113 +2114,113 @@
 		module.exports.updateTime = updateTime
 		function updateTime(request, callback) {
 			try {
-			// chamber
-				var chamber = request.game.data.chambers[request.game.data.state.chamber.x][request.game.data.state.chamber.y]
+				// chamber
+					var chamber = request.game.data.chambers[request.game.data.state.chamber.x][request.game.data.state.chamber.y]
 
-			// paused
-				if (request.game.data.state.paused) {
-					request.game.data.state.overlay.message = CONSTANTS.pauseMessage
-					callback(Object.keys(request.game.observers), {success: true, chamber: chamber})	
-				}
+				// paused
+					if (request.game.data.state.paused) {
+						request.game.data.state.overlay.message = CONSTANTS.pauseMessage
+						callback(Object.keys(request.game.observers), {success: true, chamber: chamber})	
+					}
 
-			// game over
-				else if (request.game.data.state.end) {
-					callback(Object.keys(request.game.observers), {success: true, chamber: chamber, end: true})	
-					callback(Object.keys(request.game.players), {success: true, end: true})
-				}
+				// game over
+					else if (request.game.data.state.end) {
+						callback(Object.keys(request.game.observers), {success: true, chamber: chamber, end: true})	
+						callback(Object.keys(request.game.players), {success: true, end: true})
+					}
 
-			// play
-				else {
-					// time
-						request.game.data.state.time += CONSTANTS.loopInterval
+				// play
+					else {
+						// time
+							request.game.data.state.time += CONSTANTS.loopInterval
 
-					// victory
-						if (request.game.data.state.orbs >= CONSTANTS.rps.length) {
-							request.game.data.state.end = true
-							request.game.data.state.overlay.message = CONSTANTS.victoryMessage
-						}
-
-					// timeout
-						else if (!request.game.data.state.overlay.timeout) {
-							request.game.data.state.end = true
-							request.game.data.state.overlay.message = CONSTANTS.defeatMessage
-						}
-
-					// full party death
-						else if (request.game.data.state.start && !request.game.data.state.nextChamber
-							&& !Object.keys(request.game.data.heroes).filter(function(h) {
-								return request.game.data.heroes[h].player && request.game.data.heroes[h].state.alive
-							}).length) {
-							updateNextChamber(request, 0, 0, "reset", callback)
-						}
-
-					// chamber switch
-						else if (request.game.data.state.nextChamber) {
-							if (chamber.state.cooldowns.activate) {
-								chamber.state.cooldowns.activate = Math.max(0, chamber.state.cooldowns.activate - 1)
+						// victory
+							if (request.game.data.state.orbs >= CONSTANTS.rps.length) {
+								request.game.data.state.end = true
+								request.game.data.state.overlay.message = CONSTANTS.victoryMessage
 							}
-							else {
-								updateChamber(request, callback)
-								var chamber = request.game.data.chambers[request.game.data.state.chamber.x][request.game.data.state.chamber.y]
-							}
-						}
-						else if (chamber.state.cooldowns.activate) {
-							chamber.state.cooldowns.activate = Math.max(0, chamber.state.cooldowns.activate - 1)
-						}
 
-					// regular gameplay
-						else {
-							// started?
-								if (!request.game.data.state.start) {
-									if (Object.keys(request.game.players).length < 3) {
-										request.game.data.state.overlay.message = CONSTANTS.joinMessage + request.game.id
-									}
-									else {
-										request.game.data.state.overlay.message = CONSTANTS.startMessage
-									}
+						// timeout
+							else if (!request.game.data.state.overlay.timeout) {
+								request.game.data.state.end = true
+								request.game.data.state.overlay.message = CONSTANTS.defeatMessage
+							}
+
+						// full party death
+							else if (request.game.data.state.start && !request.game.data.state.nextChamber
+								&& !Object.keys(request.game.data.heroes).filter(function(h) {
+									return request.game.data.heroes[h].player && request.game.data.heroes[h].state.alive
+								}).length) {
+								updateNextChamber(request, 0, 0, "reset", callback)
+							}
+
+						// chamber switch
+							else if (request.game.data.state.nextChamber) {
+								if (chamber.state.cooldowns.activate) {
+									chamber.state.cooldowns.activate = Math.max(0, chamber.state.cooldowns.activate - 1)
 								}
 								else {
-									request.game.data.state.overlay.message = null
-									request.game.data.state.overlay.timeout = Math.max(0, Math.min(CONSTANTS.gameCooldown, request.game.data.state.overlay.timeout - 1))
+									updateChamber(request, callback)
+									var chamber = request.game.data.chambers[request.game.data.state.chamber.x][request.game.data.state.chamber.y]
 								}
-
-							// edge cooldown?
-								chamber.state.cooldowns.edge = Math.max(0, chamber.state.cooldowns.edge - 1)
-
-							// heroes
-								for (var h in chamber.heroes) {
-									var hero = chamber.heroes[h]
-									if (hero) {
-										updateCreature(request, chamber, hero, callback)
-									}
-								}
-
-							// creatures
-								for (var c in chamber.creatures) {
-									var creature = chamber.creatures[c]
-									if (creature) {
-										updateCreature(request, chamber, creature, callback)
-									}
-								}
-
-							// items
-								for (var i in chamber.items) {
-									var item = chamber.items[i]
-									if (item) {
-										updateItem(request, chamber, item, callback)
-									}
-								}
-						}
-
-					// send data
-						callback(Object.keys(request.game.observers), {success: true, chamber: chamber})
-
-						for (var p in request.game.players) {
-							if (request.game.players[p].hero) {
-								callback([p], {success: true, hero: request.game.data.heroes[request.game.players[p].hero]})
 							}
-						}
-				}
+							else if (chamber.state.cooldowns.activate) {
+								chamber.state.cooldowns.activate = Math.max(0, chamber.state.cooldowns.activate - 1)
+							}
+
+						// regular gameplay
+							else {
+								// started?
+									if (!request.game.data.state.start) {
+										if (Object.keys(request.game.players).length < 3) {
+											request.game.data.state.overlay.message = CONSTANTS.joinMessage + request.game.id
+										}
+										else {
+											request.game.data.state.overlay.message = CONSTANTS.startMessage
+										}
+									}
+									else {
+										request.game.data.state.overlay.message = null
+										request.game.data.state.overlay.timeout = Math.max(0, Math.min(CONSTANTS.gameCooldown, request.game.data.state.overlay.timeout - 1))
+									}
+
+								// edge cooldown?
+									chamber.state.cooldowns.edge = Math.max(0, chamber.state.cooldowns.edge - 1)
+
+								// heroes
+									for (var h in chamber.heroes) {
+										var hero = chamber.heroes[h]
+										if (hero) {
+											updateCreature(request, chamber, hero, callback)
+										}
+									}
+
+								// creatures
+									for (var c in chamber.creatures) {
+										var creature = chamber.creatures[c]
+										if (creature) {
+											updateCreature(request, chamber, creature, callback)
+										}
+									}
+
+								// items
+									for (var i in chamber.items) {
+										var item = chamber.items[i]
+										if (item) {
+											updateItem(request, chamber, item, callback)
+										}
+									}
+							}
+
+						// send data
+							callback(Object.keys(request.game.observers), {success: true, chamber: chamber})
+
+							for (var p in request.game.players) {
+								if (request.game.players[p].hero) {
+									callback([p], {success: true, hero: request.game.data.heroes[request.game.players[p].hero]})
+								}
+							}
+					}
 			}
 			catch (error) {
 				main.logError(error, arguments.callee.name, [request.session.id], callback)
@@ -2270,9 +2331,11 @@
 							}
 						}
 
-					// remove attacks
+					// remove attacks & temporary spawns
 						for (var i in oldChamber.items) {
-							if (oldChamber.items[i].info.type == "rangeAttack" || oldChamber.items[i].info.type == "areaAttack") {
+							if (oldChamber.items[i].info.type == "rangeAttack"
+							 || oldChamber.items[i].info.type == "areaAttack"
+							 || oldChamber.items[i].info.type == "spawn" && oldChamber.items[i].info.temporary) {
 								delete oldChamber.items[i]
 							}
 						}
@@ -2348,7 +2411,21 @@
 									request.game.data.heroes[h].state.position.x -= portalDeltaX
 									request.game.data.heroes[h].state.position.y -= portalDeltaY
 								}
-						}						
+						}
+
+					// orb time? --> spawns
+						if ((newX || newY) && newChamber.state.overlay.orb) {
+							var existingSpawnCount = (Object.keys(newChamber.items).filter(function(key) {
+								return (newChamber.items[key] && newChamber.items[key].info.type == "spawn" && newChamber.items[key].info.temporary)
+							}) || []).length || 0
+
+							var spawnArray = []
+							while (spawnArray.length < CONSTANTS.temporarySpawnCount - existingSpawnCount) {
+								spawnArray.push(newChamber.state.overlay.orb)
+							}
+
+							createSpawns(request, newChamber, spawnArray, true, callback)
+						}
 				}
 			}
 			catch (error) {
@@ -2462,9 +2539,8 @@
 							creature.state.armor = Math.max(0, Math.min(creature.info.statistics.armorMax * multiplier, creature.state.armor + multiplier))
 
 						// healing
-							if (creature.state.effects.heal) {
+							if (!chamber.info.x && !chamber.info.y) {
 								creature.state.health = Math.min(creature.info.statistics.healthMax, creature.state.health + CONSTANTS.heal)
-								creature.state.vibration = CONSTANTS.healVibration
 							}
 
 						// bumped
@@ -2612,81 +2688,94 @@
 							}
 					}
 
-				// spawn / portal
-					else if (item.info.type == "portal" || item.info.type == "spawn") {
+				// portal
+					else if (item.info.type == "portal") {
 						// get max cooldown
-							var cooldownMax = CONSTANTS[item.info.type + "Cooldown"]
+							var cooldownMax = CONSTANTS.portalCooldown
 
 						// reduce cooldown
 							item.state.cooldowns.activate = Math.max(0, item.state.cooldowns.activate - 1)
 
-						// portal
-							if (item.info.type == "portal") {
-								// size
-									item.info.size.x = item.info.size.maxX * ((cooldownMax - item.state.cooldowns.activate) / cooldownMax)
-									item.info.size.y = item.info.size.maxY * ((cooldownMax - item.state.cooldowns.activate) / cooldownMax)
+						// size
+							item.info.size.x = item.info.size.maxX * ((cooldownMax - item.state.cooldowns.activate) / cooldownMax)
+							item.info.size.y = item.info.size.maxY * ((cooldownMax - item.state.cooldowns.activate) / cooldownMax)
 
-								// get destination chamber
-									var coords = item.state.link.split(",")
-									var cellX = Number(coords[0])
-									var cellY = Number(coords[1])
-									var destinationChamber = request.game.data.chambers[cellX][cellY]
+						// get destination chamber
+							var coords = item.state.link.split(",")
+							var cellX = Number(coords[0])
+							var cellY = Number(coords[1])
+							var destinationChamber = request.game.data.chambers[cellX][cellY]
 
-								// get destination chamber's portal
-									var portalKey = Object.keys(destinationChamber.items).find(function(i) {
-										return (destinationChamber.items[i].info.type == "portal")
-									}) || null
+						// get destination chamber's portal
+							var portalKey = Object.keys(destinationChamber.items).find(function(i) {
+								return (destinationChamber.items[i].info.type == "portal")
+							}) || null
 
-									if (portalKey) {
-										// reduce cooldown for destination's portal too
-											var portal = destinationChamber.items[portalKey]
-												portal.state.cooldowns.activate = Math.max(0, portal.state.cooldowns.activate - 1)
-												portal.info.size.x = portal.info.size.maxX * ((cooldownMax - portal.state.cooldowns.activate) / cooldownMax)
-												portal.info.size.y = portal.info.size.maxY * ((cooldownMax - portal.state.cooldowns.activate) / cooldownMax)
+							if (portalKey) {
+								// reduce cooldown for destination's portal too
+									var portal = destinationChamber.items[portalKey]
+										portal.state.cooldowns.activate = Math.max(0, portal.state.cooldowns.activate - 1)
+										portal.info.size.x = portal.info.size.maxX * ((cooldownMax - portal.state.cooldowns.activate) / cooldownMax)
+										portal.info.size.y = portal.info.size.maxY * ((cooldownMax - portal.state.cooldowns.activate) / cooldownMax)
+							}
+					}
+				
+				// spawn
+					else if (item.info.type == "spawn") {
+						// get max cooldown
+							var cooldownMax = CONSTANTS.spawnCooldown
+
+						// reduce cooldown
+							item.state.cooldowns.activate = Math.max(0, item.state.cooldowns.activate - 1)
+
+						// dead?
+							if (!item.state.alive) {
+								// first time? sound
+									if (item.state.cooldowns.death == CONSTANTS.deathCooldown) {
+										item.info.opacity = CONSTANTS.deathOpacity
+										item.state.sound = "death_" + item.info.type + "_" + item.info.subtype
+									}
+
+								// reduce cooldown
+									item.state.cooldowns.death = Math.max(0, item.state.cooldowns.death - CONSTANTS.deathFade)
+
+								// reduce size
+									item.info.size.x = Math.max(0, item.info.size.x * item.state.cooldowns.death / CONSTANTS.deathCooldown)
+									item.info.size.y = Math.max(0, item.info.size.y * item.state.cooldowns.death / CONSTANTS.deathCooldown)
+
+								// 0 cooldown?
+									if (!item.state.cooldowns.death) {
+										delete chamber.items[item.id]
 									}
 							}
 
-						// spawn
-							if (item.info.type == "spawn") {
-								// dead?
-									if (!item.state.alive) {
-										// first time? sound
-											if (item.state.cooldowns.death == CONSTANTS.deathCooldown) {
-												item.info.opacity = CONSTANTS.deathOpacity
-												item.state.sound = "death_" + item.info.type + "_" + item.info.subtype
+						// ready to spawn monster
+							else if (!item.state.cooldowns.activate && Object.keys(chamber.creatures).length < CONSTANTS.monsterCountMax) {
+								// deactivate
+									item.state.cooldowns.activate = CONSTANTS.spawnCooldown
+
+								// create creature
+									var monster = createCreature(request, main.duplicateObject(MONSTERS[main.chooseRandom(item.info.monsterTypes)]), callback)
+									main.overwriteObject(monster, {
+										state: {
+											position: {
+												x: item.state.position.x + Math.floor(Math.random() * 2 * CONSTANTS.itemDropRadius) - CONSTANTS.itemDropRadius,
+												y: item.state.position.y + Math.floor(Math.random() * 2 * CONSTANTS.itemDropRadius) - CONSTANTS.itemDropRadius
 											}
-
-										// reduce cooldown
-											item.state.cooldowns.death = Math.max(0, item.state.cooldowns.death - CONSTANTS.deathFade)
-
-										// reduce size
-											item.info.size.x = Math.max(0, item.info.size.x * item.state.cooldowns.death / CONSTANTS.deathCooldown)
-											item.info.size.y = Math.max(0, item.info.size.y * item.state.cooldowns.death / CONSTANTS.deathCooldown)
-
-										// 0 cooldown?
-											if (!item.state.cooldowns.death) {
-												delete chamber.items[item.id]
-											}
-									}
-
-								// ready to spawn monster
-									else if (!item.state.cooldowns.activate && Object.keys(chamber.creatures).length < CONSTANTS.monsterCountMax) {
-										// deactivate
-											item.state.cooldowns.activate = CONSTANTS.spawnCooldown
-
-										// create creature
-											var monster = createCreature(request, main.duplicateObject(MONSTERS[main.chooseRandom(item.info.monsterTypes)]), callback)
-											main.overwriteObject(monster, {
-												state: {
-													position: {
-														x: item.state.position.x + Math.floor(Math.random() * 2 * CONSTANTS.itemDropRadius) - CONSTANTS.itemDropRadius,
-														y: item.state.position.y + Math.floor(Math.random() * 2 * CONSTANTS.itemDropRadius) - CONSTANTS.itemDropRadius
-													}
-												}
-											})
-											chamber.creatures[monster.id] = monster
-									}
+										}
+									})
+									chamber.creatures[monster.id] = monster
 							}
+					}
+
+				// orb
+					else if (item.info.type == "orb") {
+						if (chamber.state.overlay.orb) {
+							item.state.active = false
+						}
+						else {
+							item.state.active = true
+						}
 					}
 
 				// image
@@ -2895,7 +2984,6 @@
 
 				// items
 					else {
-						var active = thing.state.image && thing.state.image.includes("active") || false
 						var imageName = []
 							imageName.push(thing.info.type)
 							imageName.push(thing.info.subtype)

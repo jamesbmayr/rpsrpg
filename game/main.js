@@ -171,10 +171,12 @@
 					}
 
 				// overlay
-					if (chamber.state.cooldowns.activate) {
-						drawOverlay(chamber.state.cooldowns.activate, chamber.state.fadeout)
+					if (chamber.state.overlay.orb) {
+						drawOverlay(CONSTANTS.colors[chamber.state.overlay.orb][0], CONSTANTS.overlayOpacity)
 					}
-
+					if (chamber.state.cooldowns.activate) {
+						drawOverlay(CONSTANTS.colors.black[4], (chamber.state.cooldowns.activate / CONSTANTS.chamberCooldown), chamber.state.fadeout)
+					}
 					if (chamber.state.overlay.message) {
 						drawOverlayMessage(chamber.state.overlay.message)
 					}
@@ -182,20 +184,18 @@
 		}
 
 	/* drawOverlay */
-		function drawOverlay(cooldown, fadeout) {
+		function drawOverlay(color, opacity, fadeout) {
 			try {
+				// opacity
+					var opacity = Math.max(0, Math.min(1, opacity))
+
 				// fade out
 					if (fadeout) {
-						var opacity = Math.max(0, Math.min(1, (CONSTANTS.chamberCooldown - cooldown) / CONSTANTS.chamberCooldown))
-					}
-
-				// fade in
-					else {
-						var opacity = Math.max(0, Math.min(1, cooldown / CONSTANTS.chamberCooldown))
+						opacity = (1 - opacity)
 					}
 
 				// draw
-					drawRectangle(CANVAS, CONTEXT, 0, 0, CANVAS.width, CANVAS.height, {color: CONSTANTS.colors.black[4], opacity: opacity})
+					drawRectangle(CANVAS, CONTEXT, 0, 0, CANVAS.width, CANVAS.height, {color: color, opacity: opacity})
 			} catch (error) {}
 		}
 
@@ -373,29 +373,6 @@
 				// sounds
 					if (creature.state.sound) {
 						playAudio(creature.state.sound)
-					}
-
-				// items
-					for (var i in creature.items) {
-						drawItem({
-							info: {
-								color: item.info.color,
-								shape: item.info.shape,
-								style: item.info.style,
-								opacity: item.info.opacity,
-								size: {
-									x: item.info.size.x,
-									y: item.info.size.y
-								}
-							},
-							state: {
-								image: item.state.image,
-								position: {
-									x: creature.state.position.x,
-									y: creature.state.position.y
-								}
-							}
-						})
 					}
 			} catch (error) {}
 		}

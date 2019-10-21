@@ -136,7 +136,7 @@
 					// sprites
 						case "sprites":
 							return [
-								"orb_rock_all_standing_default",			"orb_paper_all_standing_default",				"orb_scissors_all_standing_default",			
+								"orb_rock_all_standing_active",				"orb_paper_all_standing_active",				"orb_scissors_all_standing_active",				"orb_rock_all_standing_default",				"orb_paper_all_standing_default",				"orb_scissors_all_standing_default",			
 								"pedestal_rock_all_standing_default",		"pedestal_paper_all_standing_default",			"pedestal_scissors_all_standing_default",		"pedestal_rock_all_standing_active",			"pedestal_paper_all_standing_active",			"pedestal_scissors_all_standing_active",
 								"spawn_rock_all_standing_default",			"spawn_paper_all_standing_default",				"spawn_scissors_all_standing_default",			"spawn_rock_all_standing_active",				"spawn_paper_all_standing_active",				"spawn_scissors_all_standing_active",
 								"shrine_rock_all_standing_default",			"shrine_paper_all_standing_default",			"shrine_scissors_all_standing_default",			"shrine_rock_all_standing_active",				"shrine_paper_all_standing_active",				"shrine_scissors_all_standing_active",
@@ -189,6 +189,7 @@
 								main: [
 									"soundtrack",
 									"rangeAttack_barbarian", "rangeAttack_wizard", "rangeAttack_ranger",
+									"areaAttack_barbarian", /*"areaAttack_wizard",*/ "areaAttack_ranger",
 									"death_monster_avalanche", "death_monster_obscuro", "death_monster_tatters",
 									"death_spawn_rock", "death_spawn_paper", "death_spawn_scissors",
 									"collision_rangeAttack_monster", "collision_hero_object"
@@ -242,6 +243,7 @@
 									spawnCountMin: 		1,
 									spawnCountMax: 		3,
 									spawnChance: 		[7,10],
+									temporarySpawnCount: 8,
 
 								// health
 									baseHealthFraction: 1,
@@ -291,9 +293,9 @@
 										purple: 	["#dac0f7","#b08bda","#7b3dc2","#4a2574","#180c26"],
 										black: 		["#e4e6e7","#a2a7a9","#6e7477","#3d4142","#232526"],
 										white: 		["#c0dee5","#cee2e8","#dcf1f7","#e3f5f9","#f9fdff"],
-										barbarian: 	["#ff8700"],
-										wizard: 	["#22d0a7"],
-										ranger: 	["#c4004b"]
+										rock: 		["#ff8700"],
+										paper: 		["#22d0a7"],
+										scissors: 	["#c4004b"]
 									}
 							}
 
@@ -312,7 +314,6 @@
 							// interval derivatives
 								constants.imageFlip 		= constants.loopInterval * 6
 								constants.collisionVibration = [constants.loopInterval]
-								constants.healVibration 	= [constants.loopInterval / 2, constants.loopInterval / 2]
 
 							// points
 								constants.monsterPoints 	= Math.floor(second * 5)
@@ -620,8 +621,10 @@
 													var preferences = ["orb", "pedestal", "spawn", "shrine", "portal"]
 													for (var i in chamber.items) {
 														var item = chamber.items[i]
-
-														if (preferences.includes(item.info.type) && (preferences.indexOf(item.info.type) < preferences.indexOf(itemType))) {
+														if (item.info.type == "orb" && !item.state.active) {
+															continue
+														}
+														else if (preferences.includes(item.info.type) && (preferences.indexOf(item.info.type) < preferences.indexOf(itemType))) {
 															itemType = item.info.type
 															var targetX = item.state.position.x
 															var targetY = item.state.position.y
@@ -737,7 +740,7 @@
 											// 1: orb (or, if holding orb, pedestal)
 												if (hero.state.alive) {
 													for (var i in chamber.items) {
-														if (chamber.items[i].info.type == "orb" && chamber.items[i].info.rps == hero.info.rps) {
+														if (chamber.items[i].info.type == "orb" && chamber.items[i].state.active && chamber.items[i].info.rps == hero.info.rps) {
 															targets["0"] = chamber.items[i]
 														}
 														else if (chamber.items[i].info.type == "pedestal" && chamber.items[i].info.rps == hero.info.rps
@@ -753,6 +756,9 @@
 													else if (chamber.heroes[h].player && chamber.heroes[h].state.position.edge) {
 														targets["1"] = chamber.heroes[h]
 													}
+													else if (chamber.heroes[h].player && Object.keys(chamber.heroes[h].items).length) {
+														targets["2"] = chamber.heroes[h]
+													}
 												}
 
 											// 3: enemies & spawns
@@ -761,10 +767,10 @@
 													for (var i in chamber.items) {
 														if (chamber.items[i].info.type == "spawn" && chamber.items[i].state.alive) {
 															if (chamber.items[i].info.rps == targetType) {
-																targets["2"] = chamber.items[i]
+																targets["3"] = chamber.items[i]
 															}
 															else if (chamber.items[i].info.rps == hero.info.rps) {
-																targets["4"] = chamber.items[i]
+																targets["5"] = chamber.items[i]
 															}
 															else {
 																antitargets.push(chamber.items[i])
@@ -775,10 +781,10 @@
 													for (var c in chamber.creatures) {
 														if (chamber.creatures[c].state.alive) {
 															if (chamber.creatures[c].info.rps == targetType) {
-																targets["3"] = chamber.creatures[c]
+																targets["4"] = chamber.creatures[c]
 															}
 															else if (chamber.creatures[c].info.rps == hero.info.rps) {
-																targets["5"] = chamber.creatures[c]
+																targets["6"] = chamber.creatures[c]
 															}
 															else {
 																antitargets.push(chamber.creatures[c])
@@ -790,9 +796,6 @@
 											// 4: allies
 												for (var h in chamber.heroes) {
 													if (h == hero.id) {}
-													else if (chamber.heroes[h].player && Object.keys(chamber.heroes[h].items).length) {
-														targets["6"] = chamber.heroes[h]
-													}
 													else if (chamber.heroes[h].player && chamber.heroes[h].state.alive && chamber.heroes[h].state.health < CONSTANTS.heroHealth / 4) {
 														targets["7"] = chamber.heroes[h]
 													}
@@ -802,14 +805,28 @@
 													else if (chamber.heroes[h].player && chamber.heroes[h].state.alive) {
 														targets["9"] = chamber.heroes[h]
 													}
-													else if (chamber.heroes[h].player) {
-														targets["10"] = chamber.heroes[h]
-													}
 												}
 
 										// get targetCell
+											// targets
+												if (Object.keys(targets).length) {
+													// get target key
+														var firstKey = Object.keys(targets).sort(function(a, b) {
+															return Number(a) - Number(b)
+														})[0]
+
+													// get target cell
+														var targetX = targets[firstKey].state.position.x
+														var targetY = targets[firstKey].state.position.y
+														var cellX = Math.round(Math.abs(targetX / CONSTANTS.cellSize)) * Math.sign(targetX)
+															if (cellX == -0) { cellX = 0 }
+														var cellY = Math.round(Math.abs(targetY / CONSTANTS.cellSize)) * Math.sign(targetY)
+															if (cellY == -0) { cellY = 0 }
+														var targetCell = cellX + "," + cellY
+												}
+
 											// antitargets
-												if (antitargets.length) {
+												else if (antitargets.length) {
 													// distances
 														var distances = {}
 														for (var a in antitargets) {
@@ -853,23 +870,6 @@
 																changeDirection = "x"
 															}
 														}
-												}
-
-											// targets
-												else if (Object.keys(targets).length) {
-													// get target key
-														var firstKey = Object.keys(targets).sort(function(a, b) {
-															return a - b
-														})[0]
-
-													// get target cell
-														var targetX = targets[firstKey].state.position.x
-														var targetY = targets[firstKey].state.position.y
-														var cellX = Math.round(Math.abs(targetX / CONSTANTS.cellSize)) * Math.sign(targetX)
-															if (cellX == -0) { cellX = 0 }
-														var cellY = Math.round(Math.abs(targetY / CONSTANTS.cellSize)) * Math.sign(targetY)
-															if (cellY == -0) { cellY = 0 }
-														var targetCell = cellX + "," + cellY
 												}
 
 											// none
@@ -926,7 +926,7 @@
 										rps: "rock",
 										type: "hero",
 										subtype: "barbarian",
-										color: CONSTANTS.colors.barbarian[0],
+										color: CONSTANTS.colors.rock[0],
 										shape: "circle",
 										pathing: "hero",
 										statistics: {
@@ -956,7 +956,7 @@
 										rps: "paper",
 										type: "hero",
 										subtype: "wizard",
-										color: CONSTANTS.colors.wizard[0],
+										color: CONSTANTS.colors.paper[0],
 										shape: "circle",
 										pathing: "hero",
 										statistics: {
@@ -986,7 +986,7 @@
 										rps: "scissors",
 										type: "hero",
 										subtype: "ranger",
-										color: CONSTANTS.colors.ranger[0],
+										color: CONSTANTS.colors.scissors[0],
 										shape: "circle",
 										pathing: "hero",
 										statistics: {
@@ -1023,7 +1023,7 @@
 										rps: "rock",
 										type: "monster",
 										subtype: "avalanche",
-										color: CONSTANTS.colors.barbarian[0],
+										color: CONSTANTS.colors.rock[0],
 										shape: "triangle",
 										pathing: "aggressive",
 										points: CONSTANTS.monsterPoints,
@@ -1049,7 +1049,7 @@
 										rps: "paper",
 										type: "monster",
 										subtype: "obscuro",
-										color: CONSTANTS.colors.wizard[0],
+										color: CONSTANTS.colors.paper[0],
 										shape: "triangle",
 										pathing: "aggressive",
 										points: CONSTANTS.monsterPoints,
@@ -1075,7 +1075,7 @@
 										rps: "scissors",
 										type: "monster",
 										subtype: "tatters",
-										color: CONSTANTS.colors.ranger[0],
+										color: CONSTANTS.colors.scissors[0],
 										shape: "triangle",
 										pathing: "aggressive",
 										points: CONSTANTS.monsterPoints,
@@ -1117,7 +1117,7 @@
 										},
 										shape: "circle",
 										style: "fill",
-										color: CONSTANTS.colors.barbarian[0]
+										color: CONSTANTS.colors.rock[0]
 									}
 								},
 								"paper": {
@@ -1133,7 +1133,7 @@
 										},
 										shape: "circle",
 										style: "fill",
-										color: CONSTANTS.colors.wizard[0]
+										color: CONSTANTS.colors.paper[0]
 									}
 								},
 								"scissors": {
@@ -1149,7 +1149,7 @@
 										},
 										shape: "circle",
 										style: "fill",
-										color: CONSTANTS.colors.ranger[0]
+										color: CONSTANTS.colors.scissors[0]
 									}
 								}
 							}
@@ -1179,33 +1179,6 @@
 							overwriteObject(pedestals["scissors"], {state: {position: {x:  4 * quarterCell, y: -4 * quarterCell}}})
 							
 							return pedestals
-						break
-
-					// tiles
-						case "heal":
-							var quarterCell = Math.floor(CONSTANTS.cellSize / 4)
-
-							return {
-								info: {
-									type: "heal",
-									subtype: "heal",
-									size: {
-										x: Math.floor(CONSTANTS.cellSize / 8) * 7,
-										y: Math.floor(CONSTANTS.cellSize / 8) * 7,
-										maxX: Math.floor(CONSTANTS.cellSize / 8) * 7,
-										maxY: Math.floor(CONSTANTS.cellSize / 8) * 7
-									},
-									color: CONSTANTS.colors.white[3],
-									shape: "square",
-									style: "border"
-								},
-								state: {
-									position: {
-										x: 0,
-										y: 0
-									}
-								}
-							}
 						break
 
 						case "portal":
@@ -1272,7 +1245,8 @@
 										armorMax:  	0,
 										healthMax: CONSTANTS.spawnHealth
 									},
-									monsterTypes: []
+									monsterTypes: [],
+									temporary: false
 								},
 								state: {
 									flip: true,
@@ -1319,16 +1293,17 @@
 									overlay: {
 										message: null,
 										timeout: CONSTANTS.gameCooldown,
+										orb: null,
 										minimap: {},
 										minimapColors: {
 											active: 	CONSTANTS.colors.black[3],
 											inactive: 	CONSTANTS.colors.black[2],
 											unexplored: CONSTANTS.colors.black[1],
-											temple: 	getAsset("heal").info.color,
+											temple: 	CONSTANTS.colors.white[4],
 											portal: 	getAsset("portal").info.color,
-											rock: 		CONSTANTS.colors.barbarian[0],
-											paper: 		CONSTANTS.colors.wizard[0],
-											scissors: 	CONSTANTS.colors.ranger[0]
+											rock: 		CONSTANTS.colors.rock[0],
+											paper: 		CONSTANTS.colors.paper[0],
+											scissors: 	CONSTANTS.colors.scissors[0]
 										}
 									},
 									chamber: {
