@@ -1070,6 +1070,7 @@
 							color: main.getAsset("orbs")[shrineType].info.color
 						},
 						state: {
+							image: "shrine_" + shrineType + "_all_standing_default",
 							position: {
 								x: shrineX * CONSTANTS.cellSize,
 								y: shrineY * CONSTANTS.cellSize,
@@ -1134,6 +1135,7 @@
 								temporary: temporary || false
 							},
 							state: {
+								image: "spawn_" + spawnTypes[s] + "_all_standing_default",
 								position: {
 									x: spawnX * CONSTANTS.cellSize,
 									y: spawnY * CONSTANTS.cellSize,
@@ -1230,6 +1232,7 @@
 							}
 						},
 						state: {
+							image: "rangeAttack_" + creature.info.subtype + "_" + creature.state.movement.direction + "_moving_default",
 							position: {
 								x: creature.state.position.x,
 								y: creature.state.position.y
@@ -1281,6 +1284,7 @@
 							}
 						},
 						state: {
+							image: "areaAttack_" + creature.info.subtype + "_all_standing_default",
 							position: {
 								x: creature.state.position.x,
 								y: creature.state.position.y

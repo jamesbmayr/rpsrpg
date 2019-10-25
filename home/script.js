@@ -17,12 +17,14 @@
 				// loading messages
 					displayMessage("creating game...")
 					document.getElementById("images").setAttribute("animation", true)
+					document.getElementById("container").setAttribute("story", true)
 
 				// submit
 					sendPost(post, function(data) {
 						if (!data.success) {
 							displayMessage(data.message || "Unable to create a game...")
 							document.getElementById("images").removeAttribute("animation")
+							document.getElementById("container").removeAttribute("story")
 						}
 						else {
 							window.location = data.location

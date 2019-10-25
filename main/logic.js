@@ -148,16 +148,19 @@
 								"layer_3_background", "layer_3_wall_0_", "layer_3_wall_1_up", "layer_3_wall_1_right", "layer_3_wall_1_down", "layer_3_wall_1_left", "layer_3_wall_2_upright", "layer_3_wall_2_rightdown", "layer_3_wall_2_downleft", "layer_3_wall_2_upleft", "layer_3_wall_2_updown", "layer_3_wall_2_rightleft", "layer_3_wall_3_uprightdown", "layer_3_wall_3_rightdownleft", "layer_3_wall_3_uprightleft", "layer_3_wall_3_updownleft", "layer_3_wall_4_uprightdownleft",
 								
 								"hero_barbarian_up_moving_inactive", 		"hero_barbarian_down_moving_inactive", 			"hero_barbarian_left_moving_inactive", 			"hero_barbarian_right_moving_inactive", 		"hero_barbarian_up_standing_inactive", 			"hero_barbarian_down_standing_inactive", 		"hero_barbarian_left_standing_inactive", 		"hero_barbarian_right_standing_inactive", 
+								"hero_barbarian_up_moving_holding", 		"hero_barbarian_down_moving_holding", 			"hero_barbarian_left_moving_holding", 			"hero_barbarian_right_moving_holding", 			"hero_barbarian_up_standing_holding", 			"hero_barbarian_down_standing_holding", 		"hero_barbarian_left_standing_holding", 		"hero_barbarian_right_standing_holding", 
 								"hero_barbarian_up_moving_rangeAttack", 	"hero_barbarian_down_moving_rangeAttack", 		"hero_barbarian_left_moving_rangeAttack", 		"hero_barbarian_right_moving_rangeAttack", 		"hero_barbarian_up_standing_rangeAttack", 		"hero_barbarian_down_standing_rangeAttack", 	"hero_barbarian_left_standing_rangeAttack", 	"hero_barbarian_right_standing_rangeAttack", 
 								"hero_barbarian_up_moving_areaAttack", 		"hero_barbarian_down_moving_areaAttack", 		"hero_barbarian_left_moving_areaAttack", 		"hero_barbarian_right_moving_areaAttack", 		"hero_barbarian_up_standing_areaAttack", 		"hero_barbarian_down_standing_areaAttack", 		"hero_barbarian_left_standing_areaAttack", 		"hero_barbarian_right_standing_areaAttack", 
 								"hero_barbarian_up_moving_collision", 		"hero_barbarian_down_moving_collision", 		"hero_barbarian_left_moving_collision", 		"hero_barbarian_right_moving_collision", 		"hero_barbarian_up_standing_collision", 		"hero_barbarian_down_standing_collision", 		"hero_barbarian_left_standing_collision", 		"hero_barbarian_right_standing_collision", 
 								
 								"hero_ranger_up_moving_inactive", 			"hero_ranger_down_moving_inactive", 			"hero_ranger_left_moving_inactive", 			"hero_ranger_right_moving_inactive", 			"hero_ranger_up_standing_inactive", 			"hero_ranger_down_standing_inactive", 			"hero_ranger_left_standing_inactive", 			"hero_ranger_right_standing_inactive", 
+								"hero_ranger_up_moving_holding", 			"hero_ranger_down_moving_holding", 				"hero_ranger_left_moving_holding", 				"hero_ranger_right_moving_holding", 			"hero_ranger_up_standing_holding", 				"hero_ranger_down_standing_holding", 			"hero_ranger_left_standing_holding", 			"hero_ranger_right_standing_holding", 
 								"hero_ranger_up_moving_rangeAttack", 		"hero_ranger_down_moving_rangeAttack", 			"hero_ranger_left_moving_rangeAttack", 			"hero_ranger_right_moving_rangeAttack", 		"hero_ranger_up_standing_rangeAttack", 			"hero_ranger_down_standing_rangeAttack", 		"hero_ranger_left_standing_rangeAttack", 		"hero_ranger_right_standing_rangeAttack", 
 								"hero_ranger_up_moving_areaAttack", 		"hero_ranger_down_moving_areaAttack", 			"hero_ranger_left_moving_areaAttack", 			"hero_ranger_right_moving_areaAttack", 			"hero_ranger_up_standing_areaAttack", 			"hero_ranger_down_standing_areaAttack", 		"hero_ranger_left_standing_areaAttack", 		"hero_ranger_right_standing_areaAttack", 
 								"hero_ranger_up_moving_collision", 			"hero_ranger_down_moving_collision", 			"hero_ranger_left_moving_collision", 			"hero_ranger_right_moving_collision", 			"hero_ranger_up_standing_collision", 			"hero_ranger_down_standing_collision", 			"hero_ranger_left_standing_collision", 			"hero_ranger_right_standing_collision", 
 								
 								"hero_wizard_up_moving_inactive", 			"hero_wizard_down_moving_inactive", 			"hero_wizard_left_moving_inactive", 			"hero_wizard_right_moving_inactive", 			"hero_wizard_up_standing_inactive", 			"hero_wizard_down_standing_inactive", 			"hero_wizard_left_standing_inactive", 			"hero_wizard_right_standing_inactive",
+								"hero_wizard_up_moving_holding", 			"hero_wizard_down_moving_holding", 				"hero_wizard_left_moving_holding", 				"hero_wizard_right_moving_holding", 			"hero_wizard_up_standing_holding", 				"hero_wizard_down_standing_holding", 			"hero_wizard_left_standing_holding", 			"hero_wizard_right_standing_holding",
 								"hero_wizard_up_moving_rangeAttack", 		"hero_wizard_down_moving_rangeAttack", 			"hero_wizard_left_moving_rangeAttack", 			"hero_wizard_right_moving_rangeAttack", 		"hero_wizard_up_standing_rangeAttack", 			"hero_wizard_down_standing_rangeAttack", 		"hero_wizard_left_standing_rangeAttack", 		"hero_wizard_right_standing_rangeAttack",
 								"hero_wizard_up_moving_areaAttack", 		"hero_wizard_down_moving_areaAttack", 			"hero_wizard_left_moving_areaAttack", 			"hero_wizard_right_moving_areaAttack", 			"hero_wizard_up_standing_areaAttack", 			"hero_wizard_down_standing_areaAttack", 		"hero_wizard_left_standing_areaAttack", 		"hero_wizard_right_standing_areaAttack",
 								"hero_wizard_up_moving_collision", 			"hero_wizard_down_moving_collision", 			"hero_wizard_left_moving_collision", 			"hero_wizard_right_moving_collision", 			"hero_wizard_up_standing_collision", 			"hero_wizard_down_standing_collision", 			"hero_wizard_left_standing_collision", 			"hero_wizard_right_standing_collision",
@@ -179,7 +182,14 @@
 
 								"rangeAttack_barbarian_up_moving_default", 	"rangeAttack_barbarian_down_moving_default", 	"rangeAttack_barbarian_left_moving_default", 	"rangeAttack_barbarian_right_moving_default",
 								"rangeAttack_ranger_up_moving_default", 	"rangeAttack_ranger_down_moving_default", 		"rangeAttack_ranger_left_moving_default", 		"rangeAttack_ranger_right_moving_default",
-								"rangeAttack_wizard_up_moving_default", 	"rangeAttack_wizard_down_moving_default", 		"rangeAttack_wizard_left_moving_default", 		"rangeAttack_wizard_right_moving_default"
+								"rangeAttack_wizard_up_moving_default", 	"rangeAttack_wizard_down_moving_default", 		"rangeAttack_wizard_left_moving_default", 		"rangeAttack_wizard_right_moving_default",
+
+								"rangeAttack_avalanche_up_moving_default", 	"rangeAttack_avalanche_down_moving_default", 	"rangeAttack_avalanche_left_moving_default", 	"rangeAttack_avalanche_right_moving_default",
+								"rangeAttack_tatters_up_moving_default", 	"rangeAttack_tatters_down_moving_default", 		"rangeAttack_tatters_left_moving_default", 		"rangeAttack_tatters_right_moving_default",
+								"rangeAttack_obscuro_up_moving_default", 	"rangeAttack_obscuro_down_moving_default", 		"rangeAttack_obscuro_left_moving_default", 		"rangeAttack_obscuro_right_moving_default",
+
+								"areaAttack_barbarian_all_standing_default",	"areaAttack_wizard_all_standing_default",	"areaAttack_ranger_all_standing_default",
+								"areaAttack_avalanche_all_standing_default",	"areaAttack_obscuro_all_standing_default",	"areaAttack_tatters_all_standing_default"
 							]
 						break
 
@@ -211,6 +221,7 @@
 									defeatMessage: 		"TIME'S UP!",
 									deathMessage: 		"REVIVING",
 									teleportMessage: 	"TELEPORTING",
+									storyMessage: 		"Swarms of menacing monsters have stolen the sacred orbs!<br><br>BARBARIAN: use strength to obliterate scurrying spiders.<br>WIZARD: summon spells to destroy raging rock monsters.<br>RANGER: throw dangerous daggers through ghastly ghouls.<br><br>Work together to recover the orbs!",
 
 								// styling
 									font: 				"monospace",
@@ -249,7 +260,6 @@
 									baseHealthFraction: 1,
 									reviveHealthFraction: 0.25,
 									heroHealth: 		128,
-									monsterHealth: 		32,
 									spawnHealth: 		1024,
 									heal: 				2,
 									rpsMultiplier: 		2,
@@ -942,6 +952,7 @@
 										}
 									},
 									state: {
+										image: "hero_barbarian_down_standing_inactive",
 										health: CONSTANTS.heroHealth * CONSTANTS.baseHealthFraction,
 										armor: 4,
 										position: {
@@ -972,6 +983,7 @@
 										}
 									},
 									state: {
+										image: "hero_wizard_down_standing_inactive",
 										health: CONSTANTS.heroHealth * CONSTANTS.baseHealthFraction,
 										armor: 2,
 										position: {
@@ -1002,6 +1014,7 @@
 										}
 									},
 									state: {
+										image: "hero_ranger_down_standing_inactive",
 										health: CONSTANTS.heroHealth * CONSTANTS.baseHealthFraction,
 										armor: 2,
 										position: {
@@ -1015,7 +1028,7 @@
 
 						case "monsters":
 							var sixteenthCell = Math.floor(CONSTANTS.cellSize / 16)
-							var sixteenthHealth = Math.floor(CONSTANTS.monsterHealth / 16)
+							var sixteenthHealth = Math.floor(CONSTANTS.heroHealth / 16)
 
 							return {
 								"avalanche": {
@@ -1030,8 +1043,8 @@
 										statistics: {
 											moveSpeed: 	sixteenthCell * 1,
 											rangeSpeed: sixteenthCell * 1.5,
-											rangePower: sixteenthHealth * 2,
-											meleePower:	sixteenthHealth * 2.5,
+											rangePower: sixteenthHealth * 1.5,
+											meleePower:	sixteenthHealth * 2,
 											areaPower: 	sixteenthHealth * 1.5,
 											bumpMove:   sixteenthCell * 3,
 											armorPower:	0.25,
@@ -1040,6 +1053,7 @@
 										}
 									},
 									state: {
+										image: "monster_avalanche_down_standing_inactive",
 										health: CONSTANTS.monsterHealth * CONSTANTS.baseHealthFraction,
 										armor: 2
 									}
@@ -1056,9 +1070,9 @@
 										statistics: {
 											moveSpeed: 	sixteenthCell * 1.5,
 											rangeSpeed: sixteenthCell * 3,
-											rangePower: sixteenthHealth * 2.5,
+											rangePower: sixteenthHealth * 2,
 											meleePower:	sixteenthHealth * 1.5,
-											areaPower: 	sixteenthHealth * 2,
+											areaPower: 	sixteenthHealth * 1.5,
 											bumpMove:   sixteenthCell * 2,
 											armorPower:	0.25,
 											armorMax: 	2,
@@ -1066,6 +1080,7 @@
 										}
 									},
 									state: {
+										image: "monster_obscuro_down_standing_inactive",
 										health: CONSTANTS.monsterHealth * CONSTANTS.baseHealthFraction,
 										armor: 2
 									}
@@ -1083,8 +1098,8 @@
 											moveSpeed: 	sixteenthCell * 1.25,
 											rangeSpeed: sixteenthCell * 2,
 											rangePower: sixteenthHealth * 1.5,
-											meleePower:	sixteenthHealth * 2,
-											areaPower: 	sixteenthHealth * 2.5,
+											meleePower:	sixteenthHealth * 1.5,
+											areaPower: 	sixteenthHealth * 2,
 											bumpMove:   sixteenthCell * 2.5,
 											armorPower:	0.25,
 											armorMax: 	3,
@@ -1092,6 +1107,7 @@
 										}
 									},
 									state: {
+										image: "monster_tatters_down_standing_inactive",
 										health: CONSTANTS.monsterHealth * CONSTANTS.baseHealthFraction,
 										armor: 2
 									}
@@ -1118,6 +1134,9 @@
 										shape: "circle",
 										style: "fill",
 										color: CONSTANTS.colors.rock[0]
+									},
+									state: {
+										image: "orb_rock_all_standing_default"
 									}
 								},
 								"paper": {
@@ -1134,6 +1153,9 @@
 										shape: "circle",
 										style: "fill",
 										color: CONSTANTS.colors.paper[0]
+									},
+									state: {
+										image: "orb_rock_all_standing_default"
 									}
 								},
 								"scissors": {
@@ -1150,6 +1172,9 @@
 										shape: "circle",
 										style: "fill",
 										color: CONSTANTS.colors.scissors[0]
+									},
+									state: {
+										image: "orb_rock_all_standing_default"
 									}
 								}
 							}
@@ -1168,6 +1193,7 @@
 										style: "border"
 									},
 									state: {
+										image: "pedestal_" + p + "_all_standing_default",
 										flip: true,
 										active: false
 									}
@@ -1197,6 +1223,8 @@
 									style: "border"
 								},
 								state: {
+									image: "portal_portal_all_standing_default",
+									flip: true,
 									cooldowns: {
 										activate: 0
 									},
@@ -1219,6 +1247,7 @@
 									style: "border"
 								},
 								state: {
+									image: "shrine_rock_all_standing_default",
 									flip: true,
 									cooldowns: {
 										activate: 0
@@ -1249,6 +1278,7 @@
 									temporary: false
 								},
 								state: {
+									image: "spawn_rock_all_standing_default",
 									flip: true,
 									cooldowns: {
 										activate: 0
@@ -1467,8 +1497,10 @@
 								}
 							},
 							state: {
-								movement: {
-									direction: 	null
+								image: "areaAttack_barbarian_all_standing_default",
+								position: {
+									x: 0,
+									y: 0
 								}
 							}
 						}
