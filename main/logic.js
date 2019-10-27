@@ -1493,6 +1493,7 @@
 								},
 								shape: 			"circle",
 								style: 			"fill",
+								opacity: 		1,
 								statistics: {
 									speed: 		0,
 									power: 		0

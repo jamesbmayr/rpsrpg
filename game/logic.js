@@ -1274,11 +1274,10 @@
 							rps: creature.info.rps,
 							subtype: creature.info.subtype,
 							size: {
-								x: CONSTANTS.areaAttackRadius * power,
-								y: CONSTANTS.areaAttackRadius * power
+								x: 0,
+								y: 0
 							},
 							color: creature.info.color,
-							opacity: 0.5,
 							statistics: {
 								power: power
 							}
@@ -2683,12 +2682,13 @@
 								// resolve collisions
 									targetCoordinates = resolveCollisions(request, chamber, item, targetCoordinates, callback)
 
-								// move & shrink item
+								// move & grow item
 									item.state.position.x = Math.round(attacker.state.position.x)
 									item.state.position.y = Math.round(attacker.state.position.y)
 									item.info.statistics.power = Math.max(0, item.info.statistics.power - CONSTANTS.areaAttackFade)
-									item.info.size.x = Math.max(0, item.info.size.x - (CONSTANTS.areaAttackFade * CONSTANTS.areaAttackRadius))
-									item.info.size.y = Math.max(0, item.info.size.y - (CONSTANTS.areaAttackFade * CONSTANTS.areaAttackRadius))
+									item.info.opacity = Math.max(0, Math.min(1, item.info.opacity - (CONSTANTS.areaAttackFade * CONSTANTS.deathOpacity / 10)))
+									item.info.size.x = Math.max(0, item.info.size.x + (CONSTANTS.areaAttackFade * CONSTANTS.areaAttackRadius))
+									item.info.size.y = Math.max(0, item.info.size.y + (CONSTANTS.areaAttackFade * CONSTANTS.areaAttackRadius))
 							}
 					}
 
