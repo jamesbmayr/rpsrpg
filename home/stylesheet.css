@@ -169,7 +169,7 @@
 /*** images ***/
 	#images {
 		position: absolute;
-		z-index: -1;
+		z-index: 1;
 		top: 65%;
 		left: 50%;
 		transform: translateX(-50%) translateY(50%);
@@ -248,3 +248,210 @@
 			83%  {height: 75%;  }
 			100% {height: 50%;  }
 		}
+
+/*** sprites ***/
+	#sprites {
+		height: 100vh;
+		width: 100vw;
+		z-index: 0;
+		background: transparent;
+		pointer-events: none;
+		user-select: none;
+		-webkit-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+		-o-user-select: none;
+	}
+
+	#sprites div {
+		position: absolute;
+		top: 0px;
+		left: 0px;
+		height: 64px;
+		width: 64px;
+	}
+
+	#sprites div div {
+		position: absolute;
+		top: 0px;
+		left: 0px;
+		height: 100%;
+		width: 100%;
+		background-repeat: no-repeat;
+		background-position: center center;
+		background-size: contain;
+		opacity: 0;
+	}
+
+	/* barbarian */
+		#sprites #barbarian[direction="right"] .right {
+			opacity: 1;
+		}
+
+		#sprites #barbarian .right {
+			animation: barbarian_right step-start calc(var(--animationTime) / 4) infinite;
+		}
+
+		#sprites #barbarian[direction="left"] .left {
+			opacity: 1;
+		}
+
+		#sprites #barbarian .left {
+			animation: barbarian_left step-start calc(var(--animationTime) / 4) infinite;
+		}
+
+		#sprites #barbarian[direction="down"] .down {
+			opacity: 1;
+		}
+
+		#sprites #barbarian .down {
+			animation: barbarian_down step-start calc(var(--animationTime) / 4) infinite;
+		}
+
+		#sprites #barbarian[direction="up"] .up {
+			opacity: 1;
+		}
+
+		#sprites #barbarian .up {
+			animation: barbarian_up step-start calc(var(--animationTime) / 4) infinite;
+		}
+
+		@keyframes barbarian_down {
+			0%   {background-image: url("/sprites/hero_barbarian_down_standing_inactive.png");}
+			50%  {background-image: url("/sprites/hero_barbarian_down_moving_inactive.png");}
+			100% {background-image: url("/sprites/hero_barbarian_down_standing_inactive.png");}
+		}
+
+		@keyframes barbarian_up {
+			0%   {background-image: url("/sprites/hero_barbarian_up_standing_inactive.png");}
+			50%  {background-image: url("/sprites/hero_barbarian_up_moving_inactive.png");}
+			100% {background-image: url("/sprites/hero_barbarian_up_standing_inactive.png");}
+		}
+
+		@keyframes barbarian_right {
+			0%   {background-image: url("/sprites/hero_barbarian_right_standing_inactive.png");}
+			50%  {background-image: url("/sprites/hero_barbarian_right_moving_inactive.png");}
+			100% {background-image: url("/sprites/hero_barbarian_right_standing_inactive.png");}
+		}
+
+		@keyframes barbarian_left {
+			0%   {background-image: url("/sprites/hero_barbarian_left_standing_inactive.png");}
+			50%  {background-image: url("/sprites/hero_barbarian_left_moving_inactive.png");}
+			100% {background-image: url("/sprites/hero_barbarian_left_standing_inactive.png");}
+		}
+
+	/* wizard */
+		#sprites #wizard[direction="right"] .right {
+			opacity: 1;
+		}
+
+		#sprites #wizard .right {
+			animation: wizard_right step-start calc(var(--animationTime) / 4) infinite;
+		}
+
+		#sprites #wizard[direction="left"] .left {
+			opacity: 1;
+		}
+
+		#sprites #wizard .left {
+			animation: wizard_left step-start calc(var(--animationTime) / 4) infinite;
+		}
+
+		#sprites #wizard[direction="down"] .down {
+			opacity: 1;
+		}
+
+		#sprites #wizard .down {
+			animation: wizard_down step-start calc(var(--animationTime) / 4) infinite;
+		}
+
+		#sprites #wizard[direction="up"] .up {
+			opacity: 1;
+		}
+
+		#sprites #wizard .up {
+			animation: wizard_up step-start calc(var(--animationTime) / 4) infinite;
+		}
+
+		@keyframes wizard_down {
+			0%   {background-image: url("/sprites/hero_wizard_down_standing_inactive.png");}
+			50%  {background-image: url("/sprites/hero_wizard_down_moving_inactive.png");}
+			100% {background-image: url("/sprites/hero_wizard_down_standing_inactive.png");}
+		}
+
+		@keyframes wizard_up {
+			0%   {background-image: url("/sprites/hero_wizard_up_standing_inactive.png");}
+			50%  {background-image: url("/sprites/hero_wizard_up_moving_inactive.png");}
+			100% {background-image: url("/sprites/hero_wizard_up_standing_inactive.png");}
+		}
+
+		@keyframes wizard_right {
+			0%   {background-image: url("/sprites/hero_wizard_right_standing_inactive.png");}
+			50%  {background-image: url("/sprites/hero_wizard_right_moving_inactive.png");}
+			100% {background-image: url("/sprites/hero_wizard_right_standing_inactive.png");}
+		}
+		
+		@keyframes wizard_left {
+			0%   {background-image: url("/sprites/hero_wizard_left_standing_inactive.png");}
+			50%  {background-image: url("/sprites/hero_wizard_left_moving_inactive.png");}
+			100% {background-image: url("/sprites/hero_wizard_left_standing_inactive.png");}
+		}
+
+	/* ranger */
+		#sprites #ranger[direction="right"] .right {
+			opacity: 1;
+		}
+
+		#sprites #ranger .right {
+			animation: ranger_right step-start calc(var(--animationTime) / 4) infinite;
+		}
+
+		#sprites #ranger[direction="left"] .left {
+			opacity: 1;
+		}
+
+		#sprites #ranger .left {
+			animation: ranger_left step-start calc(var(--animationTime) / 4) infinite;
+		}
+
+		#sprites #ranger[direction="down"] .down {
+			opacity: 1;
+		}
+
+		#sprites #ranger .down {
+			animation: ranger_down step-start calc(var(--animationTime) / 4) infinite;
+		}
+
+		#sprites #ranger[direction="up"] .up {
+			opacity: 1;
+		}
+
+		#sprites #ranger .up {
+			animation: ranger_up step-start calc(var(--animationTime) / 4) infinite;
+		}
+
+		@keyframes ranger_down {
+			0%   {background-image: url("/sprites/hero_ranger_down_standing_inactive.png");}
+			50%  {background-image: url("/sprites/hero_ranger_down_moving_inactive.png");}
+			100% {background-image: url("/sprites/hero_ranger_down_standing_inactive.png");}
+		}
+
+		@keyframes ranger_up {
+			0%   {background-image: url("/sprites/hero_ranger_up_standing_inactive.png");}
+			50%  {background-image: url("/sprites/hero_ranger_up_moving_inactive.png");}
+			100% {background-image: url("/sprites/hero_ranger_up_standing_inactive.png");}
+		}
+
+		@keyframes ranger_right {
+			0%   {background-image: url("/sprites/hero_ranger_right_standing_inactive.png");}
+			50%  {background-image: url("/sprites/hero_ranger_right_moving_inactive.png");}
+			100% {background-image: url("/sprites/hero_ranger_right_standing_inactive.png");}
+		}
+
+		@keyframes ranger_left {
+			0%   {background-image: url("/sprites/hero_ranger_left_standing_inactive.png");}
+			50%  {background-image: url("/sprites/hero_ranger_left_moving_inactive.png");}
+			100% {background-image: url("/sprites/hero_ranger_left_standing_inactive.png");}
+		}
+
+		

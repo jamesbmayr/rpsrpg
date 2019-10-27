@@ -237,6 +237,7 @@
 									observerWidth: 		800,
 									audioRemoval: 		1000 * 5,
 									animationTime: 		2,
+									animationDistance: 	8,
 
 								// game loop
 									loopInterval: 		50,
@@ -337,6 +338,7 @@
 								constants.areaAttackRadius 	= Math.floor(constants.cellSize / 8)
 								constants.itemDropRadius 	= Math.floor(constants.cellSize / 4)
 								constants.monsterAwareness 	= Math.floor(constants.cellSize * 4)
+
 
 							// chamber colors by layer
 								constants.chamberColors = [
