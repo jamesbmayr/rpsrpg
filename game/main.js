@@ -207,16 +207,16 @@
 						color: CONSTANTS.colors.black[4],
 						opacity: CONSTANTS.overlayOpacity,
 						radii: {
-							topLeft: CONSTANTS.borderRadius,
-							topRight: CONSTANTS.borderRadius,
-							bottomRight: CONSTANTS.borderRadius,
-							bottomLeft: CONSTANTS.borderRadius
+							topLeft: CONSTANTS.borderWidth,
+							topRight: CONSTANTS.borderWidth,
+							bottomRight: CONSTANTS.borderWidth,
+							bottomLeft: CONSTANTS.borderWidth
 						}
 					}
-					drawRectangle(CANVAS, CONTEXT, CONSTANTS.borderRadius, CANVAS.height * 3 / 8, CANVAS.width - CONSTANTS.borderRadius * 2, CANVAS.height / 4, options)
+					drawRectangle(CANVAS, CONTEXT, CONSTANTS.borderWidth, CANVAS.height * 3 / 8, CANVAS.width - CONSTANTS.borderWidth * 2, CANVAS.height / 4, options)
 
 				// text
-					drawText(CANVAS, CONTEXT, CANVAS.width / 2, CANVAS.height / 2, message, {size: CONSTANTS.cellSize, color: CONSTANTS.colors.white[4], shadow: CONSTANTS.colors.black[4], blur: CONSTANTS.borderRadius})
+					drawText(CANVAS, CONTEXT, CANVAS.width / 2, CANVAS.height / 2, message, {size: CONSTANTS.cellSize, color: CONSTANTS.colors.white[4], shadow: CONSTANTS.colors.black[4], blur: CONSTANTS.borderWidth})
 			} catch (error) {}
 		}
 
@@ -227,10 +227,10 @@
 					var squareSize = Math.floor(chamber.info.cellSize / (2 * CONSTANTS.layers))
 					var squareRadius = Math.floor(squareSize / 2)
 					var radii = {
-						topLeft: CONSTANTS.borderRadius / 4,
-						topRight: CONSTANTS.borderRadius / 4,
-						bottomRight: CONSTANTS.borderRadius / 4,
-						bottomLeft: CONSTANTS.borderRadius / 4
+						topLeft: CONSTANTS.borderWidth / 4,
+						topRight: CONSTANTS.borderWidth / 4,
+						bottomRight: CONSTANTS.borderWidth / 4,
+						bottomLeft: CONSTANTS.borderWidth / 4
 					}
 
 				// visited
@@ -340,7 +340,7 @@
 						shape: creature.info.shape,
 						opacity: creature.info.opacity || 1,
 						shadow: healthColor,
-						blur: CONSTANTS.borderRadius
+						blur: CONSTANTS.borderWidth
 					}
 
 				// draw
@@ -362,10 +362,10 @@
 					}
 					else if (options.shape == "square") {
 						options.radii = {
-							topLeft: 		CONSTANTS.borderRadius,
-							topRight: 		CONSTANTS.borderRadius,
-							bottomRight: 	CONSTANTS.borderRadius,
-							bottomLeft: 	CONSTANTS.borderRadius
+							topLeft: 		CONSTANTS.borderWidth,
+							topRight: 		CONSTANTS.borderWidth,
+							bottomRight: 	CONSTANTS.borderWidth,
+							bottomLeft: 	CONSTANTS.borderWidth
 						}
 						drawRectangle(CANVAS, CONTEXT, creatureX - (creature.info.size.x / 2), creatureY - (creature.info.size.y / 2), creature.info.size.x, creature.info.size.y, options)
 					}
@@ -395,7 +395,7 @@
 						var healthPercentage = Math.round(item.state.health / item.info.statistics.healthMax * 100)
 						var healthColor = healthPercentage > CONSTANTS.healthHigh ? CONSTANTS.colors.green[2] : healthPercentage > CONSTANTS.healthLow ? CONSTANTS.colors.yellow[2] : CONSTANTS.colors.red[2]
 						options.shadow = healthColor
-						options.blur = CONSTANTS.borderRadius
+						options.blur = CONSTANTS.borderWidth
 					}
 
 				// draw
@@ -417,10 +417,10 @@
 					}
 					else if (options.shape == "square") {
 						options.radii = {
-							topLeft: 		CONSTANTS.borderRadius,
-							topRight: 		CONSTANTS.borderRadius,
-							bottomRight: 	CONSTANTS.borderRadius,
-							bottomLeft: 	CONSTANTS.borderRadius
+							topLeft: 		CONSTANTS.borderWidth,
+							topRight: 		CONSTANTS.borderWidth,
+							bottomRight: 	CONSTANTS.borderWidth,
+							bottomLeft: 	CONSTANTS.borderWidth
 						}
 						drawRectangle(CANVAS, CONTEXT, itemX - (item.info.size.x / 2), itemY - (item.info.size.y / 2), item.info.size.x, item.info.size.y, options)
 					}

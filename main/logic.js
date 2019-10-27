@@ -120,8 +120,11 @@
 								return ('/*** variables ***/\n' +
 										'	:root {\n' +
 										'		--font: ' + CONSTANTS.font + ';\n' +
-										'		--borderRadius: ' + CONSTANTS.borderRadius + 'px;\n' +
+										'		--borderWidth: ' + CONSTANTS.borderWidth + 'px;\n' +
 										'		--animationTime: ' + CONSTANTS.animationTime + 's;\n' +
+										'		--transitionTime: ' + CONSTANTS.transitionTime + 's;\n' +
+										'		--overlayOpacity: ' + CONSTANTS.overlayOpacity + ';\n' +
+										'		--maxContainerWidth: ' + CONSTANTS.maxContainerWidth + 'px;\n' +
 												cssColors +
 										'	}')
 						break
@@ -221,11 +224,11 @@
 									defeatMessage: 		"TIME'S UP!",
 									deathMessage: 		"REVIVING",
 									teleportMessage: 	"TELEPORTING",
-									storyMessage: 		"Swarms of menacing monsters have stolen the sacred orbs!<br><br>BARBARIAN: use strength to obliterate scurrying spiders.<br>WIZARD: summon spells to destroy raging rock monsters.<br>RANGER: throw dangerous daggers through ghastly ghouls.<br><br>Work together to recover the orbs!",
+									storyMessage: 		"Swarms of menacing monsters have stolen the sacred orbs!<br><br>BARBARIAN: use strength to obliterate scurrying spiders<br>WIZARD: summon spells to destroy raging rock monsters<br>RANGER: throw dangerous daggers through ghastly ghouls",
 
 								// styling
 									font: 				"monospace",
-									borderRadius: 		16,
+									borderWidth: 		16,
 									borderThickness: 	8,
 									overlayOpacity: 	0.5,
 									deathOpacity: 		0.5,
@@ -234,10 +237,11 @@
 									timeHigh: 			90,
 									timeLow: 			45,
 									loadFade: 			4,
-									observerWidth: 		800,
 									audioRemoval: 		1000 * 5,
 									animationTime: 		2,
 									animationDistance: 	8,
+									transitionTime: 	0.1,
+									maxContainerWidth: 	800,
 
 								// game loop
 									loopInterval: 		50,

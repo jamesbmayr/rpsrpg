@@ -11,22 +11,24 @@
 	<body>
 		<div id="message" class="hidden"></div>
 		<div id="container">
-			<h1 id="title"><a href="./about">RPS RPG</a></h1>
-			<form id="form" action="javascript:;">
-				<div id="form-right">
-					<input  id="gameCode" type="text" placeholder="code" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
-					<button id="joinGame" type="submit">join</button>
+			<div id="images">
+					<div id="rock"></div>
+					<div id="paper"></div>
+					<div id="scissors"></div>
 				</div>
-				<div id="form-left">
-					<button id="createGame">new</button>
-				</div>
-			</form>
-			<div id="story"><script node>CONSTANTS.storyMessage</script>node></div>
-		</div>
-		<div id="images">
-			<div id="rock"></div>
-			<div id="paper"></div>
-			<div id="scissors"></div>
+			<div id="container-inner">
+				<h1 id="title"><a href="./about">RPS RPG</a></h1>
+				<form id="form" action="javascript:;">
+					<div id="form-right">
+						<input  id="gameCode" type="text" placeholder="code" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+						<button id="joinGame" type="submit">join</button>
+					</div>
+					<div id="form-left">
+						<button id="createGame">new</button>
+					</div>
+				</form>
+				<div id="story"><script node>CONSTANTS.storyMessage</script>node></div>
+			</div>
 		</div>
 		<div id="sprites">
 			<div id="barbarian">

@@ -52,7 +52,7 @@
 						var post = {
 							action: "joinGame",
 							gameid: gameCode,
-							observing: (on.click == "click" && window.innerWidth >= CONSTANTS.observerWidth)
+							observing: (on.click == "click" && window.innerWidth >= CONSTANTS.maxContainerWidth)
 						}
 
 					// submit

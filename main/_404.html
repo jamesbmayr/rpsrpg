@@ -8,15 +8,25 @@
 		<link rel="stylesheet" type="text/css" href="main/stylesheet.css"/>
 		<style>
 			/* page */
+				html, body {
+					width: 100%;
+					height: 100%;
+					background-color: var(--black-4);
+				}
+
+				body {
+					background-image: url(/sprites/layer_3_background.png);
+					background-size: contain;
+					background-repeat: repeat;
+					background-position: center;
+				}
+
 				#container {
 					position: absolute;
 					top: 0px;
 					left: 0px;
 					height: 100vh;
 					width: 100vw;
-					background-position: center center;
-					background-size: cover;
-					background-repeat: no-repeat;
 					margin: 0px;
 					padding: 0px;
 					border: 0px;
@@ -29,19 +39,19 @@
 					transform: translateX(-50%) translateY(-50%);
 					font-size: 100%;
 					color: var(--white-4);
-					background-color: transparent;
+					background-color: rgba(0,0,0,var(--overlayOpacity));
+					padding: var(--borderWidth);
 					cursor: default;
 					text-align: center;
-					border-radius: var(--borderRadius);
-					line-height: 1.5;
+					border-radius: var(--borderWidth);
 					user-select: none;
 				}
 
 				#header {
 					font-size: 150%;
 					width: 100%;
-					padding: 0% 0% 2% 0%;
-					margin: 0 0 5% 0;
+					padding: 0px;
+					margin: 0px;
 					color: var(--white-4);
 					cursor: default;
 					text-align: center;
@@ -49,7 +59,7 @@
 				}				
 
 				#goback:hover, #goback:focus {
-					text-shadow: 0px 0px 50px var(--white-4);
+					text-shadow: 0px 0px var(--borderWidth) var(--white-4);
 				}
 		</style>
 	</head>

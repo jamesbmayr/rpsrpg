@@ -22,7 +22,7 @@
 			top: 50%;
 			left: 50%;
 			transform: translateX(-50%) translateY(-50%);
-			padding: 50px;
+			padding: calc(var(--borderWidth) * 2);
 		}
 
 /*** canvas ***/
@@ -37,8 +37,8 @@
 		max-height: 90vh;
 		max-width: 90vh;
 		background-color: var(--black-4);
-		box-shadow: 0px 0px 10px var(--bluegray-3);
-		border-radius: var(--borderRadius);
+		box-shadow: 0px 0px var(--borderWidth) var(--bluegray-3);
+		border-radius: var(--borderWidth);
 	}
 
 /*** timer ***/
@@ -53,7 +53,7 @@
 		max-height: 95vh;
 		max-width: 95vh;
 		background-color: transparent;
-		border-radius: calc(2 * var(--borderRadius));
+		border-radius: calc(2 * var(--borderWidth));
 	}
 
 /*** end ***/
@@ -64,14 +64,20 @@
 		transform: translateX(-50%) translateY(100%);
 		height: auto;
 		width: auto;
-		background-color: var(--black-3);
-		border-radius: var(--borderRadius);
+		background-color: var(--blue-2);
+		border-radius: var(--borderWidth);
 		text-align: center;
 		z-index: 2;
-		padding: 4px;
+		padding: calc(var(--borderWidth) / 2);
+		color: var(--white-4);
 	}
 
 	#play-again-inner {
 		color: var(--white-4);
-		font-size: 200%;
+		font-size: 100%;
+		text-shadow: 0px 0px var(--borderWidth) var(--white-4);
+	}
+
+	#play-again:hover, #play-again:focus {
+		background-color: var(--blue-3);
 	}

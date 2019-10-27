@@ -13,8 +13,8 @@
 			color: var(--black-4);
 			font-family: var(--font);
 			font-weight: bold;
-			font-size: 30px;
-			box-shadow: 0px 0px 25px var(--black-4) inset;
+			font-size: calc(var(--borderWidth) * 2);
+			box-shadow: 0px 0px var(--borderWidth) var(--black-4) inset;
 			touch-action: none;
 		}
 
@@ -28,21 +28,21 @@
 		}
 
 		a:hover, a:focus {
-			text-shadow: 0px 0px 50px var(--black-4);
+			text-shadow: 0px 0px var(--borderWidth) var(--white-4);
 		}
 
 		input, button, select, textarea {
 			font-weight: bold;
-			font-size: 30px;
+			font-size: calc(var(--borderWidth) * 2);
 			font-family: var(--font);
 			outline: none;
 			cursor: pointer;
-			border: 5px solid var(--black-4);
-			border-radius: var(--borderRadius);
+			border: var(--borderWidth) solid var(--black-4);
+			border-radius: var(--borderWidth);
 			-webkit-appearance: none;
 			-moz-appearance: none;
 			overflow: hidden;
-			color: var(--black-3);
+			color: var(--black-4);
 			background-color: var(--white-4);
 			padding: 0px;
 			-webkit-tap-highlight-color: transparent;
@@ -94,26 +94,27 @@
 		.invisible {
 			opacity: 0;
 			pointer-events: none;
-			transition: 2s;
+			transition: var(--animationTime);
 		}
 
 	/* sections */
 		#message {
 			position: fixed;
-			top: 2%;
+			top: var(--borderWidth);
 			left: 50%;
 			transform: translateX(-50%);
-			width: 80vw;
+			width: calc(100vw - (var(--borderWidth) * 4));
+			max-width: calc(var(--maxContainerWidth) - (var(--borderWidth) * 2));
 			z-index: 100;
-			padding: 10px;
-			box-shadow: 0px 0px 20px var(--black-4);
-			background-color: var(--black-1);
+			padding: var(--borderWidth);
+			box-shadow: 0px 0px var(--borderWidth) var(--black-4);
+			background-color: rgba(0,0,0,var(--overlayOpacity));
 			opacity: 0;
-			color: var(--black-4);
+			color: var(--white-4);
 			font-size: 100%;
 			text-align: center;
 			pointer-events: none;
-			border-radius: var(--borderRadius);
+			border-radius: var(--borderWidth);
 		}
 
 /*** vendor prefixes ***/
