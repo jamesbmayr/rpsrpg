@@ -40,7 +40,7 @@
 			margin-left: auto;
 			margin-right: auto;
 			background: rgba(0,0,0,var(--overlayOpacity));
-			border-radius: var(--borderWidth);
+			border-radius: var(--borderRadius);
 			overflow: hidden;
 		}
 
@@ -144,7 +144,7 @@
 		cursor: pointer;
 		color: var(--white-4);
 		text-shadow: 0px 0px var(--borderWidth) var(--black-4);
-		font-size: 200%;
+		font-size: calc(var(--fontSize) * 4);
 		text-decoration: none;
 		line-height: 1;
 		overflow: hidden;
@@ -184,9 +184,9 @@
 		height: 100%;
 		text-align: center;
 		line-height: 1;
-		font-size: 100%;
+		font-size: var(--fontSize);
 		padding: 0px;
-		border-radius: calc(var(--borderWidth) / 2) 0px 0px calc(var(--borderWidth) / 2);
+		border-radius: calc(var(--borderRadius) / 2) 0px 0px calc(var(--borderRadius) / 2);
 		border: 0px;
 		background-color: var(--green-2);
 	}
@@ -202,8 +202,8 @@
 		padding: 0px;
 		text-align: center;
 		line-height: 1;
-		font-size: 100%;
-		border-radius: 0px calc(var(--borderWidth) / 2) 0px 0px;
+		font-size: var(--fontSize);
+		border-radius: 0px calc(var(--borderRadius) / 2) 0px 0px;
 		border-width: calc(var(--borderWidth) / 2) calc(var(--borderWidth) / 2) 0px 0px;
 		background-color: var(--white-4);
 		border-color: var(--blue-2);
@@ -220,15 +220,17 @@
 		height: 50%;
 		text-align: center;
 		line-height: 1;
-		font-size: 100%;
+		font-size: var(--fontSize);
 		padding: 0px;
-		border-radius: 0px 0px calc(var(--borderWidth) / 2) 0px;
-		border: 0px;
+		border-radius: 0px 0px calc(var(--borderRadius) / 2) 0px;
+		border-width: calc(var(--borderWidth) / 2) calc(var(--borderWidth) / 2) calc(var(--borderWidth) / 2) 0px;
 		background-color: var(--blue-2);
+		border-color: var(--blue-2);
 	}
 
 	#joinGame:hover, #joinGame:focus {
 		background-color: var(--blue-3);
+		border-color: var(--blue-3);
 	}
 
 /*** story ***/
@@ -254,7 +256,8 @@
 		height: calc(var(--borderWidth) * 5);
 		width: 100%;
 		padding: 0px;
-		font-size: 50%;
+		font-size: calc(var(--fontSize) / 2);
+		line-height: 1.5;
 		color: var(--white-4);
 		transition: 2s;
 		opacity: 1;

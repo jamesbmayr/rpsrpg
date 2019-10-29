@@ -31,7 +31,7 @@
 			overflow-x: hidden;
 			overflow-y: hidden;
 			z-index: 1;
-			border-radius: var(--borderWidth);
+			border-radius: 16px;
 			border: calc(var(--borderWidth) / 2) solid var(--black-3);
 		}
 
@@ -59,7 +59,7 @@
 	}
 
 	#selection-inner button {
-		border-radius: var(--borderWidth);
+		border-radius: 4px;
 		height: calc(var(--borderWidth) * 4);
 		width: calc(var(--borderWidth) * 4);
 		outline: none;
@@ -168,14 +168,20 @@
 			float: left;
 			width: calc(40% - var(--borderWidth));
 			height: calc(100% - var(--borderWidth));
-			padding: 8px;
+			padding: calc(var(--borderWidth) / 2);
+		}
+
+		#d-pad .row {
+			float: left;
+			width: 100%;
+			height: calc(100% / 3);
 		}
 
 		#d-pad button {
 			overflow: hidden;
 			float: left;
-			height: calc(33.3%);
-			width: calc(33.3%);
+			height: 100%;
+			width: calc(100% / 3);
 			font-size: calc(var(--borderWidth) * 2);
 			color: var(--white-4);
 			background-color: var(--black-2);
@@ -190,9 +196,10 @@
 		}
 
 		#d-pad button.diagonal {
-			height: calc(33.3% - var(--borderWidth)) !important;
-			width: calc(33.3% - var(--borderWidth)) !important;
+			height: 50%;
+			width: calc(100% / 6);
 			background-color: var(--black-1);
+			font-size: 0px;
 		}
 
 		#d-pad button[active] {
@@ -204,23 +211,39 @@
 		}
 
 		#up-left {
-			border-radius: 50% 0px 0px 0px;
-			margin-top: var(--borderWidth);
-			margin-left: var(--borderWidth);
+			border-radius: 100% 0px 0px 0px;
+			margin-top: calc(100% / 6);
+			margin-left: calc(100% / 6);
+		}
+
+		#up-left div {
+			transform: rotate(-45deg);
 		}
 
 		#up {
-			border-radius: var(--borderWidth) var(--borderWidth) 0px 0px;
+			border-radius: 4px 4px 0px 0px;
+		}
+
+		#up div {
+			transform: rotate(0deg);
 		}
 
 		#up-right {
-			border-radius: 0px 50% 0px 0px;
-			margin-top: var(--borderWidth);
-			margin-right: var(--borderWidth);
+			border-radius: 0px 100% 0px 0px;
+			margin-top: calc(100% / 6);
+			margin-right: calc(100% / 6);
+		}
+
+		#up-right div {
+			transform: rotate(45deg);
 		}
 
 		#left {
-			border-radius: var(--borderWidth) 0px 0px var(--borderWidth);
+			border-radius: 4px 0px 0px 4px;
+		}
+
+		#left div {
+			transform: rotate(-90deg);
 		}
 
 		#center {
@@ -232,23 +255,39 @@
 		}
 
 		#right {
-			border-radius: 0px var(--borderWidth) var(--borderWidth) 0px;
+			border-radius: 0px 4px 4px 0px;
+		}
+
+		#right div {
+			transform: rotate(90deg);
 		}
 
 		#down-left {
-			border-radius: 0px 0px 0px 50%;
-			margin-bottom: var(--borderWidth);
-			margin-left: var(--borderWidth);
+			border-radius: 0px 0px 0px 100%;
+			margin-bottom: calc(100% / 6);
+			margin-left: calc(100% / 6);
+		}
+
+		#down-left div {
+			transform: rotate(-135deg);
 		}
 
 		#down {
-			border-radius: 0px 0px var(--borderWidth) var(--borderWidth);
+			border-radius: 0px 0px 4px 4px;
+		}
+
+		#down div {
+			transform: rotate(180deg);
 		}
 
 		#down-right {
-			border-radius: 0px 0px 50% 0px;
-			margin-bottom: var(--borderWidth);
-			margin-right: var(--borderWidth);
+			border-radius: 0px 0px 100% 0px;
+			margin-bottom: calc(100% / 6);
+			margin-right: calc(100% / 6);
+		}
+
+		#down-right div {
+			transform: rotate(135deg);
 		}
 
 	/* middle */
@@ -272,7 +311,7 @@
 			-ms-user-select: none;
 			-o-user-select: none;
 			background-color: var(--black-2);;
-			border-radius: var(--borderWidth);
+			border-radius: 4px;
 			transition: var(--transitionTime);
 		}
 
@@ -286,7 +325,7 @@
 			float: right;
 			width: calc(40% - var(--borderWidth));
 			height: calc(100% - var(--borderWidth));
-			padding: calc(var(--borderWidth) / 2));
+			padding: calc(var(--borderWidth) / 2);
 		}
 
 		#actions button {

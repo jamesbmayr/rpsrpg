@@ -149,11 +149,11 @@
 					clearCanvas(CANVAS, CONTEXT)
 					drawBackground(chamber)
 
-				// minimap
-					drawMinimap(chamber)
-
 				// draw walls
 					drawWalls(chamber)
+
+				// minimap
+					drawMinimap(chamber)
 
 				// draw creatures
 					for (var c in chamber.creatures) {
@@ -207,16 +207,16 @@
 						color: CONSTANTS.colors.black[4],
 						opacity: CONSTANTS.overlayOpacity,
 						radii: {
-							topLeft: CONSTANTS.borderWidth,
-							topRight: CONSTANTS.borderWidth,
-							bottomRight: CONSTANTS.borderWidth,
-							bottomLeft: CONSTANTS.borderWidth
+							topLeft: CONSTANTS.borderRadius,
+							topRight: CONSTANTS.borderRadius,
+							bottomRight: CONSTANTS.borderRadius,
+							bottomLeft: CONSTANTS.borderRadius
 						}
 					}
-					drawRectangle(CANVAS, CONTEXT, CONSTANTS.borderWidth, CANVAS.height * 3 / 8, CANVAS.width - CONSTANTS.borderWidth * 2, CANVAS.height / 4, options)
+					drawRectangle(CANVAS, CONTEXT, 0, CANVAS.height * 3 / 8, CANVAS.width, CANVAS.height / 4, options)
 
 				// text
-					drawText(CANVAS, CONTEXT, CANVAS.width / 2, CANVAS.height / 2, message, {size: CONSTANTS.cellSize, color: CONSTANTS.colors.white[4], shadow: CONSTANTS.colors.black[4], blur: CONSTANTS.borderWidth})
+					drawText(CANVAS, CONTEXT, CANVAS.width / 2, CANVAS.height / 2, message, {size: CONSTANTS.fontSize * 4, color: CONSTANTS.colors.white[4], shadow: CONSTANTS.colors.black[4], blur: CONSTANTS.borderWidth})
 			} catch (error) {}
 		}
 
@@ -232,6 +232,10 @@
 						bottomRight: CONSTANTS.borderWidth / 4,
 						bottomLeft: CONSTANTS.borderWidth / 4
 					}
+
+				// background
+					var backgroundRadius = (chamber.info.cellSize / 2) - (squareRadius * 2)
+					drawCircle(CANVAS, CONTEXT, Math.ceil(CANVAS.width / 2), Math.ceil(CANVAS.height / 2), backgroundRadius, {color: CONSTANTS.colors.black[4], opacity: CONSTANTS.overlayOpacity})
 
 				// visited
 					var visitedKeys = Object.keys(chamber.state.overlay.minimap)
@@ -362,10 +366,10 @@
 					}
 					else if (options.shape == "square") {
 						options.radii = {
-							topLeft: 		CONSTANTS.borderWidth,
-							topRight: 		CONSTANTS.borderWidth,
-							bottomRight: 	CONSTANTS.borderWidth,
-							bottomLeft: 	CONSTANTS.borderWidth
+							topLeft: 		CONSTANTS.borderRadius,
+							topRight: 		CONSTANTS.borderRadius,
+							bottomRight: 	CONSTANTS.borderRadius,
+							bottomLeft: 	CONSTANTS.borderRadius
 						}
 						drawRectangle(CANVAS, CONTEXT, creatureX - (creature.info.size.x / 2), creatureY - (creature.info.size.y / 2), creature.info.size.x, creature.info.size.y, options)
 					}
@@ -417,10 +421,10 @@
 					}
 					else if (options.shape == "square") {
 						options.radii = {
-							topLeft: 		CONSTANTS.borderWidth,
-							topRight: 		CONSTANTS.borderWidth,
-							bottomRight: 	CONSTANTS.borderWidth,
-							bottomLeft: 	CONSTANTS.borderWidth
+							topLeft: 		CONSTANTS.borderRadius,
+							topRight: 		CONSTANTS.borderRadius,
+							bottomRight: 	CONSTANTS.borderRadius,
+							bottomLeft: 	CONSTANTS.borderRadius
 						}
 						drawRectangle(CANVAS, CONTEXT, itemX - (item.info.size.x / 2), itemY - (item.info.size.y / 2), item.info.size.x, item.info.size.y, options)
 					}

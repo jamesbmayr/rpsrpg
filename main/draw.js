@@ -186,7 +186,7 @@
 			try {
 				// variables
 					options = options || {}
-					context.font = (options.style ? options.style + " " : "") + (options.size || 32) + "px " + (options.font || "monospace")
+					context.font = (options.style ? options.style + " " : "") + (options.size || CONSTANTS.fontSize) + "px " + (options.font || CONSTANTS.font)
 					context.fillStyle    = options.gradient ? drawGradient(canvas, context, options) : (options.color || "transparent")
 					context.strokeStyle  = options.gradient ? drawGradient(canvas, context, options) : (options.color || "transparent")
 					context.textAlign    = options.alignment || "center"

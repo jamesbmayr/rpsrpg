@@ -34,7 +34,7 @@
 	/* title */
 		#title {
 			color: var(--white-4);
-			font-size: 200%;
+			font-size: calc(var(--fontSize) * 4);
 			cursor: pointer;
 		}
 
@@ -54,7 +54,7 @@
 			cursor: default;
 			color: var(--white-4);
 			line-height: 1.25;
-			border-radius: var(--borderWidth);
+			border-radius: var(--borderRadius);
 			width: 100%;
 			text-align: center;
 			background: rgba(0,0,0,var(--overlayOpacity));
@@ -73,7 +73,7 @@
 
 		.header {
 			float: left;
-			font-size: 100%;
+			font-size: calc(var(--fontSize) * 2);
 			font-weight: bold;
 			width: calc(100% - 2 * var(--borderWidth));
 			padding: var(--borderWidth);
@@ -89,7 +89,7 @@
 			padding: 0px var(--borderWidth) var(--borderWidth) var(--borderWidth);
 			width: calc(100% - 2 * var(--borderWidth));
 			margin: 0px;
-			font-size: 50%;
+			font-size: var(--fontSize);
 			color: var(--white-4);
 			cursor: default;
 			text-align: center;
@@ -101,19 +101,19 @@
 			max-width: calc(100% - var(--borderWidth));
 			min-width: calc(100% - var(--borderWidth));
 			margin-bottom: var(--borderWidth);
-			border-radius: calc(var(--borderWidth) / 2);
+			border-radius: calc(var(--borderRadius) / 2);
 			border: 0px;
 			min-height: calc(var(--borderWidth) * 4);
-			font-size: 100%;
+			font-size: var(--fontSize);
 		}
 
 		#feedback-email {
 			width: calc(100% - var(--borderWidth) - (var(--borderWidth) * 4));
 			padding: calc(var(--borderWidth) / 2);
-			border-radius: calc(var(--borderWidth) / 2) 0px 0px calc(var(--borderWidth) / 2);
+			border-radius: calc(var(--borderRadius) / 2) 0px 0px calc(var(--borderRadius) / 2);
 			border: 0px;
 			line-height: 1;
-			font-size: 100%;
+			font-size: var(--fontSize);
 			text-align: center;
 		}
 
@@ -122,10 +122,10 @@
 			padding: calc(var(--borderWidth) / 2);
 			width: calc(var(--borderWidth) * 4);
 			line-height: 1;
-			font-size: 100%;
+			font-size: var(--fontSize);
 			font-weight: bold;
-			border-radius: 0px calc(var(--borderWidth) / 2) calc(var(--borderWidth) / 2) 0px;
-			border: 1px solid transparent;
+			border-radius: 0px calc(var(--borderRadius) / 2) calc(var(--borderRadius) / 2) 0px;
+			border: 0px solid transparent;
 			background-color: var(--blue-2);
 			color: var(--white-4);
 			cursor: pointer;

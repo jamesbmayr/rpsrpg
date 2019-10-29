@@ -528,7 +528,11 @@
 								request.game.data.nodemaps[chamber.id] = nodemap
 
 							// neighbor connections
-								var connectedCells = ["0,0"]
+								do {
+									var startX = main.rangeRandom(-1,1)
+									var startY = main.rangeRandom(-1,1)
+								} while (!startX && !startY)
+								var connectedCells = [startX + "," + startY]
 								var i = 0
 								while (i < connectedCells.length) {
 									createNeighborConnections(request, chamber, nodemap, connectedCells, connectedCells[i], callback)
@@ -606,6 +610,11 @@
 							createMonsters(request, chamber, options.monsters, callback)
 						}
 					}
+
+				// fill in center
+					if (!options.temple) {
+						chamber.cells[0][0].wall = true
+					}
 			}
 			catch (error) {
 				main.logError(error, arguments.callee.name, [request.session.id], callback)
@@ -650,6 +659,15 @@
 				// down-left
 					main.chooseRandom(WALLMAKERS)(chamber.cells, cellMinX, -1, cellMinY, -1)
 
+				// center 3x3
+					for (var x = -1; x <= 1; x++) {
+						for (var y = -1; y <= 1; y++) {
+							chamber.cells[x][y].wall = false
+						}
+					}
+
+				// center 1x1
+					chamber.cells[0][0].wall = true
 			}
 			catch (error) {
 				main.logError(error, arguments.callee.name, [request.session.id], callback)
@@ -1018,8 +1036,10 @@
 			try {
 				// clear 3x3 area
 					var chamberRadius = Math.floor(chamber.info.chamberSize / 2)
-					var portalX = main.rangeRandom(-chamberRadius + CONSTANTS.edgeBuffer, chamberRadius - CONSTANTS.edgeBuffer)
-					var portalY = main.rangeRandom(-chamberRadius + CONSTANTS.edgeBuffer, chamberRadius - CONSTANTS.edgeBuffer)
+					do {
+						var portalX = main.rangeRandom(-chamberRadius + CONSTANTS.edgeBuffer, chamberRadius - CONSTANTS.edgeBuffer)
+						var portalY = main.rangeRandom(-chamberRadius + CONSTANTS.edgeBuffer, chamberRadius - CONSTANTS.edgeBuffer)
+					} while (!portalX && !portalY)
 
 					for (var x = portalX - 1; x <= portalX + 1; x++) {
 						for (var y = portalY - 1; y <= portalY + 1; y++) {
@@ -1053,8 +1073,10 @@
 			try {
 				// clear 3x3 area
 					var chamberRadius = Math.floor(chamber.info.chamberSize / 2)
-					var shrineX = main.rangeRandom(-chamberRadius + CONSTANTS.edgeBuffer, chamberRadius - CONSTANTS.edgeBuffer)
-					var shrineY = main.rangeRandom(-chamberRadius + CONSTANTS.edgeBuffer, chamberRadius - CONSTANTS.edgeBuffer)
+					do {
+						var shrineX = main.rangeRandom(-chamberRadius + CONSTANTS.edgeBuffer, chamberRadius - CONSTANTS.edgeBuffer)
+						var shrineY = main.rangeRandom(-chamberRadius + CONSTANTS.edgeBuffer, chamberRadius - CONSTANTS.edgeBuffer)
+					} while (!shrineX && !shrineY)
 
 					for (var x = shrineX - 1; x <= shrineX + 1; x++) {
 						for (var y = shrineY - 1; y <= shrineY + 1; y++) {
@@ -1102,9 +1124,9 @@
 							do {
 								var spawnX = main.rangeRandom(-chamberRadius + CONSTANTS.edgeBuffer, chamberRadius - CONSTANTS.edgeBuffer)
 								var spawnY = main.rangeRandom(-chamberRadius + CONSTANTS.edgeBuffer, chamberRadius - CONSTANTS.edgeBuffer)
-							} while (Object.keys(chamber.items).filter(function(i) {
+							} while ((!spawnX && !spawnY) || (Object.keys(chamber.items).filter(function(i) {
 								return (chamber.items[i] && chamber.items[i].state.position.x == spawnX * CONSTANTS.cellSize && chamber.items[i].state.position.y == spawnY * CONSTANTS.cellSize)
-							}).length)
+							}).length))
 						}
 
 					// clear 3x3 area
@@ -1173,8 +1195,10 @@
 			try {
 				// clear 3x3 area
 					var chamberRadius = Math.floor(chamber.info.chamberSize / 2)
-					var orbX = main.rangeRandom(-chamberRadius + CONSTANTS.edgeBuffer, chamberRadius - CONSTANTS.edgeBuffer)
-					var orbY = main.rangeRandom(-chamberRadius + CONSTANTS.edgeBuffer, chamberRadius - CONSTANTS.edgeBuffer)
+					do {
+						var orbX = main.rangeRandom(-chamberRadius + CONSTANTS.edgeBuffer, chamberRadius - CONSTANTS.edgeBuffer)
+						var orbY = main.rangeRandom(-chamberRadius + CONSTANTS.edgeBuffer, chamberRadius - CONSTANTS.edgeBuffer)
+					} while (!orbX && !orbY)
 
 					for (var x = orbX - 1; x <= orbX + 1; x++) {
 						for (var y = orbY - 1; y <= orbY + 1; y++) {
@@ -2018,7 +2042,7 @@
 
 						// reduce armor
 							if (recipient.state.armor) {
-								var inflictedDamage = Math.round(totalDamage * (1 - recipient.info.statistics.armorPower))
+								var inflictedDamage = Math.round(totalDamage * (10 - recipient.state.armor) / 10)
 								recipient.state.armor = Math.max(0, recipient.state.armor - 1)
 							}
 							else {
@@ -2294,6 +2318,10 @@
 													item.state.position.y = Math.round(y + Number(Math.floor(Math.random() * 2 * CONSTANTS.itemDropRadius) - CONSTANTS.itemDropRadius))
 												request.game.data.chambers[oldX][oldY].items[i] = item
 
+												if (item.info.type == "orb") {
+													request.game.data.state.overlay.orb = null
+												}
+
 												delete hero.items[i]
 											}
 										}
@@ -2537,7 +2565,7 @@
 							creature.state.position.vx = targetCoordinates.collisionX ? 0 : creature.state.position.vx
 							creature.state.position.vy = targetCoordinates.collisionY ? 0 : creature.state.position.vy
 						
-						// armor
+						// increase armor
 							var multiplier  = (creature.state.effects && creature.state.effects.paper) ? CONSTANTS.paperMultiplier : 1
 							creature.state.armor = Math.max(0, Math.min(creature.info.statistics.armorMax * multiplier, creature.state.armor + multiplier))
 

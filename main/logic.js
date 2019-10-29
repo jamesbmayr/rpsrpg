@@ -94,7 +94,7 @@
 							return "logo.png"
 						break
 						case "google fonts":
-							return '<!--<link href="https://fonts.googleapis.com/css?family=Press-Start-P2" rel="stylesheet">-->'
+							return '<link href="https://fonts.googleapis.com/css?family=Press+Start+2P" rel="stylesheet">'
 						break
 						case "meta":
 							return '<meta charset="UTF-8"/>\
@@ -120,6 +120,8 @@
 								return ('/*** variables ***/\n' +
 										'	:root {\n' +
 										'		--font: ' + CONSTANTS.font + ';\n' +
+										' 		--fontSize: ' + CONSTANTS.fontSize + 'px;\n' +
+										'		--borderRadius: ' + CONSTANTS.borderRadius + 'px;\n' +
 										'		--borderWidth: ' + CONSTANTS.borderWidth + 'px;\n' +
 										'		--animationTime: ' + CONSTANTS.animationTime + 's;\n' +
 										'		--transitionTime: ' + CONSTANTS.transitionTime + 's;\n' +
@@ -208,7 +210,6 @@
 									"collision_rangeAttack_monster", "collision_hero_object"
 								],
 								player: [
-
 								]
 							}
 						break
@@ -227,7 +228,9 @@
 									storyMessage: 		"Swarms of menacing monsters have stolen the sacred orbs!<br><br>BARBARIAN: use strength to obliterate scurrying spiders<br>WIZARD: summon spells to destroy raging rock monsters<br>RANGER: throw dangerous daggers through ghastly ghouls",
 
 								// styling
-									font: 				"monospace",
+									font: 				"'Press Start 2P', monospace",
+									fontSize: 			16,
+									borderRadius: 		0,
 									borderWidth: 		16,
 									borderThickness: 	8,
 									overlayOpacity: 	0.5,
@@ -259,12 +262,13 @@
 									spawnCountMin: 		1,
 									spawnCountMax: 		3,
 									spawnChance: 		[7,10],
-									temporarySpawnCount: 8,
+									temporarySpawnCount: 4,
 
 								// health
 									baseHealthFraction: 1,
-									reviveHealthFraction: 0.25,
+									reviveHealthFraction: (1 / 8),
 									heroHealth: 		128,
+									monsterHealth: 		32,
 									spawnHealth: 		1024,
 									heal: 				2,
 									rpsMultiplier: 		2,
@@ -282,7 +286,7 @@
 
 								// shrine effects
 									rockMultiplier: 	1.5,
-									paperMultiplier: 	2,
+									paperMultiplier: 	1.5,
 									scissorsMultiplier: 1.5,
 
 								// lists
@@ -634,13 +638,10 @@
 													var cellX = null
 													var cellY = null
 													var itemType = null
-													var preferences = ["orb", "pedestal", "spawn", "shrine", "portal"]
+													var preferences = ["orb", "pedestal", "shrine", "portal"]
 													for (var i in chamber.items) {
 														var item = chamber.items[i]
-														if (item.info.type == "orb" && !item.state.active) {
-															continue
-														}
-														else if (preferences.includes(item.info.type) && (preferences.indexOf(item.info.type) < preferences.indexOf(itemType))) {
+														if (preferences.includes(item.info.type) && (preferences.indexOf(item.info.type) < preferences.indexOf(itemType))) {
 															itemType = item.info.type
 															var targetX = item.state.position.x
 															var targetY = item.state.position.y
@@ -722,9 +723,29 @@
 											})
 											var targetHero = chamber.heroes[targetKey]
 
-										// no rps target?
+										// no rps target? --> closest
 											if (!targetHero) {
-												return currentCell
+												// distances
+													var distances = {}
+													for (var h in chamber.heroes) {
+														var hero = chamber.heroes[h]
+														if (hero.state.alive) {
+															var distance = getDistance(monster.state.position.x, monster.state.position.y, hero.state.position.x, hero.state.position.y)
+															if (distance <= CONSTANTS.monsterAwareness) {
+																distances[h] = distance
+															}
+														}
+													}
+
+												// get closest
+													var keys = Object.keys(distances) || []
+													if (!keys.length) {
+														return currentCell
+													}
+														keys.sort(function(a,b) {
+															return distances[b] - distances[a]
+														})
+													var targetHero = chamber.heroes[keys[0]]
 											}
 
 										// get target cell
@@ -781,7 +802,7 @@
 												if (hero.state.alive) {
 													var targetType = (hero.info.rps == "rock") ? "scissors" : (hero.info.rps == "scissors") ? "paper" : "rock"
 													for (var i in chamber.items) {
-														if (chamber.items[i].info.type == "spawn" && chamber.items[i].state.alive) {
+														if (chamber.items[i].info.type == "spawn" && chamber.items[i].state.alive && !chamber.items[i].info.temporary) {
 															if (chamber.items[i].info.rps == targetType) {
 																targets["3"] = chamber.items[i]
 															}
@@ -947,20 +968,19 @@
 										pathing: "hero",
 										statistics: {
 											moveSpeed: 	sixteenthCell * 1,
-											rangeSpeed: sixteenthCell * 2,
-											rangePower: sixteenthHealth * 1.5,
+											rangeSpeed: sixteenthCell * 3,
+											rangePower: sixteenthHealth * 2,
 											meleePower:	sixteenthHealth * 2.5,
 											areaPower: 	sixteenthHealth * 2,
 											bumpMove: 	sixteenthCell * 3,
-											armorPower:	0.25,
-											armorMax: 	5,
+											armorMax: 	9,
 											healthMax: CONSTANTS.heroHealth
 										}
 									},
 									state: {
 										image: "hero_barbarian_down_standing_inactive",
 										health: CONSTANTS.heroHealth * CONSTANTS.baseHealthFraction,
-										armor: 4,
+										armor: 9,
 										position: {
 											x: 0,
 											y: 4 * sixteenthCell
@@ -980,18 +1000,17 @@
 											moveSpeed: 	sixteenthCell * 1.25,
 											rangeSpeed: sixteenthCell * 3,
 											rangePower: sixteenthHealth * 2,
-											meleePower:	sixteenthHealth * 1.5,
+											meleePower:	sixteenthHealth * 2,
 											areaPower: 	sixteenthHealth * 2.5,
 											bumpMove: 	sixteenthCell * 2,
-											armorPower:	0.25,
-											armorMax: 	3,
+											armorMax: 	7,
 											healthMax: CONSTANTS.heroHealth
 										}
 									},
 									state: {
 										image: "hero_wizard_down_standing_inactive",
 										health: CONSTANTS.heroHealth * CONSTANTS.baseHealthFraction,
-										armor: 2,
+										armor: 7,
 										position: {
 											x: -4 * sixteenthCell,
 											y: -4 * sixteenthCell
@@ -1012,17 +1031,16 @@
 											rangeSpeed: sixteenthCell * 3,
 											rangePower: sixteenthHealth * 2.5,
 											meleePower:	sixteenthHealth * 2,
-											areaPower: 	sixteenthHealth * 1.5,
+											areaPower: 	sixteenthHealth * 2,
 											bumpMove: 	sixteenthCell * 2.5,
-											armorPower:	0.25,
-											armorMax: 	4,
+											armorMax: 	8,
 											healthMax: CONSTANTS.heroHealth
 										}
 									},
 									state: {
 										image: "hero_ranger_down_standing_inactive",
 										health: CONSTANTS.heroHealth * CONSTANTS.baseHealthFraction,
-										armor: 2,
+										armor: 8,
 										position: {
 											x:  4 * sixteenthCell,
 											y: -4 * sixteenthCell
@@ -1048,20 +1066,19 @@
 										points: CONSTANTS.monsterPoints,
 										statistics: {
 											moveSpeed: 	sixteenthCell * 1,
-											rangeSpeed: sixteenthCell * 1.5,
-											rangePower: sixteenthHealth * 1.5,
-											meleePower:	sixteenthHealth * 2,
-											areaPower: 	sixteenthHealth * 1.5,
+											rangeSpeed: sixteenthCell * 3,
+											rangePower: sixteenthHealth * 1,
+											meleePower:	sixteenthHealth * 1.5,
+											areaPower: 	sixteenthHealth * 1,
 											bumpMove:   sixteenthCell * 3,
-											armorPower:	0.25,
-											armorMax: 	4,
+											armorMax: 	5,
 											healthMax: CONSTANTS.monsterHealth
 										}
 									},
 									state: {
 										image: "monster_avalanche_down_standing_inactive",
 										health: CONSTANTS.monsterHealth * CONSTANTS.baseHealthFraction,
-										armor: 2
+										armor: 5
 									}
 								},
 								"obscuro": {
@@ -1076,19 +1093,18 @@
 										statistics: {
 											moveSpeed: 	sixteenthCell * 1.5,
 											rangeSpeed: sixteenthCell * 3,
-											rangePower: sixteenthHealth * 2,
-											meleePower:	sixteenthHealth * 1.5,
-											areaPower: 	sixteenthHealth * 1.5,
+											rangePower: sixteenthHealth * 1.5,
+											meleePower:	sixteenthHealth * 1,
+											areaPower: 	sixteenthHealth * 1,
 											bumpMove:   sixteenthCell * 2,
-											armorPower:	0.25,
-											armorMax: 	2,
+											armorMax: 	3,
 											healthMax: CONSTANTS.monsterHealth
 										}
 									},
 									state: {
 										image: "monster_obscuro_down_standing_inactive",
 										health: CONSTANTS.monsterHealth * CONSTANTS.baseHealthFraction,
-										armor: 2
+										armor: 3
 									}
 								},
 								"tatters": {
@@ -1102,20 +1118,19 @@
 										points: CONSTANTS.monsterPoints,
 										statistics: {
 											moveSpeed: 	sixteenthCell * 1.25,
-											rangeSpeed: sixteenthCell * 2,
-											rangePower: sixteenthHealth * 1.5,
-											meleePower:	sixteenthHealth * 1.5,
-											areaPower: 	sixteenthHealth * 2,
+											rangeSpeed: sixteenthCell * 3,
+											rangePower: sixteenthHealth * 1,
+											meleePower:	sixteenthHealth * 1,
+											areaPower: 	sixteenthHealth * 1.5,
 											bumpMove:   sixteenthCell * 2.5,
-											armorPower:	0.25,
-											armorMax: 	3,
+											armorMax: 	4,
 											healthMax: CONSTANTS.monsterHealth
 										}
 									},
 									state: {
 										image: "monster_tatters_down_standing_inactive",
 										health: CONSTANTS.monsterHealth * CONSTANTS.baseHealthFraction,
-										armor: 2
+										armor: 4
 									}
 								}
 							}
@@ -1276,7 +1291,6 @@
 									shape: "triangle",
 									style: "border",
 									statistics: {
-										armorPower: 0,
 										armorMax:  	0,
 										healthMax: CONSTANTS.spawnHealth
 									},
@@ -1414,7 +1428,6 @@
 									meleePower:	0,
 									areaPower: 	0,
 									bumpMove: 	0,
-									armorPower: 0,
 									armorMax: 	0,
 									healthMax: 	0
 								}
