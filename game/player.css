@@ -195,6 +195,15 @@
 			transition: var(--transitionTime);
 		}
 
+		#d-pad button div {
+			pointer-events: none;
+			user-select: none;
+			-webkit-user-select: none;
+			-moz-user-select: none;
+			-ms-user-select: none;
+			-o-user-select: none;
+		}
+
 		#d-pad button.diagonal {
 			height: 50%;
 			width: calc(100% / 6);
@@ -206,7 +215,7 @@
 			background-color: var(--black-3);
 		}
 
-		#d-pad button[effect] {
+		#d-pad[effect] button {
 			box-shadow: 0px 0px calc(var(--borderWidth) * 2) var(--scissors-0) inset;
 		}
 
@@ -351,7 +360,7 @@
 			background-color: var(--black-3);
 		}
 
-		#actions button[effect] {
+		#actions[effect] button {
 			box-shadow: 0px 0px calc(var(--borderWidth) * 2) var(--rock-0) inset;
 		}
 

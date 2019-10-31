@@ -319,26 +319,18 @@
 
 				// rock effects
 					if (hero.state.effects.rock) {
-						for (var a in CONSTANTS.actions) {
-							INPUTS[CONSTANTS.actions[a]].setAttribute("effect", true)
-						}
+						ACTIONS.setAttribute("effect", true)
 					}
 					else {
-						for (var a in CONSTANTS.actions) {
-							INPUTS[CONSTANTS.actions[a]].removeAttribute("effect")
-						}
+						ACTIONS.removeAttribute("effect")
 					}
 
 				// scissors effects
 					if (hero.state.effects.scissors) {
-						for (var d in CONSTANTS.directions) {
-							INPUTS[CONSTANTS.directions[d]].setAttribute("effect", true)
-						}
+						DPAD.setAttribute("effect", true)
 					}
 					else {
-						for (var d in CONSTANTS.directions) {
-							INPUTS[CONSTANTS.directions[d]].removeAttribute("effect")
-						}
+						DPAD.removeAttribute("effect")
 					}
 			} catch (error) {}
 		}

@@ -1138,7 +1138,7 @@
 
 					// items
 						case "orbs":
-							var orbSize = Math.floor(CONSTANTS.cellSize / 8 * 3)
+							var quarterCell = Math.floor(CONSTANTS.cellSize / 4)
 
 							return {
 								"rock": {
@@ -1147,14 +1147,13 @@
 										type: "orb",
 										subtype: "rock",
 										size: {
-											x: orbSize,
-											y: orbSize,
-											maxX: orbSize,
-											maxY: orbSize
+											x: quarterCell,
+											y: quarterCell
 										},
 										shape: "circle",
 										style: "fill",
-										color: CONSTANTS.colors.rock[0]
+										color: CONSTANTS.colors.rock[0],
+										powerUp: "strength"
 									},
 									state: {
 										image: "orb_rock_all_standing_default"
@@ -1166,14 +1165,13 @@
 										type: "orb",
 										subtype: "paper",
 										size: {
-											x: orbSize,
-											y: orbSize,
-											maxX: orbSize,
-											maxY: orbSize
+											x: quarterCell,
+											y: quarterCell
 										},
 										shape: "circle",
 										style: "fill",
-										color: CONSTANTS.colors.paper[0]
+										color: CONSTANTS.colors.paper[0],
+										powerUp: "shield"
 									},
 									state: {
 										image: "orb_rock_all_standing_default"
@@ -1185,14 +1183,13 @@
 										type: "orb",
 										subtype: "scissors",
 										size: {
-											x: orbSize,
-											y: orbSize,
-											maxX: orbSize,
-											maxY: orbSize
+											x: quarterCell,
+											y: quarterCell
 										},
 										shape: "circle",
 										style: "fill",
-										color: CONSTANTS.colors.scissors[0]
+										color: CONSTANTS.colors.scissors[0],
+										powerUp: "speed"
 									},
 									state: {
 										image: "orb_rock_all_standing_default"
@@ -1211,7 +1208,11 @@
 										type: "pedestal",
 										points: CONSTANTS.pedestalPoints,
 										shape: "circle",
-										style: "border"
+										style: "border",
+										size: {
+											x: Math.floor(CONSTANTS.cellSize / 2),
+											y: Math.floor(CONSTANTS.cellSize / 2)
+										}
 									},
 									state: {
 										image: "pedestal_" + p + "_all_standing_default",
@@ -1233,12 +1234,6 @@
 								info: {
 									type: "portal",
 									subtype: "portal",
-									size: {
-										x: Math.floor(CONSTANTS.cellSize / 8) * 7,
-										y: Math.floor(CONSTANTS.cellSize / 8) * 7,
-										maxX: Math.floor(CONSTANTS.cellSize / 8) * 7,
-										maxY: Math.floor(CONSTANTS.cellSize / 8) * 7
-									},
 									color: CONSTANTS.colors.blue[1],
 									shape: "square",
 									style: "border"
@@ -1259,13 +1254,12 @@
 								info: {
 									type: "shrine",
 									size: {
-										x: Math.floor(CONSTANTS.cellSize / 8) * 7,
-										y: Math.floor(CONSTANTS.cellSize / 8) * 7,
-										maxX: Math.floor(CONSTANTS.cellSize / 8) * 7,
-										maxY: Math.floor(CONSTANTS.cellSize / 8) * 7
+										x: CONSTANTS.cellSize,
+										y: CONSTANTS.cellSize
 									},
 									shape: "square",
-									style: "border"
+									style: "border",
+									powerUp: "strength"
 								},
 								state: {
 									image: "shrine_rock_all_standing_default",
@@ -1283,15 +1277,15 @@
 									type: "spawn",
 									points: CONSTANTS.spawnPoints,
 									size: {
-										x: Math.floor(CONSTANTS.cellSize / 8) * 7,
-										y: Math.floor(CONSTANTS.cellSize / 8) * 7,
-										maxX: Math.floor(CONSTANTS.cellSize / 8) * 7,
-										maxY: Math.floor(CONSTANTS.cellSize / 8) * 7
+										x: Math.floor(CONSTANTS.cellSize / 2),
+										y: Math.floor(CONSTANTS.cellSize / 2),
+										maxX: Math.floor(CONSTANTS.cellSize / 2),
+										maxY: Math.floor(CONSTANTS.cellSize / 2)
 									},
 									shape: "triangle",
 									style: "border",
 									statistics: {
-										armorMax:  	0,
+										armorMax:  0,
 										healthMax: CONSTANTS.spawnHealth
 									},
 									monsterTypes: [],
@@ -1482,10 +1476,10 @@
 								type: 		"item",
 								subtype: 	null,
 								size: {
-									x: 		Math.floor(CONSTANTS.cellSize / 4),
-									y: 		Math.floor(CONSTANTS.cellSize / 4),
-									maxX: 	Math.floor(CONSTANTS.cellSize / 4),
-									maxY: 	Math.floor(CONSTANTS.cellSize / 4)
+									x: 		CONSTANTS.cellSize,
+									y: 		CONSTANTS.cellSize,
+									maxX: 	CONSTANTS.cellSize,
+									maxY: 	CONSTANTS.cellSize
 								},
 								color: 		null
 							},

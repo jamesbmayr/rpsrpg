@@ -1086,10 +1086,12 @@
 
 				// create shrine
 					var shrine = createItem(request, main.getAsset("shrine"), callback)
+					var orb = main.getAsset("orbs")[shrineType]
 					main.overwriteObject(shrine, {
 						info: {
 							subtype: shrineType,
-							color: main.getAsset("orbs")[shrineType].info.color
+							color: orb.info.color,
+							powerUp: orb.info.powerUp
 						},
 						state: {
 							image: "shrine_" + shrineType + "_all_standing_default",
@@ -1808,6 +1810,7 @@
 							if (item.info.type == "shrine" && thing.info.type == "hero") {
 								if (!item.state.cooldowns.activate) {
 									thing.state.effects[item.info.subtype] = CONSTANTS.effectCooldown
+									request.game.data.state.overlay.message = item.info.powerUp
 								}
 							}
 
@@ -2081,11 +2084,20 @@
 												item.state.position.y = Math.round(y + Number(Math.floor(Math.random() * 2 * CONSTANTS.itemDropRadius) - CONSTANTS.itemDropRadius))
 											chamber.items[i] = item
 
-											if (item.info.type == "orb") {
-												chamber.state.overlay.orb = null
-											}
-
 											delete recipient.items[i]
+
+											// leave orb state
+												if (item.info.type == "orb") {
+													chamber.state.overlay.orb = null
+
+													for (var i in chamber.items) {
+														if (chamber.items[i].info.type == "spawn" && chamber.items[i].info.temporary) {
+															chamber.items[i].state.health = 0
+															chamber.items[i].state.alive = false
+															chamber.items[i].state.cooldowns.death = CONSTANTS.deathCooldown
+														}
+													}
+												}
 										}
 									}
 							}
@@ -2318,11 +2330,12 @@
 													item.state.position.y = Math.round(y + Number(Math.floor(Math.random() * 2 * CONSTANTS.itemDropRadius) - CONSTANTS.itemDropRadius))
 												request.game.data.chambers[oldX][oldY].items[i] = item
 
-												if (item.info.type == "orb") {
-													request.game.data.state.overlay.orb = null
-												}
-
 												delete hero.items[i]
+
+												// leave orb state
+													if (item.info.type == "orb") {
+														request.game.data.state.overlay.orb = null
+													}
 											}
 										}
 								}
