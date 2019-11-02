@@ -169,13 +169,13 @@
 	}
 
 	#audio .sprite {
-		background-image: url("/sprites/orb_rock_all_standing_active.png");
+		background-image: url("/sprites/pedestal_rock_all_standing_active.png");
 	}
 
 	#artwork .sprite {
-		background-image: url("/sprites/orb_paper_all_standing_active.png");
+		background-image: url("/sprites/pedestal_paper_all_standing_active.png");
 	}
 
 	#code .sprite {
-		background-image: url("/sprites/orb_scissors_all_standing_active.png");
+		background-image: url("/sprites/pedestal_scissors_all_standing_active.png");
 	}

@@ -141,10 +141,11 @@
 					// sprites
 						case "sprites":
 							return [
-								"orb_rock_all_standing_active",				"orb_paper_all_standing_active",				"orb_scissors_all_standing_active",				"orb_rock_all_standing_default",				"orb_paper_all_standing_default",				"orb_scissors_all_standing_default",			
+								"orb_rock_all_standing_active",				"orb_paper_all_standing_active",				"orb_scissors_all_standing_active",				"orb_rock_all_standing_default",				"orb_paper_all_standing_default",				"orb_scissors_all_standing_default",
 								"pedestal_rock_all_standing_default",		"pedestal_paper_all_standing_default",			"pedestal_scissors_all_standing_default",		"pedestal_rock_all_standing_active",			"pedestal_paper_all_standing_active",			"pedestal_scissors_all_standing_active",
 								"spawn_rock_all_standing_default",			"spawn_paper_all_standing_default",				"spawn_scissors_all_standing_default",			"spawn_rock_all_standing_active",				"spawn_paper_all_standing_active",				"spawn_scissors_all_standing_active",
 								"shrine_rock_all_standing_default",			"shrine_paper_all_standing_default",			"shrine_scissors_all_standing_default",			"shrine_rock_all_standing_active",				"shrine_paper_all_standing_active",				"shrine_scissors_all_standing_active",
+								"cloud_rock_all_standing_default",			"cloud_paper_all_standing_default",				"cloud_scissors_all_standing_default",
 								"portal_portal_all_standing_default", 		"portal_portal_all_standing_active",
 
 								"layer_0_background", "layer_0_wall_0_", "layer_0_wall_1_up", "layer_0_wall_1_right", "layer_0_wall_1_down", "layer_0_wall_1_left", "layer_0_wall_2_upright", "layer_0_wall_2_rightdown", "layer_0_wall_2_downleft", "layer_0_wall_2_upleft", "layer_0_wall_2_updown", "layer_0_wall_2_rightleft", "layer_0_wall_3_uprightdown", "layer_0_wall_3_rightdownleft", "layer_0_wall_3_uprightleft", "layer_0_wall_3_updownleft", "layer_0_wall_4_uprightdownleft",
@@ -283,6 +284,7 @@
 									rangeAttackFade: 	1,
 									areaAttackFade: 	3,
 									deathFade: 			1,
+									cloudFade: 			3,
 
 								// shrine effects
 									rockMultiplier: 	1.5,
@@ -1511,10 +1513,35 @@
 								}
 							},
 							state: {
-								image: "areaAttack_barbarian_all_standing_default",
+								image: 			"areaAttack_barbarian_all_standing_default",
 								position: {
-									x: 0,
-									y: 0
+									x: 			0,
+									y: 			0
+								}
+							}
+						}
+					break
+
+					case "cloud":
+						return {
+							info: {
+								type: "cloud",
+								size: {
+									x: 		Math.floor(CONSTANTS.cellSize / 4),
+									y: 		Math.floor(CONSTANTS.cellSize / 4),
+									maxX: 	Math.floor(CONSTANTS.cellSize / 4),
+									maxY: 	Math.floor(CONSTANTS.cellSize / 4),
+								},
+								shape: 		"circle",
+								style: 		"border",
+								opacity: 	1,
+								color: 		"transparent"
+							},
+							state: {
+								image: 		"cloud_rock_all_standing_default",
+								position: {
+									x: 		0,
+									y: 		0
 								}
 							}
 						}

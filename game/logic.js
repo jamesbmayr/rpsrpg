@@ -1328,6 +1328,35 @@
 			}
 		}
 
+	/* createCloud */
+		module.exports.createCloud = createCloud
+		function createCloud(request, chamber, damage, recipient, callback) {
+			try {
+				// create cloud
+					var cloud = main.getSchema("cloud")
+					main.overwriteObject(cloud, {
+						info: {
+							rps: damage.rps,
+							subtype: damage.rps,
+							color: CONSTANTS.colors[damage.rps][0]
+						},
+						state: {
+							image: "cloud_" + damage.rps + "_all_standing_default",
+							position: {
+								x: recipient.state.position.x + Number(Math.floor(Math.random() * 2 * CONSTANTS.itemDropRadius) - CONSTANTS.itemDropRadius),
+								y: recipient.state.position.y + Number(Math.floor(Math.random() * 2 * CONSTANTS.itemDropRadius) - CONSTANTS.itemDropRadius)
+							}
+						}
+					})
+
+				// add to items
+					chamber.items[cloud.id] = cloud
+			}
+			catch (error) {
+				main.logError(error, arguments.callee.name, [request.session.id], callback)
+			}
+		}
+
 /*** creates: creatures ***/
 	/* createCreature */
 		module.exports.createCreature = createCreature
@@ -2102,6 +2131,11 @@
 									}
 							}
 
+						// alive? --> damage cloud
+							else {
+								createCloud(request, chamber, damage, recipient, callback)
+							}
+
 						// return alive
 							return recipient.state.alive
 					}
@@ -2375,11 +2409,12 @@
 							}
 						}
 
-					// remove attacks & temporary spawns
+					// remove attacks & clouds & temporary spawns
 						for (var i in oldChamber.items) {
 							if (oldChamber.items[i].info.type == "rangeAttack"
 							 || oldChamber.items[i].info.type == "areaAttack"
-							 || oldChamber.items[i].info.type == "spawn" && oldChamber.items[i].info.temporary) {
+							 || oldChamber.items[i].info.type == "cloud"
+							 || (oldChamber.items[i].info.type == "spawn" && oldChamber.items[i].info.temporary)) {
 								delete oldChamber.items[i]
 							}
 						}
@@ -2823,6 +2858,18 @@
 						}
 					}
 
+				// cloud
+					else if (item.info.type == "cloud") {
+						if (!item.info.size.x || !item.info.size.y || !item.info.opacity) {
+							delete chamber.items[item.id]
+						}
+						else {
+							item.info.opacity = Math.max(0, Math.min(1, item.info.opacity - (CONSTANTS.cloudFade * CONSTANTS.deathOpacity / 10)))
+							item.info.size.x = Math.max(0, item.info.size.x - CONSTANTS.cloudFade)
+							item.info.size.y = Math.max(0, item.info.size.y - CONSTANTS.cloudFade)
+						}
+					}
+
 				// image
 					updateImage(request, item, targetCoordinates, callback)
 			}
@@ -3023,7 +3070,7 @@
 							imageName.push(thing.info.subtype)
 							imageName.push(thing.state.movement ? thing.state.movement.direction : "all")
 							imageName.push(thing.state.movement && thing.state.movement[thing.state.movement.direction] ? (flip ? "standing" : "moving") : "standing")
-							imageName.push(thing.state.actions.a ? "rangeAttack" : thing.state.actions.b ? "areaAttack" : (targetCoordinates.collisionX || targetCoordinates.collisionY) ? "collision" : Object.keys(thing.items).length ? "holding" : "inactive")
+							imageName.push(thing.state.actions.a ? "rangeAttack" : thing.state.actions.b ? "areaAttack" : (targetCoordinates.collisionX || targetCoordinates.collisionY) ? (flip ? "inactive" : "collision") : Object.keys(thing.items).length ? "holding" : "inactive")
 						thing.state.image = imageName.join("_")
 					}
 
