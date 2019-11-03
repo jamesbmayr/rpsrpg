@@ -3070,7 +3070,7 @@
 							imageName.push(thing.info.subtype)
 							imageName.push(thing.state.movement ? thing.state.movement.direction : "all")
 							imageName.push(thing.state.movement && thing.state.movement[thing.state.movement.direction] ? (flip ? "standing" : "moving") : "standing")
-							imageName.push(thing.state.actions.a ? "rangeAttack" : thing.state.actions.b ? "areaAttack" : (targetCoordinates.collisionX || targetCoordinates.collisionY) ? (flip ? "inactive" : "collision") : Object.keys(thing.items).length ? "holding" : "inactive")
+							imageName.push(Object.keys(thing.items).length ? "holding" : thing.state.actions.a ? "rangeAttack" : thing.state.actions.b ? "areaAttack" : (targetCoordinates.collisionX || targetCoordinates.collisionY) ? (flip ? "inactive" : "collision") : "inactive")
 						thing.state.image = imageName.join("_")
 					}
 
