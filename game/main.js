@@ -440,6 +440,7 @@
 	/* playAudio */
 		function playAudio(soundEffect) {
 			try {
+				console.log(soundEffect, Boolean(SOUNDS[soundEffect]))
 				if (soundEffect && SOUNDS[soundEffect]) {
 					var audio = SOUNDS[soundEffect]
 						audio.pause()

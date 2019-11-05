@@ -204,11 +204,18 @@
 							return {
 								main: [
 									"soundtrack",
-									"rangeAttack_barbarian", "rangeAttack_wizard", "rangeAttack_ranger",
-									"areaAttack_barbarian", /*"areaAttack_wizard",*/ "areaAttack_ranger",
+									"collision_rangeAttack", "collision_areaAttack", "collision_hero", "collision_monster", 
+
+									"rangeAttack_hero_barbarian", "rangeAttack_hero_wizard", "rangeAttack_hero_ranger",
+									"areaAttack_hero_barbarian", "areaAttack_hero_wizard", "areaAttack_hero_ranger",
+									/*"death_hero_barbarian", "death_hero_wizard", "death_hero_ranger",*/
+
+									"rangeAttack_monster_avalanche", "rangeAttack_monster_obscuro", "rangeAttack_monster_tatters",
+									"areaAttack_monster_avalanche", "areaAttack_monster_obscuro", "areaAttack_monster_tatters",
 									"death_monster_avalanche", "death_monster_obscuro", "death_monster_tatters",
 									"death_spawn_rock", "death_spawn_paper", "death_spawn_scissors",
-									"collision_rangeAttack_monster", "collision_hero_object"
+									
+									"activation_portal", "activation_shrine", "activation_spawn", "activation_pedestal"
 								],
 								player: [
 								]
@@ -327,6 +334,7 @@
 								constants.edgeCooldown 		= Math.floor(second * 2)
 								constants.spawnCooldown 	= Math.floor(second * 4)
 								constants.portalCooldown 	= Math.floor(second * 3)
+								constants.shrineCooldown 	= Math.floor(second * 3)
 								constants.deathCooldown 	= Math.floor(second)
 								constants.effectCooldown 	= Math.floor(second * 30)
 								constants.aCooldown 		= Math.floor(second / 2)
@@ -1155,7 +1163,7 @@
 										shape: "circle",
 										style: "fill",
 										color: CONSTANTS.colors.rock[0],
-										powerUp: "strength"
+										text: "strength"
 									},
 									state: {
 										image: "orb_rock_all_standing_default"
@@ -1173,7 +1181,7 @@
 										shape: "circle",
 										style: "fill",
 										color: CONSTANTS.colors.paper[0],
-										powerUp: "shield"
+										text: "shield"
 									},
 									state: {
 										image: "orb_rock_all_standing_default"
@@ -1191,7 +1199,7 @@
 										shape: "circle",
 										style: "fill",
 										color: CONSTANTS.colors.scissors[0],
-										powerUp: "speed"
+										text: "speed"
 									},
 									state: {
 										image: "orb_rock_all_standing_default"
@@ -1238,7 +1246,8 @@
 									subtype: "portal",
 									color: CONSTANTS.colors.blue[1],
 									shape: "square",
-									style: "border"
+									style: "border",
+									opacity: 1
 								},
 								state: {
 									image: "portal_portal_all_standing_default",
@@ -1261,7 +1270,8 @@
 									},
 									shape: "square",
 									style: "border",
-									powerUp: "strength"
+									opacity: 1,
+									text: "strength"
 								},
 								state: {
 									image: "shrine_rock_all_standing_default",

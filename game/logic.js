@@ -1091,7 +1091,7 @@
 						info: {
 							subtype: shrineType,
 							color: orb.info.color,
-							powerUp: orb.info.powerUp
+							text: orb.info.text
 						},
 						state: {
 							image: "shrine_" + shrineType + "_all_standing_default",
@@ -1273,7 +1273,7 @@
 					chamber.items[attack.id] = attack
 
 				// sound
-					creature.state.sound = "rangeAttack_" + creature.info.subtype
+					creature.state.sound = "rangeAttack_" + creature.info.type + "_" + creature.info.subtype
 			}
 			catch (error) {
 				main.logError(error, arguments.callee.name, [request.session.id], callback)
@@ -1321,7 +1321,7 @@
 					chamber.items[attack.id] = attack
 
 				// sound
-					creature.state.sound = "areaAttack_" + creature.info.subtype
+					creature.state.sound = "areaAttack_" + creature.info.type + "_" + creature.info.subtype
 			}
 			catch (error) {
 				main.logError(error, arguments.callee.name, [request.session.id], callback)
@@ -1838,8 +1838,12 @@
 						// shrine
 							if (item.info.type == "shrine" && thing.info.type == "hero") {
 								if (!item.state.cooldowns.activate) {
-									thing.state.effects[item.info.subtype] = CONSTANTS.effectCooldown
-									request.game.data.state.overlay.message = item.info.powerUp
+									item.state.cooldowns.activate = CONSTANTS.shrineCooldown
+
+									// all heroes
+										for (var i in request.game.data.heroes) {
+											request.game.data.heroes[i].state.effects[item.info.subtype] = CONSTANTS.effectCooldown
+										}
 								}
 							}
 
@@ -1883,8 +1887,6 @@
 											resolvePoints(request, item, callback)
 
 											delete thing.items[orbKey]
-
-											chamber.state.overlay.orb = null
 										}
 									}
 
@@ -1959,12 +1961,10 @@
 
 								// damage
 									if ((attack.info.type == "rangeAttack" || attack.info.type == "areaAttack") || !Object.keys(attacker.items).length) {
-										// sound
-											attack.state.sound = "collision_" + attack.info.type + "_" + recipient.info.type
-
 										// power
 											if (attack.info.type == "rangeAttack" || attack.info.type == "areaAttack") {
 												var power = attack.info.statistics.power
+												attack.state.sound = "collision_" + attack.info.type
 											}
 											else {
 												var power = attacker.info.statistics.meleePower * (attacker.state.effects.rock ? CONSTANTS.rockMultiplier : 1)
@@ -2325,7 +2325,7 @@
 								})
 								var fromPortal = request.game.data.chambers[oldX][oldY].items[fromKey]
 									fromPortal.state.cooldowns.activate = CONSTANTS.portalCooldown
-									fromPortal.info.size.x = fromPortal.info.size.y = 0
+									fromPortal.info.opacity = 0
 
 							// to
 								var toKeys = Object.keys(request.game.data.chambers[newX][newY].items)
@@ -2334,7 +2334,7 @@
 								})
 								var toPortal = request.game.data.chambers[newX][newY].items[toKey]
 									toPortal.state.cooldowns.activate = CONSTANTS.portalCooldown
-									toPortal.info.size.x = toPortal.info.size.y = 0
+									toPortal.info.opacity = 0
 
 							// message
 								request.game.data.state.overlay.message = CONSTANTS.teleportMessage
@@ -2628,7 +2628,7 @@
 
 								if (creature.info.type == "hero") {
 									creature.state.vibration = CONSTANTS.collisionVibration
-									creature.state.sound = "collision_hero_object"
+									creature.state.sound = "collision_hero"
 								}
 							}
 
@@ -2768,17 +2768,43 @@
 							}
 					}
 
+				// shrine
+					else if (item.info.type == "shrine") {
+						// get max cooldown
+							var cooldownMax = CONSTANTS.shrineCooldown
+
+						// just activated? --> sound
+							if (item.state.cooldowns.activate == cooldownMax) {
+								item.state.sound = "activation_" + item.info.type
+							}
+
+						// reduce cooldown
+							item.state.cooldowns.activate = Math.max(0, item.state.cooldowns.activate - 1)
+
+						// opacity
+							item.info.opacity = Math.max(0, Math.min(1, ((cooldownMax - item.state.cooldowns.activate) / cooldownMax)))
+
+						// message
+							if (item.state.cooldowns.activate) {
+								request.game.data.state.overlay.message = item.info.text
+							}
+					}
+
 				// portal
 					else if (item.info.type == "portal") {
 						// get max cooldown
 							var cooldownMax = CONSTANTS.portalCooldown
 
+						// just activated? --> sound
+							if (item.state.cooldowns.activate == cooldownMax) {
+								item.state.sound = "activation_" + item.info.type
+							}
+
 						// reduce cooldown
 							item.state.cooldowns.activate = Math.max(0, item.state.cooldowns.activate - 1)
 
-						// size
-							item.info.size.x = item.info.size.maxX * ((cooldownMax - item.state.cooldowns.activate) / cooldownMax)
-							item.info.size.y = item.info.size.maxY * ((cooldownMax - item.state.cooldowns.activate) / cooldownMax)
+						// opacity
+							item.info.opacity = Math.max(0, Math.min(1, ((cooldownMax - item.state.cooldowns.activate) / cooldownMax)))
 
 						// get destination chamber
 							var coords = item.state.link.split(",")
@@ -2795,8 +2821,6 @@
 								// reduce cooldown for destination's portal too
 									var portal = destinationChamber.items[portalKey]
 										portal.state.cooldowns.activate = Math.max(0, portal.state.cooldowns.activate - 1)
-										portal.info.size.x = portal.info.size.maxX * ((cooldownMax - portal.state.cooldowns.activate) / cooldownMax)
-										portal.info.size.y = portal.info.size.maxY * ((cooldownMax - portal.state.cooldowns.activate) / cooldownMax)
 							}
 					}
 				
@@ -2833,6 +2857,7 @@
 							else if (!item.state.cooldowns.activate && Object.keys(chamber.creatures).length < CONSTANTS.monsterCountMax) {
 								// deactivate
 									item.state.cooldowns.activate = CONSTANTS.spawnCooldown
+									item.state.sound = "activation_" + item.info.type
 
 								// create creature
 									var monster = createCreature(request, main.duplicateObject(MONSTERS[main.chooseRandom(item.info.monsterTypes)]), callback)
@@ -2856,6 +2881,15 @@
 						else {
 							item.state.active = true
 						}
+					}
+
+				// pedestal
+					else if (item.info.type == "pedestal") {
+						// just activated?
+							if (chamber.state.overlay.orb == item.info.rps && item.state.active) {
+								chamber.state.overlay.orb = null
+								chamber.items[item.id].state.sound = "activation_" + item.info.type
+							}
 					}
 
 				// cloud
