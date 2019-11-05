@@ -84,17 +84,32 @@
 		.hidden {
 			display: none;
 			pointer-events: none;
+			user-select: none;
+			-webkit-user-select: none;
+			-moz-user-select: none;
+			-ms-user-select: none;
+			-o-user-select: none;
 		}
 
 		[hidden=true] {
 			display: none;
 			pointer-events: none;
+			user-select: none;
+			-webkit-user-select: none;
+			-moz-user-select: none;
+			-ms-user-select: none;
+			-o-user-select: none;
 		}
 
 		.invisible {
 			opacity: 0;
 			pointer-events: none;
 			transition: var(--animationTime);
+			user-select: none;
+			-webkit-user-select: none;
+			-moz-user-select: none;
+			-ms-user-select: none;
+			-o-user-select: none;
 		}
 
 	/* sections */

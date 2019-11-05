@@ -205,8 +205,8 @@
 		}
 
 		#d-pad button.diagonal {
-			height: 50%;
-			width: calc(100% / 6);
+			height: calc(100% * (2 / 3));
+			width: calc(100% * (2 / 9));
 			background-color: var(--black-1);
 			font-size: 0px;
 		}
@@ -221,8 +221,8 @@
 
 		#up-left {
 			border-radius: 100% 0px 0px 0px;
-			margin-top: calc(100% / 6);
-			margin-left: calc(100% / 6);
+			margin-top: calc(100% / 9);
+			margin-left: calc(100% / 9);
 		}
 
 		#up-left div {
@@ -239,8 +239,8 @@
 
 		#up-right {
 			border-radius: 0px 100% 0px 0px;
-			margin-top: calc(100% / 6);
-			margin-right: calc(100% / 6);
+			margin-top: calc(100% / 9);
+			margin-right: calc(100% / 9);
 		}
 
 		#up-right div {
@@ -273,8 +273,8 @@
 
 		#down-left {
 			border-radius: 0px 0px 0px 100%;
-			margin-bottom: calc(100% / 6);
-			margin-left: calc(100% / 6);
+			margin-bottom: calc(100% / 9);
+			margin-left: calc(100% / 9);
 		}
 
 		#down-left div {
@@ -291,8 +291,8 @@
 
 		#down-right {
 			border-radius: 0px 0px 100% 0px;
-			margin-bottom: calc(100% / 6);
-			margin-right: calc(100% / 6);
+			margin-bottom: calc(100% / 9);
+			margin-right: calc(100% / 9);
 		}
 
 		#down-right div {

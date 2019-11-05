@@ -22,19 +22,15 @@
 					<div class="sprite"></div>
 					<div class="header">Launch</div>
 					<div class="content">
-						Every game has a unique 4-letter id. <a href="../../">Create a game</a> on a computer.<br>
-						<a href="../../">Join</a> on a mobile device by entering the 4-letter id.
+						<a href="../../">Create a new game</a> on a computer.<br>
+						<a href="../../">Join</a> on a phone with the 4-letter game code.
 					</div>
 				</div>
 				<div id="gameplay" class="section">
 					<div class="sprite"></div>
 					<div class="header">Gameplay</div>
 					<div class="content">
-						Swarms of menacing monsters have stolen the sacred orbs!<br><br>
-						<span class="orangetext">BARBARIAN</span>: use strength to obliterate scurrying spiders<br>
-						<span class="greentext">WIZARD</span>: summon spells to destroy raging rock monsters<br>
-						<span class="magentatext">RANGER</span>: throw dangerous daggers through ghastly ghouls<br><br>
-						Work together to recover the orbs!
+						<div id="controls"></div>
 					</div>
 				</div>
 				<div id="feedback" class="section">
@@ -45,25 +41,89 @@
 						<input type="email" id="feedback-email" placeholder="email" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/><button id="feedback-submit" value="submit">&#8680;</button>
 					</div>
 				</div>
+				<div id="heroes" class="section" selection="1">
+					<div class="sprite"></div>
+					<div class="header">heroes</div>
+					<button class="pagination" value="left"><div>&#8593;</div></button>
+					<button class="pagination" value="right"><div>&#8593;</div></button>
+					<div class="content carousel">
+						<div id="barbarian" class="carousel-item">
+							<span class="subheader orangetext">barbarian</span>
+							<span class="subcontent">use strength to obliterate scurrying spiders</span>
+						</div>
+						<div id="wizard" class="carousel-item">
+							<span class="subheader greentext">wizard</span>
+							<span class="subcontent">summon spells to destroy raging rock monsters</span>
+						</div>
+						<div id="ranger" class="carousel-item">
+							<span class="subheader magentatext">ranger</span>
+							<span class="subcontent">throw dangerous daggers through ghastly ghouls</span>
+						</div>
+					</div>
+				</div>
+				<div id="monsters" class="section" selection="2">
+					<div class="sprite"></div>
+					<div class="header">monsters</div>
+					<button class="pagination" value="left"><div>&#8593;</div></button>
+					<button class="pagination" value="right"><div>&#8593;</div></button>
+					<div class="content carousel">
+						<div id="avalanche" class="carousel-item">
+							<span class="subheader orangetext">avalanche</span>
+							<span class="subcontent">this raging rock monster rips rangers apart</span>
+						</div>
+						<div id="obscuro" class="carousel-item">
+							<span class="subheader greentext">obscuro</span>
+							<span class="subcontent">this ghastly ghoul blasts through barbarians</span>
+						</div>
+						<div id="tatters" class="carousel-item">
+							<span class="subheader magentatext">tatters</span>
+							<span class="subcontent">this scurryining spider webs up wizards</span>
+						</div>
+					</div>
+				</div>
+				<div id="shrines" class="section" selection="0">
+					<div class="sprite"></div>
+					<div class="header">shrines</div>
+					<button class="pagination" value="left"><div>&#8593;</div></button>
+					<button class="pagination" value="right"><div>&#8593;</div></button>
+					<div class="content carousel">
+						<div id="shrine_rock" class="carousel-item">
+							<span class="subheader orangetext">strength</span>
+							<span class="subcontent">all attacks are mcuh more powerful</span>
+						</div>
+						<div id="shrine_paper" class="carousel-item">
+							<span class="subheader greentext">shield</span>
+							<span class="subcontent">powerful armor blocks damage from foes</span>
+						</div>
+						<div id="shrine_scissors" class="carousel-item">
+							<span class="subheader magentatext">speed</span>
+							<span class="subcontent">move faster in all directions</span>
+						</div>
+						<div id="portal" class="carousel-item">
+							<span class="subheader bluetext">portal</span>
+							<span class="subcontent">teleport to the portal's pair</span>
+						</div>
+					</div>
+				</div>
 				<div id="audio" class="section">
 					<div class="sprite"></div>
 					<div class="header">Audio</div>
 					<div class="content">
-						TBD
+						Sound effects and soundtrack created by <a href="#">Alex Berg</a> using <span class="greentext">Pro Tools</span>.
 					</div>
 				</div>
 				<div id="artwork" class="section">
 					<div class="sprite"></div>
 					<div class="header">Artwork</div>
 					<div class="content">
-						TBD
+						All sprites and backgrounds created by <a href="#">Jenn Levy</a> using <span class="magentatext">Paint Brush</span>.
 					</div>
 				</div>
 				<div id="code" class="section">
 					<div class="sprite"></div>
 					<div class="header">Code</div>
 					<div class="content">
-						The app is powered by <span class="greentext">nodeJS</span> and <span class="magentatext">websockets</span>, written in 100% raw <span class="orangetext">javascript</span>. 
+						The app is powered by <span class="greentext">nodeJS</span> and <span class="magentatext">websockets</span>, written in 100% raw <span class="orangetext">javascript</span> by <a href="https://jamesmayr.com" target="_blank">James Mayr</a>. 
 						<br><br>
 						See the latest updates on <a href="https://www.github.com/jamesbmayr/rpsrpg" target="_blank">GitHub</a>.
 					</div>

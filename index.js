@@ -131,6 +131,20 @@
 										catch (error) {_404(error)}
 									break
 
+								// controller
+									case (/\/controller[.]png$/).test(request.url):
+										try {
+											response.writeHead(200, {"Content-Type": "image/png"})
+											fs.readFile("./main/images/controller.png", function (error, file) {
+												if (error) {_404(error)}
+												else {
+													response.end(file, "binary")
+												}
+											})
+										}
+										catch (error) {_404(error)}
+									break
+
 								// sprites
 									case (/\/sprites\/([a-zA-Z0-9_])+[.]png$/).test(request.url):
 										try {

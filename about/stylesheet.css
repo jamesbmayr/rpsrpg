@@ -69,11 +69,27 @@
 			background-repeat: no-repeat;
 			background-size: contain;
 			background-position: center center;
+			opacity: 1;
+			overflow: hidden;
+			transition: var(--animationTime);
 		}
 
 		.header {
 			float: left;
 			font-size: calc(var(--fontSize) * 2);
+			font-weight: bold;
+			width: calc(100% - 2 * var(--borderWidth));
+			padding: var(--borderWidth);
+			color: var(--white-4);
+			text-shadow: 0px 0px var(--borderWidth) var(--black-4);
+			cursor: default;
+			text-align: center;
+			z-index: 2;
+		}
+
+		.subheader {
+			float: left;
+			font-size: calc(var(--fontSize) * 1.25);
 			font-weight: bold;
 			width: calc(100% - 2 * var(--borderWidth));
 			padding: var(--borderWidth);
@@ -93,6 +109,28 @@
 			color: var(--white-4);
 			cursor: default;
 			text-align: center;
+		}
+
+		.content.carousel {
+			padding: 0px 0px var(--borderWidth) 0px;
+			width: calc(100% - 8 * var(--borderWidth));
+		}
+
+		.subcontent {
+			float: left;
+			padding: 0px;
+			width: 100%;
+		}
+
+	/* controls */
+		#controls {
+			text-align: center;
+			background-image: url("/images/controller.png");
+			background-repeat: no-repeat;
+			background-size: contain;
+			background-position: center center;
+			height: 300px;
+			width: 100%;
 		}
 
 	/* feedback */
@@ -135,47 +173,164 @@
 			background-color: var(--blue-3);
 		}
 
+	/* pagination */
+		.carousel-item {
+			opacity: 1;
+			overflow: hidden;
+			transition: var(--animationTime);
+		}
+
+		.section:not([selection="0"]) .carousel-item:nth-child(1) {
+			opacity: 0;
+			height: 0px;
+			width: 0px;
+		}
+
+		.section:not([selection="1"]) .carousel-item:nth-child(2) {
+			opacity: 0;
+			height: 0px;
+			width: 0px;
+		}
+
+		.section:not([selection="2"]) .carousel-item:nth-child(3) {
+			opacity: 0;
+			height: 0px;
+			width: 0px;
+		}
+
+		.section:not([selection="3"]) .carousel-item:nth-child(4) {
+			opacity: 0;
+			height: 0px;
+			width: 0px;
+		}
+
+		.section:not([selection="4"]) .carousel-item:nth-child(5) {
+			opacity: 0;
+			height: 0px;
+			width: 0px;
+		}
+
+		button.pagination {
+			background-color: transparent;
+			border: 0px;
+			padding: var(--borderWidth);
+			font-size: calc(var(--fontSize) * 2);
+		}
+
+		button.pagination:focus, button.pagination:hover {
+			text-shadow: 0px 0px var(--borderWidth) var(--white-4);
+		}
+
+		button.pagination div {
+			pointer-events: none;
+			user-select: none;
+			-webkit-user-select: none;
+			-moz-user-select: none;
+			-ms-user-select: none;
+			-o-user-select: none;
+		}
+
+		button.pagination[value="left"] {
+			float: left;
+		}
+
+		button.pagination[value="left"] div {
+			transform: rotate(-90deg) translateX(2px);
+		}
+
+		button.pagination[value="right"] {
+			float: right;
+		}
+
+		button.pagination[value="right"] div {
+			transform: rotate(90deg) translateX(2px);
+		}
+
 /*** colors ***/
 	/* text */
 		.orangetext {
 			font-weight: bold;
 			color: var(--rock-0);
-			text-shadow: 0px 0px var(--borderWidth) var(--white-4);
 		}
 
 		.greentext {
 			font-weight: bold;
 			color: var(--paper-0);
-			text-shadow: 0px 0px var(--borderWidth) var(--white-4);
 		}
 
 		.magentatext {
 			font-weight: bold;
 			color: var(--scissors-0);
-			text-shadow: 0px 0px var(--borderWidth) var(--white-4);
+		}
+
+		.bluetext {
+			font-weight: bold;
+			color: var(--blue-2);
 		}
 
 /*** sprites ***/
-	#launch .sprite {
-		background-image: url("/sprites/rangeAttack_barbarian_down_moving_default.png");
-	}
+	/* static */
+		#launch .sprite {
+			background-image: url("/sprites/rangeAttack_barbarian_down_moving_default.png");
+		}
 
-	#gameplay .sprite {
-		background-image: url("/sprites/rangeAttack_wizard_down_moving_default.png");
-	}
+		#gameplay .sprite {
+			background-image: url("/sprites/rangeAttack_wizard_down_moving_default.png");
+		}
 
-	#feedback .sprite {
-		background-image: url("/sprites/rangeAttack_ranger_down_moving_default.png");
-	}
+		#feedback .sprite {
+			background-image: url("/sprites/rangeAttack_ranger_down_moving_default.png");
+		}
 
-	#audio .sprite {
-		background-image: url("/sprites/pedestal_rock_all_standing_active.png");
-	}
+		#audio .sprite {
+			background-image: url("/sprites/pedestal_rock_all_standing_active.png");
+		}
 
-	#artwork .sprite {
-		background-image: url("/sprites/pedestal_paper_all_standing_active.png");
-	}
+		#artwork .sprite {
+			background-image: url("/sprites/pedestal_paper_all_standing_active.png");
+		}
 
-	#code .sprite {
-		background-image: url("/sprites/pedestal_scissors_all_standing_active.png");
-	}
+		#code .sprite {
+			background-image: url("/sprites/pedestal_scissors_all_standing_active.png");
+		}
+
+	/* carousels */
+		#heroes[selection="0"] .sprite {
+			background-image: url("/sprites/hero_barbarian_down_standing_inactive.png");
+		}
+
+		#heroes[selection="1"] .sprite {
+			background-image: url("/sprites/hero_wizard_down_standing_inactive.png");
+		}
+
+		#heroes[selection="2"] .sprite {
+			background-image: url("/sprites/hero_ranger_down_standing_inactive.png");
+		}
+
+		#monsters[selection="0"] .sprite {
+			background-image: url("/sprites/monster_avalanche_down_standing_inactive.png");
+		}
+
+		#monsters[selection="1"] .sprite {
+			background-image: url("/sprites/monster_obscuro_down_standing_inactive.png");
+		}
+
+		#monsters[selection="2"] .sprite {
+			background-image: url("/sprites/monster_tatters_down_standing_inactive.png");
+		}
+
+		#shrines[selection="0"] .sprite {
+			background-image: url("/sprites/shrine_rock_all_standing_active.png");
+		}
+
+		#shrines[selection="1"] .sprite {
+			background-image: url("/sprites/shrine_paper_all_standing_active.png");
+		}
+
+		#shrines[selection="2"] .sprite {
+			background-image: url("/sprites/shrine_scissors_all_standing_active.png");
+		}
+
+		#shrines[selection="3"] .sprite {
+			background-image: url("/sprites/portal_portal_all_standing_active.png");
+		}
