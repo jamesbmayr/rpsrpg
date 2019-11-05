@@ -16,6 +16,7 @@
 			font-size: var(--fontSize);
 			box-shadow: 0px 0px var(--borderWidth) var(--black-4) inset;
 			touch-action: none;
+			-webkit-touch-callout: none !important;
 		}
 
 		a, a:visited, a:hover, a:focus {
@@ -57,6 +58,7 @@
 			color:  var(--white-4);
 			background-color: var(--black-4);
 			vertical-align: middle;
+			-webkit-touch-callout: none !important;
 		}
 
 		button:hover, button:focus, select:focus, textarea:focus, input:focus {
