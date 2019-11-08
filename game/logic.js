@@ -1966,14 +1966,13 @@
 										// power
 											if (attack.info.type == "rangeAttack" || attack.info.type == "areaAttack") {
 												var power = attack.info.statistics.power
-												attack.state.sound = "collision_" + attack.info.type
 											}
 											else {
 												var power = attacker.info.statistics.meleePower * (attacker.state.effects.rock ? CONSTANTS.rockMultiplier : 1)
 											}
 
 										// damage
-											var alive = resolveDamage(request, chamber, recipient, {
+											var alive = resolveDamage(request, chamber, attack, recipient, {
 												power: 	power,
 												rps: 	attacker ? attacker.info.rps  : attack.info.rps,
 												type: 	attacker ? attacker.info.type : attack.info.type
@@ -2038,7 +2037,7 @@
 
 	/* resolveDamage */
 		module.exports.resolveDamage = resolveDamage
-		function resolveDamage(request, chamber, recipient, damage, callback) {
+		function resolveDamage(request, chamber, attack, recipient, damage, callback) {
 			try {
 				// friendly fire?
 					if (recipient.info.type == damage.type) {
@@ -2057,6 +2056,9 @@
 
 				// enemy fire
 					else {
+						// sound
+							attack.state.sound = "collision_attack"
+
 						// multipliers
 							var multiplier = 1
 							switch (damage.rps) {
@@ -2329,8 +2331,6 @@
 									return (request.game.data.chambers[oldX][oldY].items[i].info.type == "portal")
 								})
 								var fromPortal = request.game.data.chambers[oldX][oldY].items[fromKey]
-									fromPortal.state.cooldowns.activate = CONSTANTS.portalCooldown
-									fromPortal.info.opacity = 0
 
 							// to
 								var toKeys = Object.keys(request.game.data.chambers[newX][newY].items)
@@ -2648,7 +2648,6 @@
 						// bumped
 							if (creature.state.movement.bumped) {
 								creature.state.movement.bumped = false
-								creature.state.sound = "collision_" + creature.info.type
 
 								if (creature.info.type == "hero") {
 									creature.state.vibration = CONSTANTS.collisionVibration

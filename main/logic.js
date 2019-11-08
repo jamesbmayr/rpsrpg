@@ -205,7 +205,7 @@
 								main: [
 									"soundtrack_temple", "soundtrack_exploration", "soundtrack_anticipation", "soundtrack_panic",
 
-									"collision_rangeAttack", "collision_areaAttack", "collision_meleeAttack", "collision_monster", "collision_hero",
+									"collision_attack",
 
 									"rangeAttack_hero_barbarian", "rangeAttack_hero_wizard", "rangeAttack_hero_ranger",
 									"areaAttack_hero_barbarian", "areaAttack_hero_wizard", "areaAttack_hero_ranger",
@@ -218,8 +218,7 @@
 									
 									"activation_portal", "activation_shrine", "activation_spawn", "activation_pedestal"
 								],
-								player: [
-								]
+								player: []
 							}
 						break
 
@@ -253,6 +252,7 @@
 									animationDistance: 	8,
 									transitionTime: 	0.1,
 									maxContainerWidth: 	800,
+									repeatBuffer: 		0.2,
 
 								// game loop
 									loopInterval: 		50,
@@ -1352,7 +1352,7 @@
 										message: null,
 										timeout: CONSTANTS.gameCooldown,
 										orb: null,
-										soundtrack: "soundtrack_temple",
+										soundtrack: "soundtrack_exploration",
 										minimap: {},
 										minimapColors: {
 											active: 	CONSTANTS.colors.black[3],

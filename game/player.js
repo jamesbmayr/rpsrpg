@@ -2,7 +2,6 @@
 	/* elements */
 		var SELECTION 	= document.getElementById("selection-inner")
 		var WIRE 		= document.getElementById("wire")
-		var AUDIO 		= document.getElementById("audio")
 		var CONTAINER 	= document.getElementById("container")
 		var INFO 		= document.getElementById("info")
 		var DPAD 		= document.getElementById("d-pad")
@@ -26,24 +25,6 @@
 
 	/* booleans */
 		var SELECTED = false
-
-	/* preloadSounds */
-		var SOUNDS = []
-		preloadSounds()
-		function preloadSounds() {
-			setTimeout(function() {
-				try {
-					for (var i in SFX.player) {
-						var audio = document.createElement("audio")
-							audio.id = SFX.player[i]
-							audio.src = "/sfx/" + SFX.player[i] + ".mp3"
-							audio.load()
-						AUDIO.appendChild(audio)
-						SOUNDS[SFX.player[i]] = audio
-					}
-				} catch (error) {}
-			}, 0)
-		}
 
 /*** websocket ***/
 	/* socket */
@@ -261,11 +242,6 @@
 				// dpad & actions
 					displayButtons(hero)
 
-				// sounds
-					if (hero.state.sound) {
-						playAudio(hero.state.sound)
-					}
-
 				// vibration
 					if (hero.state.vibration) {
 						playVibration(hero.state.vibration)
@@ -338,18 +314,6 @@
 		}
 
 /*** audio ***/
-	/* playAudio */
-		function playAudio(soundEffect) {
-			try {
-				if (soundEffect && SOUNDS[soundEffect]) {
-					var audio = SOUNDS[soundEffect]
-						audio.pause()
-						audio.currentTime = 0
-						audio.play().catch(function(error) {})
-				}
-			} catch (error) {}
-		}
-
 	/* playVibration */
 		function playVibration(vibrationArray) {
 			try {

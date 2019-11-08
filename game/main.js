@@ -10,22 +10,6 @@
 	/* elements */
 		var AUDIO = document.getElementById("audio")
 
-	/* preloadImages */
-		var IMAGES = []
-		preloadImages()
-		function preloadImages() {
-			setTimeout(function() {
-				try {
-					for (var i in SPRITES) {
-						var img = document.createElement("img")
-							img.id = SPRITES[i]
-							img.src = "/sprites/" + SPRITES[i] + ".png"
-						IMAGES[SPRITES[i]] = img
-					}
-				} catch (error) {}
-			}, 0)
-		}
-
 	/* preloadSounds */
 		var MUSIC = null
 		var SOUNDS = {}
@@ -51,9 +35,25 @@
 									audio.currentTime = 0
 									audio.volume = 0
 									audio.loop = true
-									audio.play()
+									audio.play().catch(function(error) {})
 							}
 						}
+				} catch (error) {}
+			}, 0)
+		}
+
+	/* preloadImages */
+		var IMAGES = []
+		preloadImages()
+		function preloadImages() {
+			setTimeout(function() {
+				try {
+					for (var i in SPRITES) {
+						var img = document.createElement("img")
+							img.id = SPRITES[i]
+							img.src = "/sprites/" + SPRITES[i] + ".png"
+						IMAGES[SPRITES[i]] = img
+					}
 				} catch (error) {}
 			}, 0)
 		}
@@ -378,7 +378,7 @@
 
 				// sounds
 					if (creature.state.sound) {
-						playAudio(creature.state.sound)
+						playAudio(chamber, creature.state.sound)
 					}
 			} catch (error) {}
 		}
@@ -444,9 +444,11 @@
 			try {
 				if (soundEffect && SOUNDS[soundEffect] && !chamber.state.overlay.paused) {
 					var audio = SOUNDS[soundEffect]
+					if (audio.currentTime == 0 || audio.currentTime > CONSTANTS.repeatBuffer) {
 						audio.pause()
 						audio.currentTime = 0
 						audio.play().catch(function(error) {})
+					}
 				}
 			} catch (error) {}
 		}
@@ -472,7 +474,7 @@
 					else if (MUSIC == "soundtrack_anticipation") {
 						SOUNDS["soundtrack_anticipation"].pause()
 						SOUNDS["soundtrack_anticipation"].currentTime = 0
-						SOUNDS["soundtrack_anticipation"].play()
+						SOUNDS["soundtrack_anticipation"].play().catch(function(error) {})
 
 						SOUNDS["soundtrack_temple"].volume = 		0
 						SOUNDS["soundtrack_exploration"].volume = 	0
@@ -482,7 +484,7 @@
 					else if (MUSIC == "soundtrack_panic") {
 						SOUNDS["soundtrack_panic"].pause()
 						SOUNDS["soundtrack_panic"].currentTime = 0
-						SOUNDS["soundtrack_panic"].play()
+						SOUNDS["soundtrack_panic"].play().catch(function(error) {})
 
 						SOUNDS["soundtrack_temple"].volume = 		0
 						SOUNDS["soundtrack_exploration"].volume = 	0
