@@ -203,12 +203,9 @@
 						case "sfx":
 							return {
 								main: [
-									"soundtrack",
-									"collision_rangeAttack", "collision_areaAttack", "collision_hero", "collision_monster", 
+									"soundtrack_temple", "soundtrack_exploration", "soundtrack_anticipation", "soundtrack_panic",
 
-									"rangeAttack_hero_barbarian", "rangeAttack_hero_wizard", "rangeAttack_hero_ranger",
-									"areaAttack_hero_barbarian", "areaAttack_hero_wizard", "areaAttack_hero_ranger",
-									/*"death_hero_barbarian", "death_hero_wizard", "death_hero_ranger",*/
+									"collision_rangeAttack", "collision_areaAttack", "collision_meleeAttack", "collision_monster", 
 
 									"rangeAttack_monster_avalanche", "rangeAttack_monster_obscuro", "rangeAttack_monster_tatters",
 									"areaAttack_monster_avalanche", "areaAttack_monster_obscuro", "areaAttack_monster_tatters",
@@ -218,6 +215,10 @@
 									"activation_portal", "activation_shrine", "activation_spawn", "activation_pedestal"
 								],
 								player: [
+									"rangeAttack_hero_barbarian", "rangeAttack_hero_wizard", "rangeAttack_hero_ranger",
+									"areaAttack_hero_barbarian", "areaAttack_hero_wizard", "areaAttack_hero_ranger",
+									"death_hero_barbarian", "death_hero_wizard", "death_hero_ranger",
+									"collision_hero"
 								]
 							}
 						break
@@ -248,7 +249,6 @@
 									timeHigh: 			90,
 									timeLow: 			45,
 									loadFade: 			4,
-									audioRemoval: 		1000 * 5,
 									animationTime: 		2,
 									animationDistance: 	8,
 									transitionTime: 	0.1,
@@ -292,6 +292,7 @@
 									areaAttackFade: 	3,
 									deathFade: 			1,
 									cloudFade: 			3,
+									audioFade: 			1,
 
 								// shrine effects
 									rockMultiplier: 	1.5,
@@ -1350,6 +1351,7 @@
 										message: null,
 										timeout: CONSTANTS.gameCooldown,
 										orb: null,
+										soundtrack: "soundtrack_temple",
 										minimap: {},
 										minimapColors: {
 											active: 	CONSTANTS.colors.black[3],

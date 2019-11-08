@@ -24,32 +24,34 @@
 		}
 
 	/* preloadSounds */
-		var MUSIC = false
-		window.SOUNDS = SOUNDS
-		var SOUNDS = []
+		var MUSIC = null
+		var SOUNDS = {}
 		preloadSounds()
 		function preloadSounds() {
 			setTimeout(function() {
 				try {
-					for (var i in SFX.main) {
-						var audio = new Audio()
-							audio.id = SFX.main[i]
-							audio.src = "/sfx/" + SFX.main[i] + ".mp3"
-							audio.load()
-						SOUNDS[SFX.main[i]] = audio
-					}
-				} catch (error) {}
-			})
-		}
+					// sfx
+						for (var i in SFX.main) {
+							var audio = new Audio()
+								audio.id = SFX.main[i]
+								audio.src = "/sfx/" + SFX.main[i] + ".mp3"
+								audio.load()
+							SOUNDS[SFX.main[i]] = audio
+						}
 
-	/* setVolume */
-		window.setVolume = setVolume
-		function setVolume(name, volume) {
-			try {
-				if (SOUNDS[name]) {
-					SOUNDS[name].volume = volume
-				}
-			} catch (error) { console.log(error) }
+					// soundtrack
+						for (var i in SOUNDS) {
+							if (i.includes("soundtrack")) {
+								var audio = SOUNDS[i]
+									audio.pause()
+									audio.currentTime = 0
+									audio.volume = 0
+									audio.loop = true
+									audio.play()
+							}
+						}
+				} catch (error) {}
+			}, 0)
 		}
 
 	/* other */
@@ -119,15 +121,6 @@
 					if (data.end) {
 						ENDLINK.removeAttribute("hidden")
 					}
-
-				// music
-					if (!MUSIC) {
-						MUSIC = SOUNDS["soundtrack"]
-						MUSIC.loop = true
-						MUSIC.pause()
-						MUSIC.currentTime = 0
-						MUSIC.play()
-					}
 			} catch (error) {}
 		}
 
@@ -179,6 +172,11 @@
 					}
 					if (chamber.state.overlay.message) {
 						drawOverlayMessage(chamber.state.overlay.message)
+					}
+
+				// music
+					if (chamber.state.overlay.soundtrack !== MUSIC) {
+						switchSoundtrack(chamber.state.overlay.soundtrack)
 					}
 			} catch (error) {}
 		}
@@ -440,7 +438,6 @@
 	/* playAudio */
 		function playAudio(soundEffect) {
 			try {
-				console.log(soundEffect, Boolean(SOUNDS[soundEffect]))
 				if (soundEffect && SOUNDS[soundEffect]) {
 					var audio = SOUNDS[soundEffect]
 						audio.pause()
@@ -449,3 +446,38 @@
 				}
 			} catch (error) {}
 		}
+
+	/* switchSoundtrack */
+		function switchSoundtrack(soundtrack) {
+			try {
+				if (soundtrack && SOUNDS[soundtrack] && soundtrack !== MUSIC) {
+					MUSIC = soundtrack
+
+					if (MUSIC == "soundtrack_temple") {
+						SOUNDS["soundtrack_temple"].volume = 		1 /*Math.max(0, Math.min(1, (SOUNDS["soundtrack_temple"].volume * 10 + CONSTANTS.audioFade) / 10))*/
+						SOUNDS["soundtrack_exploration"].volume = 	0 /*Math.max(0, Math.min(1, (SOUNDS["soundtrack_exploration"].volume * 10 - CONSTANTS.audioFade) / 10))*/
+						SOUNDS["soundtrack_anticipation"].volume = 	0 /*Math.max(0, Math.min(1, (SOUNDS["soundtrack_anticipation"].volume * 10 - CONSTANTS.audioFade) / 10))*/
+						SOUNDS["soundtrack_panic"].volume = 		0 /*Math.max(0, Math.min(1, (SOUNDS["soundtrack_panic"].volume * 10 - CONSTANTS.audioFade) / 10))*/
+					}
+					else if (MUSIC == "soundtrack_exploration") {
+						SOUNDS["soundtrack_temple"].volume = 		1 /*Math.max(0, Math.min(1, (SOUNDS["soundtrack_temple"].volume * 10 + CONSTANTS.audioFade) / 10))*/
+						SOUNDS["soundtrack_exploration"].volume = 	1 /*Math.max(0, Math.min(1, (SOUNDS["soundtrack_exploration"].volume * 10 + CONSTANTS.audioFade) / 10))*/
+						SOUNDS["soundtrack_anticipation"].volume = 	0 /*Math.max(0, Math.min(1, (SOUNDS["soundtrack_anticipation"].volume * 10 - CONSTANTS.audioFade) / 10))*/
+						SOUNDS["soundtrack_panic"].volume = 		0 /*Math.max(0, Math.min(1, (SOUNDS["soundtrack_panic"].volume * 10 - CONSTANTS.audioFade) / 10))*/
+					}
+					else if (MUSIC == "soundtrack_anticipation") {
+						SOUNDS["soundtrack_temple"].volume = 		0 /*Math.max(0, Math.min(1, (SOUNDS["soundtrack_temple"].volume * 10 - CONSTANTS.audioFade) / 10))*/
+						SOUNDS["soundtrack_exploration"].volume = 	0 /*Math.max(0, Math.min(1, (SOUNDS["soundtrack_exploration"].volume * 10 - CONSTANTS.audioFade) / 10))*/
+						SOUNDS["soundtrack_anticipation"].volume = 	1 /*Math.max(0, Math.min(1, (SOUNDS["soundtrack_anticipation"].volume * 10 + CONSTANTS.audioFade) / 10))*/
+						SOUNDS["soundtrack_panic"].volume = 		0 /*Math.max(0, Math.min(1, (SOUNDS["soundtrack_panic"].volume * 10 - CONSTANTS.audioFade) / 10))*/
+					}
+					else if (MUSIC == "soundtrack_panic") {
+						SOUNDS["soundtrack_temple"].volume = 		0 /*Math.max(0, Math.min(1, (SOUNDS["soundtrack_temple"].volume * 10 - CONSTANTS.audioFade) / 10))*/
+						SOUNDS["soundtrack_exploration"].volume = 	0 /*Math.max(0, Math.min(1, (SOUNDS["soundtrack_exploration"].volume * 10 - CONSTANTS.audioFade) / 10))*/
+						SOUNDS["soundtrack_anticipation"].volume = 	0 /*Math.max(0, Math.min(1, (SOUNDS["soundtrack_anticipation"].volume * 10 - CONSTANTS.audioFade) / 10))*/
+						SOUNDS["soundtrack_panic"].volume = 		1 /*Math.max(0, Math.min(1, (SOUNDS["soundtrack_panic"].volume * 10 + CONSTANTS.audioFade) / 10))*/
+					}
+				}
+			} catch (error) {}
+		}
+

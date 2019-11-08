@@ -1862,6 +1862,7 @@
 										delete chamber.items[item.id]
 
 										chamber.state.overlay.orb = thing.info.rps
+										chamber.state.overlay.soundtrack = "soundtrack_panic"
 									}
 
 								// stop movement
@@ -2118,6 +2119,7 @@
 											// leave orb state
 												if (item.info.type == "orb") {
 													chamber.state.overlay.orb = null
+													chamber.state.overlay.soundtrack = "soundtrack_anticipation"
 
 													for (var i in chamber.items) {
 														if (chamber.items[i].info.type == "spawn" && chamber.items[i].info.temporary) {
@@ -2369,6 +2371,7 @@
 												// leave orb state
 													if (item.info.type == "orb") {
 														request.game.data.state.overlay.orb = null
+														request.game.data.state.overlay.soundtrack = "soundtrack_anticipation"
 													}
 											}
 										}
@@ -2409,13 +2412,16 @@
 							}
 						}
 
-					// remove attacks & clouds & temporary spawns
+					// remove attacks & clouds & temporary spawns // reset shrines
 						for (var i in oldChamber.items) {
 							if (oldChamber.items[i].info.type == "rangeAttack"
 							 || oldChamber.items[i].info.type == "areaAttack"
 							 || oldChamber.items[i].info.type == "cloud"
 							 || (oldChamber.items[i].info.type == "spawn" && oldChamber.items[i].info.temporary)) {
 								delete oldChamber.items[i]
+							}
+							else if (oldChamber.items[i].info.type == "shrine") {
+								oldChamber.items[i].state.cooldowns.activate = 0
 							}
 						}
 					
@@ -2504,6 +2510,20 @@
 							}
 
 							createSpawns(request, newChamber, spawnArray, true, callback)
+						}
+
+					// soundtrack
+						if (!newX && !newY) {
+							newChamber.state.overlay.soundtrack = "soundtrack_temple"
+						}
+						else if (newChamber.state.overlay.orb) {
+							newChamber.state.overlay.soundtrack = "soundtrack_panic"
+						}
+						else if ((Object.keys(newChamber.items).find(function(key) { return newChamber.items[key].info.type == "orb" }) || []).length) {
+							newChamber.state.overlay.soundtrack = "soundtrack_anticipation"
+						}
+						else {
+							newChamber.state.overlay.soundtrack = "soundtrack_exploration"
 						}
 				}
 			}
@@ -2625,10 +2645,10 @@
 						// bumped
 							if (creature.state.movement.bumped) {
 								creature.state.movement.bumped = false
+								creature.state.sound = "collision_" + creature.info.type
 
 								if (creature.info.type == "hero") {
 									creature.state.vibration = CONSTANTS.collisionVibration
-									creature.state.sound = "collision_hero"
 								}
 							}
 
