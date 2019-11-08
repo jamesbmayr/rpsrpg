@@ -42,7 +42,7 @@
 						SOUNDS[SFX.player[i]] = audio
 					}
 				} catch (error) {}
-			})
+			}, 0)
 		}
 
 /*** websocket ***/
@@ -345,9 +345,13 @@
 					var audio = SOUNDS[soundEffect]
 						audio.pause()
 						audio.currentTime = 0
-						audio.play().catch(function(error) {})
+						audio.play().catch(function(error) {
+							displayMessage(error)
+						})
 				}
-			} catch (error) {}
+			} catch (error) {
+				displayMessage(error)
+			}
 		}
 
 	/* playVibration */

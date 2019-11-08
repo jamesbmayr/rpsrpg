@@ -458,36 +458,36 @@
 					MUSIC = soundtrack
 
 					if (MUSIC == "soundtrack_temple") {
-						SOUNDS["soundtrack_temple"].volume = 		Math.max(0, Math.min(1, (SOUNDS["soundtrack_temple"].volume * 10 + CONSTANTS.audioFade) / 10))
-						SOUNDS["soundtrack_exploration"].volume = 	Math.max(0, Math.min(1, (SOUNDS["soundtrack_exploration"].volume * 10 - CONSTANTS.audioFade) / 10))
-						SOUNDS["soundtrack_anticipation"].volume = 	Math.max(0, Math.min(1, (SOUNDS["soundtrack_anticipation"].volume * 10 - CONSTANTS.audioFade) / 10))
-						SOUNDS["soundtrack_panic"].volume = 		Math.max(0, Math.min(1, (SOUNDS["soundtrack_panic"].volume * 10 - CONSTANTS.audioFade) / 10))
+						SOUNDS["soundtrack_temple"].volume = 		1
+						SOUNDS["soundtrack_exploration"].volume = 	0
+						SOUNDS["soundtrack_anticipation"].volume = 	0
+						SOUNDS["soundtrack_panic"].volume = 		0
 					}
 					else if (MUSIC == "soundtrack_exploration") {
-						SOUNDS["soundtrack_temple"].volume = 		Math.max(0, Math.min(1, (SOUNDS["soundtrack_temple"].volume * 10 + CONSTANTS.audioFade) / 10))
-						SOUNDS["soundtrack_exploration"].volume = 	Math.max(0, Math.min(1, (SOUNDS["soundtrack_exploration"].volume * 10 + CONSTANTS.audioFade) / 10))
-						SOUNDS["soundtrack_anticipation"].volume = 	Math.max(0, Math.min(1, (SOUNDS["soundtrack_anticipation"].volume * 10 - CONSTANTS.audioFade) / 10))
-						SOUNDS["soundtrack_panic"].volume = 		Math.max(0, Math.min(1, (SOUNDS["soundtrack_panic"].volume * 10 - CONSTANTS.audioFade) / 10))
+						SOUNDS["soundtrack_temple"].volume = 		1
+						SOUNDS["soundtrack_exploration"].volume = 	1
+						SOUNDS["soundtrack_anticipation"].volume = 	0
+						SOUNDS["soundtrack_panic"].volume = 		0
 					}
 					else if (MUSIC == "soundtrack_anticipation") {
 						SOUNDS["soundtrack_anticipation"].pause()
 						SOUNDS["soundtrack_anticipation"].currentTime = 0
 						SOUNDS["soundtrack_anticipation"].play()
 
-						SOUNDS["soundtrack_temple"].volume = 		Math.max(0, Math.min(1, (SOUNDS["soundtrack_temple"].volume * 10 - CONSTANTS.audioFade) / 10))
-						SOUNDS["soundtrack_exploration"].volume = 	Math.max(0, Math.min(1, (SOUNDS["soundtrack_exploration"].volume * 10 - CONSTANTS.audioFade) / 10))
-						SOUNDS["soundtrack_anticipation"].volume = 	Math.max(0, Math.min(1, (SOUNDS["soundtrack_anticipation"].volume * 10 + CONSTANTS.audioFade) / 10))
-						SOUNDS["soundtrack_panic"].volume = 		Math.max(0, Math.min(1, (SOUNDS["soundtrack_panic"].volume * 10 - CONSTANTS.audioFade) / 10))
+						SOUNDS["soundtrack_temple"].volume = 		0
+						SOUNDS["soundtrack_exploration"].volume = 	0
+						SOUNDS["soundtrack_anticipation"].volume = 	1
+						SOUNDS["soundtrack_panic"].volume = 		0
 					}
 					else if (MUSIC == "soundtrack_panic") {
 						SOUNDS["soundtrack_panic"].pause()
 						SOUNDS["soundtrack_panic"].currentTime = 0
 						SOUNDS["soundtrack_panic"].play()
-						
-						SOUNDS["soundtrack_temple"].volume = 		Math.max(0, Math.min(1, (SOUNDS["soundtrack_temple"].volume * 10 - CONSTANTS.audioFade) / 10))
-						SOUNDS["soundtrack_exploration"].volume = 	Math.max(0, Math.min(1, (SOUNDS["soundtrack_exploration"].volume * 10 - CONSTANTS.audioFade) / 10))
-						SOUNDS["soundtrack_anticipation"].volume = 	Math.max(0, Math.min(1, (SOUNDS["soundtrack_anticipation"].volume * 10 - CONSTANTS.audioFade) / 10))
-						SOUNDS["soundtrack_panic"].volume = 		Math.max(0, Math.min(1, (SOUNDS["soundtrack_panic"].volume * 10 + CONSTANTS.audioFade) / 10))
+
+						SOUNDS["soundtrack_temple"].volume = 		0
+						SOUNDS["soundtrack_exploration"].volume = 	0
+						SOUNDS["soundtrack_anticipation"].volume = 	0
+						SOUNDS["soundtrack_panic"].volume = 		1
 					}
 				}
 			} catch (error) {}
