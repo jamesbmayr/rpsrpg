@@ -1348,6 +1348,7 @@
 									time: 	0,
 									orbs: 	0,
 									overlay: {
+										pause: false,
 										message: null,
 										timeout: CONSTANTS.gameCooldown,
 										orb: null,

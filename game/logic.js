@@ -378,6 +378,7 @@
 			try {
 				// change pause
 					request.game.data.state.paused = !request.game.data.state.paused
+					request.game.data.state.overlay.paused = request.game.data.state.paused
 			}
 			catch (error) {
 				main.logError(error, arguments.callee.name, [request.session.id], callback)
@@ -2212,12 +2213,14 @@
 						// victory
 							if (request.game.data.state.orbs >= CONSTANTS.rps.length) {
 								request.game.data.state.end = true
+								request.game.data.state.overlay.pause = true
 								request.game.data.state.overlay.message = CONSTANTS.victoryMessage
 							}
 
 						// timeout
 							else if (!request.game.data.state.overlay.timeout) {
 								request.game.data.state.end = true
+								request.game.data.state.overlay.pause = true
 								request.game.data.state.overlay.message = CONSTANTS.defeatMessage
 							}
 

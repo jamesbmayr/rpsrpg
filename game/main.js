@@ -7,6 +7,9 @@
 		var TIMER = document.getElementById("timer")
 		var TIMERCONTEXT = TIMER.getContext("2d")
 
+	/* elements */
+		var AUDIO = document.getElementById("audio")
+
 	/* preloadImages */
 		var IMAGES = []
 		preloadImages()
@@ -32,10 +35,11 @@
 				try {
 					// sfx
 						for (var i in SFX.main) {
-							var audio = new Audio()
+							var audio = document.createElement("audio")
 								audio.id = SFX.main[i]
 								audio.src = "/sfx/" + SFX.main[i] + ".mp3"
 								audio.load()
+							AUDIO.appendChild(audio)
 							SOUNDS[SFX.main[i]] = audio
 						}
 
@@ -150,39 +154,39 @@
 
 				// draw creatures
 					for (var c in chamber.creatures) {
-						drawCreature(chamber.creatures[c])
+						drawCreature(chamber, chamber.creatures[c])
 					}
 
 				// draw heroes
 					for (var h in chamber.heroes) {
-						drawCreature(chamber.heroes[h])
+						drawCreature(chamber, chamber.heroes[h])
 					}
 
 				// draw items
 					for (var i in chamber.items) {
-						drawItem(chamber.items[i])
+						drawItem(chamber, chamber.items[i])
 					}
 
 				// overlay
 					if (chamber.state.overlay.orb) {
-						drawOverlay(CONSTANTS.colors[chamber.state.overlay.orb][0], CONSTANTS.overlayOpacity)
+						drawOverlay(chamber, CONSTANTS.colors[chamber.state.overlay.orb][0], CONSTANTS.overlayOpacity)
 					}
 					if (chamber.state.cooldowns.activate) {
-						drawOverlay(CONSTANTS.colors.black[4], (chamber.state.cooldowns.activate / CONSTANTS.chamberCooldown), chamber.state.fadeout)
+						drawOverlay(chamber, CONSTANTS.colors.black[4], (chamber.state.cooldowns.activate / CONSTANTS.chamberCooldown), chamber.state.fadeout)
 					}
 					if (chamber.state.overlay.message) {
-						drawOverlayMessage(chamber.state.overlay.message)
+						drawOverlayMessage(chamber, chamber.state.overlay.message)
 					}
 
 				// music
 					if (chamber.state.overlay.soundtrack !== MUSIC) {
-						switchSoundtrack(chamber.state.overlay.soundtrack)
+						switchSoundtrack(chamber, chamber.state.overlay.soundtrack)
 					}
 			} catch (error) {}
 		}
 
 	/* drawOverlay */
-		function drawOverlay(color, opacity, fadeout) {
+		function drawOverlay(chamber, color, opacity, fadeout) {
 			try {
 				// opacity
 					var opacity = Math.max(0, Math.min(1, opacity))
@@ -198,7 +202,7 @@
 		}
 
 	/* drawOverlayMessage */
-		function drawOverlayMessage(message) {
+		function drawOverlayMessage(chamber, message) {
 			try {
 				// overlay
 					var options = {
@@ -329,7 +333,7 @@
 		}
 
 	/* drawCreature */
-		function drawCreature(creature) {
+		function drawCreature(chamber, creature) {
 			try {
 				// variables
 					var healthPercentage = Math.round(creature.state.health / creature.info.statistics.healthMax * 100)
@@ -380,7 +384,7 @@
 		}
 
 	/* drawItem */
-		function drawItem(item) {
+		function drawItem(chamber, item) {
 			try {
 				// variables
 					var itemX = item.state.position.x + Math.ceil(CANVAS.width  / 2)
@@ -429,16 +433,16 @@
 
 				// sounds
 					if (item.state.sound) {
-						playAudio(item.state.sound)
+						playAudio(chamber, item.state.sound)
 					}
 			} catch (error) {}
 		}
 
 /*** audio ***/
 	/* playAudio */
-		function playAudio(soundEffect) {
+		function playAudio(chamber, soundEffect) {
 			try {
-				if (soundEffect && SOUNDS[soundEffect]) {
+				if (soundEffect && SOUNDS[soundEffect] && !chamber.state.overlay.paused) {
 					var audio = SOUNDS[soundEffect]
 						audio.pause()
 						audio.currentTime = 0
@@ -448,34 +452,42 @@
 		}
 
 	/* switchSoundtrack */
-		function switchSoundtrack(soundtrack) {
+		function switchSoundtrack(chamber, soundtrack) {
 			try {
 				if (soundtrack && SOUNDS[soundtrack] && soundtrack !== MUSIC) {
 					MUSIC = soundtrack
 
 					if (MUSIC == "soundtrack_temple") {
-						SOUNDS["soundtrack_temple"].volume = 		1 /*Math.max(0, Math.min(1, (SOUNDS["soundtrack_temple"].volume * 10 + CONSTANTS.audioFade) / 10))*/
-						SOUNDS["soundtrack_exploration"].volume = 	0 /*Math.max(0, Math.min(1, (SOUNDS["soundtrack_exploration"].volume * 10 - CONSTANTS.audioFade) / 10))*/
-						SOUNDS["soundtrack_anticipation"].volume = 	0 /*Math.max(0, Math.min(1, (SOUNDS["soundtrack_anticipation"].volume * 10 - CONSTANTS.audioFade) / 10))*/
-						SOUNDS["soundtrack_panic"].volume = 		0 /*Math.max(0, Math.min(1, (SOUNDS["soundtrack_panic"].volume * 10 - CONSTANTS.audioFade) / 10))*/
+						SOUNDS["soundtrack_temple"].volume = 		Math.max(0, Math.min(1, (SOUNDS["soundtrack_temple"].volume * 10 + CONSTANTS.audioFade) / 10))
+						SOUNDS["soundtrack_exploration"].volume = 	Math.max(0, Math.min(1, (SOUNDS["soundtrack_exploration"].volume * 10 - CONSTANTS.audioFade) / 10))
+						SOUNDS["soundtrack_anticipation"].volume = 	Math.max(0, Math.min(1, (SOUNDS["soundtrack_anticipation"].volume * 10 - CONSTANTS.audioFade) / 10))
+						SOUNDS["soundtrack_panic"].volume = 		Math.max(0, Math.min(1, (SOUNDS["soundtrack_panic"].volume * 10 - CONSTANTS.audioFade) / 10))
 					}
 					else if (MUSIC == "soundtrack_exploration") {
-						SOUNDS["soundtrack_temple"].volume = 		1 /*Math.max(0, Math.min(1, (SOUNDS["soundtrack_temple"].volume * 10 + CONSTANTS.audioFade) / 10))*/
-						SOUNDS["soundtrack_exploration"].volume = 	1 /*Math.max(0, Math.min(1, (SOUNDS["soundtrack_exploration"].volume * 10 + CONSTANTS.audioFade) / 10))*/
-						SOUNDS["soundtrack_anticipation"].volume = 	0 /*Math.max(0, Math.min(1, (SOUNDS["soundtrack_anticipation"].volume * 10 - CONSTANTS.audioFade) / 10))*/
-						SOUNDS["soundtrack_panic"].volume = 		0 /*Math.max(0, Math.min(1, (SOUNDS["soundtrack_panic"].volume * 10 - CONSTANTS.audioFade) / 10))*/
+						SOUNDS["soundtrack_temple"].volume = 		Math.max(0, Math.min(1, (SOUNDS["soundtrack_temple"].volume * 10 + CONSTANTS.audioFade) / 10))
+						SOUNDS["soundtrack_exploration"].volume = 	Math.max(0, Math.min(1, (SOUNDS["soundtrack_exploration"].volume * 10 + CONSTANTS.audioFade) / 10))
+						SOUNDS["soundtrack_anticipation"].volume = 	Math.max(0, Math.min(1, (SOUNDS["soundtrack_anticipation"].volume * 10 - CONSTANTS.audioFade) / 10))
+						SOUNDS["soundtrack_panic"].volume = 		Math.max(0, Math.min(1, (SOUNDS["soundtrack_panic"].volume * 10 - CONSTANTS.audioFade) / 10))
 					}
 					else if (MUSIC == "soundtrack_anticipation") {
-						SOUNDS["soundtrack_temple"].volume = 		0 /*Math.max(0, Math.min(1, (SOUNDS["soundtrack_temple"].volume * 10 - CONSTANTS.audioFade) / 10))*/
-						SOUNDS["soundtrack_exploration"].volume = 	0 /*Math.max(0, Math.min(1, (SOUNDS["soundtrack_exploration"].volume * 10 - CONSTANTS.audioFade) / 10))*/
-						SOUNDS["soundtrack_anticipation"].volume = 	1 /*Math.max(0, Math.min(1, (SOUNDS["soundtrack_anticipation"].volume * 10 + CONSTANTS.audioFade) / 10))*/
-						SOUNDS["soundtrack_panic"].volume = 		0 /*Math.max(0, Math.min(1, (SOUNDS["soundtrack_panic"].volume * 10 - CONSTANTS.audioFade) / 10))*/
+						SOUNDS["soundtrack_anticipation"].pause()
+						SOUNDS["soundtrack_anticipation"].currentTime = 0
+						SOUNDS["soundtrack_anticipation"].play()
+
+						SOUNDS["soundtrack_temple"].volume = 		Math.max(0, Math.min(1, (SOUNDS["soundtrack_temple"].volume * 10 - CONSTANTS.audioFade) / 10))
+						SOUNDS["soundtrack_exploration"].volume = 	Math.max(0, Math.min(1, (SOUNDS["soundtrack_exploration"].volume * 10 - CONSTANTS.audioFade) / 10))
+						SOUNDS["soundtrack_anticipation"].volume = 	Math.max(0, Math.min(1, (SOUNDS["soundtrack_anticipation"].volume * 10 + CONSTANTS.audioFade) / 10))
+						SOUNDS["soundtrack_panic"].volume = 		Math.max(0, Math.min(1, (SOUNDS["soundtrack_panic"].volume * 10 - CONSTANTS.audioFade) / 10))
 					}
 					else if (MUSIC == "soundtrack_panic") {
-						SOUNDS["soundtrack_temple"].volume = 		0 /*Math.max(0, Math.min(1, (SOUNDS["soundtrack_temple"].volume * 10 - CONSTANTS.audioFade) / 10))*/
-						SOUNDS["soundtrack_exploration"].volume = 	0 /*Math.max(0, Math.min(1, (SOUNDS["soundtrack_exploration"].volume * 10 - CONSTANTS.audioFade) / 10))*/
-						SOUNDS["soundtrack_anticipation"].volume = 	0 /*Math.max(0, Math.min(1, (SOUNDS["soundtrack_anticipation"].volume * 10 - CONSTANTS.audioFade) / 10))*/
-						SOUNDS["soundtrack_panic"].volume = 		1 /*Math.max(0, Math.min(1, (SOUNDS["soundtrack_panic"].volume * 10 + CONSTANTS.audioFade) / 10))*/
+						SOUNDS["soundtrack_panic"].pause()
+						SOUNDS["soundtrack_panic"].currentTime = 0
+						SOUNDS["soundtrack_panic"].play()
+						
+						SOUNDS["soundtrack_temple"].volume = 		Math.max(0, Math.min(1, (SOUNDS["soundtrack_temple"].volume * 10 - CONSTANTS.audioFade) / 10))
+						SOUNDS["soundtrack_exploration"].volume = 	Math.max(0, Math.min(1, (SOUNDS["soundtrack_exploration"].volume * 10 - CONSTANTS.audioFade) / 10))
+						SOUNDS["soundtrack_anticipation"].volume = 	Math.max(0, Math.min(1, (SOUNDS["soundtrack_anticipation"].volume * 10 - CONSTANTS.audioFade) / 10))
+						SOUNDS["soundtrack_panic"].volume = 		Math.max(0, Math.min(1, (SOUNDS["soundtrack_panic"].volume * 10 + CONSTANTS.audioFade) / 10))
 					}
 				}
 			} catch (error) {}

@@ -2,6 +2,7 @@
 	/* elements */
 		var SELECTION 	= document.getElementById("selection-inner")
 		var WIRE 		= document.getElementById("wire")
+		var AUDIO 		= document.getElementById("audio")
 		var CONTAINER 	= document.getElementById("container")
 		var INFO 		= document.getElementById("info")
 		var DPAD 		= document.getElementById("d-pad")
@@ -33,10 +34,11 @@
 			setTimeout(function() {
 				try {
 					for (var i in SFX.player) {
-						var audio = new Audio()
+						var audio = document.createElement("audio")
 							audio.id = SFX.player[i]
 							audio.src = "/sfx/" + SFX.player[i] + ".mp3"
 							audio.load()
+						AUDIO.appendChild(audio)
 						SOUNDS[SFX.player[i]] = audio
 					}
 				} catch (error) {}
