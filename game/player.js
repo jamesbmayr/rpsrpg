@@ -345,13 +345,9 @@
 					var audio = SOUNDS[soundEffect]
 						audio.pause()
 						audio.currentTime = 0
-						audio.play().catch(function(error) {
-							displayMessage(error)
-						})
+						audio.play().catch(function(error) {})
 				}
-			} catch (error) {
-				displayMessage(error)
-			}
+			} catch (error) {}
 		}
 
 	/* playVibration */

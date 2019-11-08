@@ -205,7 +205,11 @@
 								main: [
 									"soundtrack_temple", "soundtrack_exploration", "soundtrack_anticipation", "soundtrack_panic",
 
-									"collision_rangeAttack", "collision_areaAttack", "collision_meleeAttack", "collision_monster", 
+									"collision_rangeAttack", "collision_areaAttack", "collision_meleeAttack", "collision_monster", "collision_hero",
+
+									"rangeAttack_hero_barbarian", "rangeAttack_hero_wizard", "rangeAttack_hero_ranger",
+									"areaAttack_hero_barbarian", "areaAttack_hero_wizard", "areaAttack_hero_ranger",
+									"death_hero_barbarian", "death_hero_wizard", "death_hero_ranger",
 
 									"rangeAttack_monster_avalanche", "rangeAttack_monster_obscuro", "rangeAttack_monster_tatters",
 									"areaAttack_monster_avalanche", "areaAttack_monster_obscuro", "areaAttack_monster_tatters",
@@ -215,10 +219,6 @@
 									"activation_portal", "activation_shrine", "activation_spawn", "activation_pedestal"
 								],
 								player: [
-									"rangeAttack_hero_barbarian", "rangeAttack_hero_wizard", "rangeAttack_hero_ranger",
-									"areaAttack_hero_barbarian", "areaAttack_hero_wizard", "areaAttack_hero_ranger",
-									"death_hero_barbarian", "death_hero_wizard", "death_hero_ranger",
-									"collision_hero"
 								]
 							}
 						break
