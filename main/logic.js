@@ -292,7 +292,7 @@
 									areaAttackFade: 	3,
 									deathFade: 			1,
 									cloudFade: 			3,
-									audioFade: 			1,
+									volumeFade: 		0.05,
 
 								// shrine effects
 									rockMultiplier: 	1.5,

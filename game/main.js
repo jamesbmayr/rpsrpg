@@ -7,9 +7,6 @@
 		var TIMER = document.getElementById("timer")
 		var TIMERCONTEXT = TIMER.getContext("2d")
 
-	/* elements */
-		var AUDIO = document.getElementById("audio")
-
 	/* preloadSounds */
 		var MUSIC = null
 		var SOUNDS = {}
@@ -19,27 +16,23 @@
 				try {
 					// sfx
 						for (var i in SFX.main) {
-							var audio = document.createElement("audio")
-								audio.id = SFX.main[i]
+							var audio = new Audio()
 								audio.src = "/sfx/" + SFX.main[i] + ".mp3"
 								audio.load()
-							AUDIO.appendChild(audio)
 							SOUNDS[SFX.main[i]] = audio
+
+							if (SFX.main[i].includes("soundtrack")) {
+								audio.pause()
+								audio.loop = true
+								audio.volume = 0
+							}
 						}
 
 					// soundtrack
-						for (var i in SOUNDS) {
-							if (i.includes("soundtrack")) {
-								var audio = SOUNDS[i]
-									audio.pause()
-									audio.currentTime = 0
-									audio.volume = 0
-									audio.loop = true
-									audio.play().catch(function(error) {})
-							}
-						}
+						SOUNDS["soundtrack_temple"].play().catch(function(error) {})
+						SOUNDS["soundtrack_exploration"].play().catch(function(error) {})
 				} catch (error) {}
-			}, 0)
+			})
 		}
 
 	/* preloadImages */
@@ -55,7 +48,7 @@
 						IMAGES[SPRITES[i]] = img
 					}
 				} catch (error) {}
-			}, 0)
+			})
 		}
 
 	/* other */
@@ -179,9 +172,7 @@
 					}
 
 				// music
-					if (chamber.state.overlay.soundtrack !== MUSIC) {
-						switchSoundtrack(chamber, chamber.state.overlay.soundtrack)
-					}
+					adjustSoundtrack(chamber, chamber.state.overlay.soundtrack)
 			} catch (error) {}
 		}
 
@@ -453,44 +444,48 @@
 			} catch (error) {}
 		}
 
-	/* switchSoundtrack */
-		function switchSoundtrack(chamber, soundtrack) {
+	/* adjustSoundtrack */
+		function adjustSoundtrack(chamber, soundtrack) {
 			try {
-				if (soundtrack && SOUNDS[soundtrack] && soundtrack !== MUSIC) {
+				if (soundtrack && SOUNDS[soundtrack]) {
+					if (soundtrack == "soundtrack_temple") {
+						SOUNDS["soundtrack_temple"].volume = 		Math.max(0, Math.min(1, (Number(SOUNDS["soundtrack_temple"].volume) * 1000 + CONSTANTS.volumeFade * 1000) / 1000))
+						SOUNDS["soundtrack_exploration"].volume = 	Math.max(0, Math.min(1, (Number(SOUNDS["soundtrack_exploration"].volume) * 1000 - CONSTANTS.volumeFade * 1000) / 1000))
+						SOUNDS["soundtrack_anticipation"].volume = 	Math.max(0, Math.min(1, (Number(SOUNDS["soundtrack_anticipation"].volume) * 1000 - CONSTANTS.volumeFade * 1000) / 1000))
+						SOUNDS["soundtrack_panic"].volume = 		Math.max(0, Math.min(1, (Number(SOUNDS["soundtrack_panic"].volume) * 1000 - CONSTANTS.volumeFade * 1000) / 1000))
+					}
+					else if (soundtrack == "soundtrack_exploration") {
+						SOUNDS["soundtrack_temple"].volume = 		Math.max(0, Math.min(1, (Number(SOUNDS["soundtrack_temple"].volume) * 1000 + CONSTANTS.volumeFade * 1000) / 1000))
+						SOUNDS["soundtrack_exploration"].volume = 	Math.max(0, Math.min(1, (Number(SOUNDS["soundtrack_exploration"].volume) * 1000 + CONSTANTS.volumeFade * 1000) / 1000))
+						SOUNDS["soundtrack_anticipation"].volume = 	Math.max(0, Math.min(1, (Number(SOUNDS["soundtrack_anticipation"].volume) * 1000 - CONSTANTS.volumeFade * 1000) / 1000))
+						SOUNDS["soundtrack_panic"].volume = 		Math.max(0, Math.min(1, (Number(SOUNDS["soundtrack_panic"].volume) * 1000 - CONSTANTS.volumeFade * 1000) / 1000))
+					}
+					else if (soundtrack == "soundtrack_anticipation") {
+						if (MUSIC !== soundtrack) {
+							SOUNDS["soundtrack_anticipation"].pause()
+							SOUNDS["soundtrack_anticipation"].currentTime = 0
+							SOUNDS["soundtrack_anticipation"].play().catch(function(error) {})
+						}
+
+						SOUNDS["soundtrack_temple"].volume = 		Math.max(0, Math.min(1, (Number(SOUNDS["soundtrack_temple"].volume) * 1000 - CONSTANTS.volumeFade * 1000) / 1000))
+						SOUNDS["soundtrack_exploration"].volume = 	Math.max(0, Math.min(1, (Number(SOUNDS["soundtrack_exploration"].volume) * 1000 - CONSTANTS.volumeFade * 1000) / 1000))
+						SOUNDS["soundtrack_anticipation"].volume = 	Math.max(0, Math.min(1, (Number(SOUNDS["soundtrack_anticipation"].volume) * 1000 + CONSTANTS.volumeFade * 1000) / 1000))
+						SOUNDS["soundtrack_panic"].volume = 		Math.max(0, Math.min(1, (Number(SOUNDS["soundtrack_panic"].volume) * 1000 - CONSTANTS.volumeFade * 1000) / 1000))
+					}
+					else if (soundtrack == "soundtrack_panic") {
+						if (MUSIC !== soundtrack) {
+							SOUNDS["soundtrack_panic"].pause()
+							SOUNDS["soundtrack_panic"].currentTime = 0
+							SOUNDS["soundtrack_panic"].play().catch(function(error) {})
+						}
+
+						SOUNDS["soundtrack_temple"].volume = 		Math.max(0, Math.min(1, (Number(SOUNDS["soundtrack_temple"].volume) * 1000 - CONSTANTS.volumeFade * 1000) / 1000))
+						SOUNDS["soundtrack_exploration"].volume = 	Math.max(0, Math.min(1, (Number(SOUNDS["soundtrack_exploration"].volume) * 1000 - CONSTANTS.volumeFade * 1000) / 1000))
+						SOUNDS["soundtrack_anticipation"].volume = 	Math.max(0, Math.min(1, (Number(SOUNDS["soundtrack_anticipation"].volume) * 1000 - CONSTANTS.volumeFade * 1000) / 1000))
+						SOUNDS["soundtrack_panic"].volume = 		Math.max(0, Math.min(1, (Number(SOUNDS["soundtrack_panic"].volume) * 1000 + CONSTANTS.volumeFade * 1000) / 1000))
+					}
+
 					MUSIC = soundtrack
-
-					if (MUSIC == "soundtrack_temple") {
-						SOUNDS["soundtrack_temple"].volume = 		1
-						SOUNDS["soundtrack_exploration"].volume = 	0
-						SOUNDS["soundtrack_anticipation"].volume = 	0
-						SOUNDS["soundtrack_panic"].volume = 		0
-					}
-					else if (MUSIC == "soundtrack_exploration") {
-						SOUNDS["soundtrack_temple"].volume = 		1
-						SOUNDS["soundtrack_exploration"].volume = 	1
-						SOUNDS["soundtrack_anticipation"].volume = 	0
-						SOUNDS["soundtrack_panic"].volume = 		0
-					}
-					else if (MUSIC == "soundtrack_anticipation") {
-						SOUNDS["soundtrack_anticipation"].pause()
-						SOUNDS["soundtrack_anticipation"].currentTime = 0
-						SOUNDS["soundtrack_anticipation"].play().catch(function(error) {})
-
-						SOUNDS["soundtrack_temple"].volume = 		0
-						SOUNDS["soundtrack_exploration"].volume = 	0
-						SOUNDS["soundtrack_anticipation"].volume = 	1
-						SOUNDS["soundtrack_panic"].volume = 		0
-					}
-					else if (MUSIC == "soundtrack_panic") {
-						SOUNDS["soundtrack_panic"].pause()
-						SOUNDS["soundtrack_panic"].currentTime = 0
-						SOUNDS["soundtrack_panic"].play().catch(function(error) {})
-
-						SOUNDS["soundtrack_temple"].volume = 		0
-						SOUNDS["soundtrack_exploration"].volume = 	0
-						SOUNDS["soundtrack_anticipation"].volume = 	0
-						SOUNDS["soundtrack_panic"].volume = 		1
-					}
 				}
 			} catch (error) {}
 		}

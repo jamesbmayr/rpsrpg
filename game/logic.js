@@ -2331,6 +2331,8 @@
 									return (request.game.data.chambers[oldX][oldY].items[i].info.type == "portal")
 								})
 								var fromPortal = request.game.data.chambers[oldX][oldY].items[fromKey]
+									fromPortal.state.cooldowns.activate = CONSTANTS.portalCooldown
+									fromPortal.info.opacity = 0
 
 							// to
 								var toKeys = Object.keys(request.game.data.chambers[newX][newY].items)
@@ -2483,6 +2485,9 @@
 									return oldChamber.items[i].info.type == "portal"
 								})
 								var oldPortal = oldChamber.items[oldKey]
+									oldPortal.info.opacity = 1
+									oldPortal.state.cooldowns.activate = 0
+									oldPortal.state.sound = null
 
 							// new portal
 								var newKey = Object.keys(newChamber.items).find(function (i) {
