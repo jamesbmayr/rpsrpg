@@ -980,7 +980,7 @@
 										statistics: {
 											moveSpeed: 	sixteenthCell * 1,
 											rangeSpeed: sixteenthCell * 4,
-											rangePower: sixteenthHealth * 2.5,
+											rangePower: sixteenthHealth * 3,
 											meleePower:	sixteenthHealth * 2,
 											areaPower: 	sixteenthHealth * 1.5,
 											bumpMove: 	sixteenthCell * 2.5,
@@ -1010,7 +1010,7 @@
 										statistics: {
 											moveSpeed: 	sixteenthCell * 1.25,
 											rangeSpeed: sixteenthCell * 4,
-											rangePower: sixteenthHealth * 2.5,
+											rangePower: sixteenthHealth * 3,
 											meleePower:	sixteenthHealth * 1.5,
 											areaPower: 	sixteenthHealth * 2.5,
 											bumpMove: 	sixteenthCell * 1.5,
@@ -1040,7 +1040,7 @@
 										statistics: {
 											moveSpeed: 	sixteenthCell * 1.5,
 											rangeSpeed: sixteenthCell * 4,
-											rangePower: sixteenthHealth * 3.5,
+											rangePower: sixteenthHealth * 4,
 											meleePower:	sixteenthHealth * 1.5,
 											areaPower: 	sixteenthHealth * 1.5,
 											bumpMove: 	sixteenthCell * 2,

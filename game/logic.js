@@ -1843,7 +1843,9 @@
 
 									// all heroes
 										for (var i in request.game.data.heroes) {
-											request.game.data.heroes[i].state.effects[item.info.subtype] = CONSTANTS.effectCooldown
+											if (request.game.data.heroes[i].state.alive) {
+												request.game.data.heroes[i].state.effects[item.info.subtype] = CONSTANTS.effectCooldown
+											}
 										}
 								}
 							}
@@ -2203,6 +2205,10 @@
 
 				// game over
 					else if (request.game.data.state.end) {
+						for (var i in chamber.items) {
+							chamber.items[i].state.sound = null
+						}
+
 						callback(Object.keys(request.game.observers), {success: true, chamber: chamber, end: true})	
 						callback(Object.keys(request.game.players), {success: true, end: true})
 					}
@@ -2354,14 +2360,14 @@
 									var hero = request.game.data.heroes[h]
 
 									// stop effects
-										if (!hero.player && hero.state.effects) {
+										if (hero.state.effects) {
 											for (var e in hero.state.effects) {
 												hero.state.effects[e] = 0
 											}
 										}
 									
 									// drop items
-										if (!hero.player && hero.items) {
+										if (hero.items) {
 											var x = Number(hero.state.position.x)
 											var y = Number(hero.state.position.y)
 
